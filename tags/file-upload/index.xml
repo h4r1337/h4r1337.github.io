@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>File-Upload on</title><link>https://h4r1337.github.io/tags/file-upload/</link><description>Recent content in File-Upload on</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Mon, 04 Nov 2024 20:37:42 +0530</lastBuildDate><atom:link href="https://h4r1337.github.io/tags/file-upload/index.xml" rel="self" type="application/rss+xml"/><item><title>PermX | HackTheBox</title><link>https://h4r1337.github.io/posts/permx/</link><pubDate>Mon, 04 Nov 2024 20:37:42 +0530</pubDate><guid>https://h4r1337.github.io/posts/permx/</guid><description>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/permx">PermX&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/1573153">&lt;img src="https://www.hackthebox.com/badge/image/1573153" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Permx
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>&lt;code>PermX&lt;/code> is an Easy Difficulty Linux machine featuring a learning management system vulnerable to unrestricted file uploads via &lt;a href="https://nvd.nist.gov/vuln/detail/CVE-2023-4220">CVE-2023-4220&lt;/a>. This vulnerability is leveraged to gain a foothold on the machine. Enumerating the machine reveals credentials that lead to SSH access. A &lt;code>sudo&lt;/code> misconfiguration is then exploited to gain a &lt;code>root&lt;/code> shell.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;h2 id="information-gathering">Information Gathering&lt;/h2>
+&lt;p>Before starting, I have added &lt;code>permx.htb&lt;/code> to &lt;code>/etc/hosts&lt;/code> file&lt;/p></description><content>&lt;h3 id="overview">Overview&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/cover.webp">&lt;/figure>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align: center">Title&lt;/th>
+&lt;th style="text-align: center">&lt;a href="https://app.hackthebox.com/machines/permx">PermX&lt;/a>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align: center">Difficulty&lt;/td>
+&lt;td style="text-align: center">Easy&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Machine&lt;/td>
+&lt;td style="text-align: center">Linux&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align: center">Maker&lt;/td>
+&lt;td style="text-align: center">&lt;a href="https://app.hackthebox.com/users/1573153">&lt;img src="https://www.hackthebox.com/badge/image/1573153" alt="" style="display: unset">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;br>
+&lt;div class="alert alert-tip collapsed">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-bulb">&lt;/i>
+&lt;p class="alert-heading">
+About Permx
+&lt;/p>
+&lt;i class='bx bx-chevron-down collapsed'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" style="display: none;" >
+&lt;p>&lt;code>PermX&lt;/code> is an Easy Difficulty Linux machine featuring a learning management system vulnerable to unrestricted file uploads via &lt;a href="https://nvd.nist.gov/vuln/detail/CVE-2023-4220">CVE-2023-4220&lt;/a>. This vulnerability is leveraged to gain a foothold on the machine. Enumerating the machine reveals credentials that lead to SSH access. A &lt;code>sudo&lt;/code> misconfiguration is then exploited to gain a &lt;code>root&lt;/code> shell.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;h2 id="information-gathering">Information Gathering&lt;/h2>
+&lt;p>Before starting, I have added &lt;code>permx.htb&lt;/code> to &lt;code>/etc/hosts&lt;/code> file&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> -e &lt;span style="color:#b8bb26">&amp;#39;10.10.11.23\tpermx.htn&amp;#39;&lt;/span> | sudo tee -a /etc/hosts
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now let&amp;rsquo;s start with nmap scan.
+Scanned all TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>nmap -p- --min-rate &lt;span style="color:#d3869b">10000&lt;/span> -vv -oA nmap/ports 10.10.11.23
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> permx.htb &lt;span style="color:#fe8019">(&lt;/span>10.10.11.23&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received syn-ack &lt;span style="color:#fe8019">(&lt;/span>0.25s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2024-07-08 15:04:06 IST &lt;span style="color:#fe8019">for&lt;/span> 97s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Not shown: &lt;span style="color:#d3869b">63855&lt;/span> filtered ports, &lt;span style="color:#d3869b">1678&lt;/span> closed ports
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Reason: &lt;span style="color:#d3869b">63855&lt;/span> no-responses and &lt;span style="color:#d3869b">1678&lt;/span> conn-refused
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Enumerated open TCP ports:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>nmap -p22,80 --min-rate &lt;span style="color:#d3869b">1000&lt;/span> -sC -sV -vv -oA nmap/services 10.10.11.23
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Nmap scan report &lt;span style="color:#fe8019">for&lt;/span> permx.htb &lt;span style="color:#fe8019">(&lt;/span>10.10.11.23&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Host is up, received syn-ack &lt;span style="color:#fe8019">(&lt;/span>0.16s latency&lt;span style="color:#fe8019">)&lt;/span>.
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Scanned at 2024-07-08 15:05:58 IST &lt;span style="color:#fe8019">for&lt;/span> 12s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PORT STATE SERVICE REASON VERSION
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>22/tcp open ssh syn-ack OpenSSH 8.9p1 Ubuntu 3ubuntu0.10 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu Linux; protocol 2.0&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>80/tcp open http syn-ack Apache httpd 2.4.52
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>| http-methods:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_ Supported Methods: OPTIONS HEAD GET POST
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-server-header: Apache/2.4.52 &lt;span style="color:#fe8019">(&lt;/span>Ubuntu&lt;span style="color:#fe8019">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>|_http-title: eLEARNING
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Service Info: Host: 127.0.1.1; OS: Linux; CPE: cpe:/o:linux:linux_kernel
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>There are only 2 ports open, &lt;code>80&lt;/code> and &lt;code>22&lt;/code>&lt;/p>
+&lt;hr>
+&lt;h2 id="enumeration">Enumeration&lt;/h2>
+&lt;h3 id="port-80---http-apache">Port 80 - HTTP (Apache)&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/Pasted%20image%2020240708150113.webp">&lt;/figure>
+&lt;p>There isn&amp;rsquo;t much functionality to test in this site. There&amp;rsquo;s a contact form
+in &lt;code>/contact.html&lt;/code>, but that is also not working.
+Let&amp;rsquo;s do vhost enumeration to check if there&amp;rsquo;s any subdomains:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>ffuf -u http://permx.htb/ -H &lt;span style="color:#b8bb26">&amp;#39;Host: FUZZ.permx.htb&amp;#39;&lt;/span> -w /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt -mc &lt;span style="color:#d3869b">200&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> /&lt;span style="color:#b8bb26">&amp;#39;___\ /&amp;#39;&lt;/span>___&lt;span style="color:#b8bb26">\ &lt;/span> /&amp;#39;___&lt;span style="color:#b8bb26">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">&lt;/span> /&lt;span style="color:#b8bb26">\ \_&lt;/span>_/ /&lt;span style="color:#b8bb26">\ \_&lt;/span>_/ __ __ /&lt;span style="color:#b8bb26">\ \_&lt;/span>_/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">\ \ &lt;/span>,__&lt;span style="color:#b8bb26">\\&lt;/span> &lt;span style="color:#b8bb26">\ &lt;/span>,__&lt;span style="color:#b8bb26">\/\ \/\ \ \ \ &lt;/span>,__&lt;span style="color:#b8bb26">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">&lt;/span> &lt;span style="color:#b8bb26">\ \ \_&lt;/span>/ &lt;span style="color:#b8bb26">\ \ \_&lt;/span>/&lt;span style="color:#b8bb26">\ \ \_\ \ \ \ \_&lt;/span>/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#b8bb26">\ \_\ &lt;/span> &lt;span style="color:#b8bb26">\ \_\ &lt;/span> &lt;span style="color:#b8bb26">\ \_&lt;/span>___/ &lt;span style="color:#b8bb26">\ \_\
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#b8bb26">&lt;/span> &lt;span style="color:#b8bb26">\/&lt;/span>_/ &lt;span style="color:#b8bb26">\/&lt;/span>_/ &lt;span style="color:#b8bb26">\/&lt;/span>___/ &lt;span style="color:#b8bb26">\/&lt;/span>_/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> v1.1.0
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>________________________________________________
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> :: Method : GET
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> :: URL : http://permx.htb/
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> :: Wordlist : FUZZ: /usr/share/wordlists/seclists/Discovery/DNS/subdomains-top1million-5000.txt
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> :: Header : Host: FUZZ.permx.htb
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> :: Follow redirects : &lt;span style="color:#fabd2f">false&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> :: Calibration : &lt;span style="color:#fabd2f">false&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> :: Timeout : &lt;span style="color:#d3869b">10&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> :: Threads : &lt;span style="color:#d3869b">40&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> :: Matcher : Response status: &lt;span style="color:#d3869b">200&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>________________________________________________
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>www &lt;span style="color:#fe8019">[&lt;/span>Status: 200, Size: 36178, Words: 12829, Lines: 587&lt;span style="color:#fe8019">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>lms &lt;span style="color:#fe8019">[&lt;/span>Status: 200, Size: 19347, Words: 4910, Lines: 353&lt;span style="color:#fe8019">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>:: Progress: &lt;span style="color:#fe8019">[&lt;/span>4989/4989&lt;span style="color:#fe8019">]&lt;/span> :: Job &lt;span style="color:#fe8019">[&lt;/span>1/1&lt;span style="color:#fe8019">]&lt;/span> :: &lt;span style="color:#d3869b">226&lt;/span> req/sec :: Duration: &lt;span style="color:#fe8019">[&lt;/span>0:00:22&lt;span style="color:#fe8019">]&lt;/span> :: Errors: &lt;span style="color:#d3869b">0&lt;/span> ::
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Found one subdomain, let&amp;rsquo;s add that to &lt;code>/etc/hosts&lt;/code> as well&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fabd2f">echo&lt;/span> -e &lt;span style="color:#b8bb26">&amp;#39;10.10.11.23\tlms.permx.htb&amp;#39;&lt;/span> | sudo tee -a /etc/hosts
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="lmspermxhtb">&lt;code>lms.permx.htb&lt;/code>&lt;/h5>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/Pasted%20image%2020240708151036.webp">&lt;/figure>
+&lt;p>Chamilo is an open source e-learning and content management system.
+If we also have the version number, we could easily find a working exploit.
+The &lt;code>/robots.txt&lt;/code> file is available and there&amp;rsquo;s some files that might disclose the version number.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/robots-txt.webp">&lt;/figure>
+&lt;p>The &lt;code>README.txt&lt;/code> file returns a 404 error. But the &lt;code>/documentation/&lt;/code> endpoint is working fine and we can see the version of the chamilo instance used here.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/version.webp">&lt;/figure>
+&lt;p>Chamilo LMS &amp;lt;= &lt;code>1.11.24&lt;/code> is vulnerable to unauthenticated RCE throught file upload - &lt;a href="https://pentest-tools.com/vulnerabilities-exploits/chamilo-lms-11124-remote-code-execution_22949">CVE-2023-4220&lt;/a>.&lt;/p>
+&lt;h2 id="exploitation---cve-2023-4220">Exploitation - &lt;code>CVE-2023-4220&lt;/code>&lt;/h2>
+&lt;p>Found this &lt;a href="https://github.com/Ziad-Sakr/Chamilo-LMS-CVE-2023-4220-Exploit/blob/main/CVE-2023-4220.sh?source=post_page-----84871140b508--------------------------------">exploit&lt;/a> to be working. Let&amp;rsquo;s run it:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/Pasted%20image%2020240709202401.webp">&lt;/figure>
+&lt;p>And we got the shell.&lt;/p>
+&lt;h2 id="lateral-movement-to-user">Lateral Movement to user&lt;/h2>
+&lt;h3 id="local-enumeration">Local Enumeration&lt;/h3>
+&lt;p>We can start by enumerating the configuration files of chamilo.
+After some enumeration in the &lt;code>/var/www/chamilo&lt;/code> directory for password in the configuration files I found this:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/Pasted%20image%2020240709203439.webp">&lt;/figure>
+&lt;p>There are only 2 users in the machine.&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/users.webp">&lt;/figure>
+&lt;p>We can try the password with user &lt;code>mtz&lt;/code>&lt;/p>
+&lt;p>And it works:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/Pasted%20image%2020240709203701.webp">&lt;/figure>
+&lt;hr>
+&lt;h2 id="privilege-escalation">Privilege Escalation&lt;/h2>
+&lt;h3 id="local-enumeration-1">Local Enumeration&lt;/h3>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/Pasted%20image%2020240709205357.webp">&lt;/figure>
+&lt;p>It looks like we can execute &lt;code>/opt/acl.sh&lt;/code> with sudo privileges.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>cat /opt/acl.sh
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">#!/bin/bash
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8ec07c">&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$#&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> -ne &lt;span style="color:#d3869b">3&lt;/span> &lt;span style="color:#fe8019">]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> /usr/bin/echo &lt;span style="color:#b8bb26">&amp;#34;Usage: &lt;/span>$0&lt;span style="color:#b8bb26"> user perm file&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">exit&lt;/span> &lt;span style="color:#d3869b">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>user&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$1&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>perm&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$2&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>target&lt;span style="color:#fe8019">=&lt;/span>&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$3&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[[&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$target&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> !&lt;span style="color:#fe8019">=&lt;/span> /home/mtz/* &lt;span style="color:#fe8019">||&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$target&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> &lt;span style="color:#fe8019">==&lt;/span> *..* &lt;span style="color:#fe8019">]]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> /usr/bin/echo &lt;span style="color:#b8bb26">&amp;#34;Access denied.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">exit&lt;/span> &lt;span style="color:#d3869b">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#928374;font-style:italic">## Check if the path is a file&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">if&lt;/span> &lt;span style="color:#fe8019">[&lt;/span> ! -f &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$target&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> &lt;span style="color:#fe8019">]&lt;/span>; &lt;span style="color:#fe8019">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> /usr/bin/echo &lt;span style="color:#b8bb26">&amp;#34;Target must be a file.&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#fabd2f">exit&lt;/span> &lt;span style="color:#d3869b">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#fe8019">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>/usr/bin/sudo /usr/bin/setfacl -m u:&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$user&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>:&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$perm&lt;span style="color:#b8bb26">&amp;#34;&lt;/span> &lt;span style="color:#b8bb26">&amp;#34;&lt;/span>$target&lt;span style="color:#b8bb26">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>The script runs the &lt;code>setfacl&lt;/code> command as sudo and gives the user control to specify three arguments that is then passed to &lt;code>setfacl&lt;/code>.&lt;/p>
+&lt;div class="alert alert-note open">
+&lt;div class="alert-heading-box" onclick="toggleAlert(this)" >
+&lt;i class="bx bx-info-circle">&lt;/i>
+&lt;p class="alert-heading">
+Note
+&lt;/p>
+&lt;i class='bx bx-chevron-down open'>&lt;/i>
+&lt;/div>
+&lt;div class="alert-content" >
+&lt;p>&lt;a href="https://www.usenix.org/legacy/publications/library/proceedings/usenix03/tech/freenix03/full_papers/gruenbacher/gruenbacher_html/main.html">&lt;code>setfacl&lt;/code>&lt;/a> is a command utility tool for setting access control lists in files and directories.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;script>
+function toggleAlert(headerElement) {
+var alertBox = headerElement.parentElement;
+var alertContent = alertBox.querySelector('.alert-content');
+var icon = headerElement.querySelectorAll('i')[1];
+alertBox.classList.toggle('open');
+alertBox.classList.toggle('collapsed');
+if (alertBox.classList.contains('open')) {
+alertContent.style.display = 'block';
+icon.classList.remove('open');
+icon.classList.add('collapsed');
+} else {
+icon.classList.remove('collapsed');
+icon.classList.add('open');
+alertContent.style.display = 'none';
+}
+}
+&lt;/script>
+&lt;p>In a closer look, we can see that, &lt;code>acl.sh&lt;/code> requires 3 inputs &lt;code>$user&lt;/code> &lt;code>$perm&lt;/code> and &lt;code>$target&lt;/code>.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>$user&lt;/code> is the user for which we want to set the permission. In our case user &lt;code>mtz&lt;/code>.&lt;/li>
+&lt;li>&lt;code>$perm&lt;/code> represents the permission. eg: &lt;code>rwx&lt;/code> for read, write, and execute permissions.&lt;/li>
+&lt;li>&lt;code>$target&lt;/code> is to specify the file we want to upply the permission.
+The script also check if the &lt;code>$target&lt;/code> is located in &lt;code>/home/mtz/&lt;/code> directory, that is our home directory. And eventhough there is a wildcard (&lt;code>*&lt;/code>) used to check this,
+we can&amp;rsquo;t use file path like &lt;code>/home/mtz/../../root/root.txt&lt;/code> because the script also checks if the &lt;code>$target&lt;/code> contains &lt;code>..&lt;/code> characters.&lt;/li>
+&lt;/ul>
+&lt;p>But what we can try is to create a symlink of a file in our home directory and change its permission.&lt;/p>
+&lt;h3 id="privilege-escalation-1">Privilege Escalation&lt;/h3>
+&lt;p>So with that set, we can try changing permission of the &lt;code>/etc/sudoers&lt;/code> file:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/Pasted%20image%2020240709210026.webp">&lt;/figure>
+&lt;p>First, let&amp;rsquo;s create a symlink in our home directory.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#ebdbb2;background-color:#282828;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-sh" data-lang="sh">&lt;span style="display:flex;">&lt;span>ln -s /etc/sudoers /home/mtz/test
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/Pasted%20image%2020240709210138.webp">&lt;/figure>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/Pasted%20image%2020240709210214.webp">&lt;/figure>
+&lt;p>Now let&amp;rsquo;s edit the file and update the permission of user &lt;code>mtz&lt;/code>:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/Pasted%20image%2020240709210254.webp">&lt;/figure>
+&lt;p>And that&amp;rsquo;s it:&lt;/p>
+&lt;figure>
+&lt;img src="https://h4r1337.github.io/img/permx/Pasted%20image%2020240709210530.webp">&lt;/figure>
+&lt;h4 id="references">References:&lt;/h4>
+&lt;ul>
+&lt;li>&lt;a href="https://pentest-tools.com/vulnerabilities-exploits/chamilo-lms-11124-remote-code-execution_22949">CVE-2023-4220&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://github.com/Ziad-Sakr/Chamilo-LMS-CVE-2023-4220-Exploit/blob/main/CVE-2023-4220.sh">CVE-2023-4220 Exploit&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.usenix.org/legacy/publications/library/proceedings/usenix03/tech/freenix03/full_papers/gruenbacher/gruenbacher_html/main.html">POSIX Access Control Lists on Linux&lt;/a>&lt;/li>
+&lt;/ul></content></item></channel></rss>
